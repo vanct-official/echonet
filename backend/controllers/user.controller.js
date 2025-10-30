@@ -21,7 +21,7 @@ export const getUserProfile = async (req, res) => {
 };
 
 // Get All User Profile
-// 📘 [GET] /api/users
+// 📘 [GET] /api/users/all
 export const getAllUsers = async (req, res) => {
   try {
     // 1️⃣ Lấy tất cả người dùng (trừ passwordHash)

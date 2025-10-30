@@ -1,4 +1,4 @@
-// src/pages/SearchPage.jsx (Đã Hoàn Thiện)
+// src/pages/SearchPage.jsx
 
 import React, { useState } from "react";
 import {
@@ -17,9 +17,8 @@ import {
 import { FaSearch, FaComment } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import Sidebar from "../components/Sidebar"; // 💡 Giả định import Sidebar
+import Sidebar from "../components/Sidebar";
 
-// Giả định: currentUser được truyền từ App.jsx
 export default function SearchPage({ currentUser }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
@@ -48,7 +47,6 @@ export default function SearchPage({ currentUser }) {
         `http://localhost:5000/api/users/search?q=${searchTerm}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Lọc chính mình ra khỏi kết quả
       const filteredResults = res.data.filter(
         (u) => u._id !== currentUser?._id
       );
@@ -66,13 +64,16 @@ export default function SearchPage({ currentUser }) {
     }
   };
 
-  // HÀM MỚI: Bắt đầu cuộc trò chuyện
+  // ✅ Chuyển hướng đến trang cá nhân
+  const handleViewProfile = (userId) => {
+    navigate(`/user/${userId}`);
+  };
+
+  // ✅ Hoặc bắt đầu chat
   const handleStartChat = (targetUser) => {
-    // Chuyển hướng đến trang chat với ID của người dùng mục tiêu
     navigate(`/chat/${targetUser._id}`);
   };
 
-  // Component hiển thị từng kết quả tìm kiếm (User Result Item)
   const UserResultItem = ({ user }) => (
     <HStack
       p={3}
@@ -81,11 +82,15 @@ export default function SearchPage({ currentUser }) {
       justifyContent="space-between"
       alignItems="center"
       w="full"
+      _hover={{ bg: "gray.50", cursor: "pointer" }}
+      onClick={() => handleViewProfile(user._id)} // 👈 Click toàn dòng để mở profile
     >
       <HStack spacing={4}>
         <Avatar name={user.username} src={user.avatar} />
         <VStack align="start" spacing={0}>
-          <Text fontWeight="bold">{user.firstname} {user.lastname}</Text>
+          <Text fontWeight="bold">
+            {user.firstname} {user.lastname}
+          </Text>
           <Text fontSize="sm" color="gray.500">
             @{user.username}
           </Text>
@@ -95,22 +100,22 @@ export default function SearchPage({ currentUser }) {
         leftIcon={<FaComment />}
         colorScheme="blue"
         size="sm"
-        onClick={() => handleStartChat(user)}
+        onClick={(e) => {
+          e.stopPropagation(); // ⚠️ Ngăn click lan sang mở profile
+          handleStartChat(user);
+        }}
       >
         Chat
       </Button>
     </HStack>
   );
 
-  // --- Phần render chính ---
   return (
     <Flex maxW="1000px" mx="auto" mt={5} gap={6}>
-      {/* Sidebar */}
       <Box w="250px" display={{ base: "none", md: "block" }}>
         <Sidebar user={currentUser} />
       </Box>
 
-      {/* Content (Search) */}
       <VStack flex={1} p={5} spacing={5} align="stretch">
         <Heading size="lg" mb={4}>
           Tìm kiếm Người dùng
@@ -132,7 +137,6 @@ export default function SearchPage({ currentUser }) {
           </Button>
         </HStack>
 
-        {/* Hiển thị kết quả */}
         <VStack spacing={3} mt={4} align="stretch">
           {loading ? (
             <Spinner size="md" />

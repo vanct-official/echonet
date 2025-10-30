@@ -1,0 +1,86 @@
+# ===============================
+# ⚙️  GENERAL
+# ===============================
+.DS_Store
+Thumbs.db
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+.env
+.env.local
+.env.development.local
+.env.production.local
+.env.test.local
+*.log
+*.pid
+*.seed
+*.tgz
+*.bak
+*.tmp
+
+# ===============================
+# 🖥️  FRONTEND (React + Vite)
+# ===============================
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.DS_Store
+frontend/.env
+frontend/.env.*
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-lock.yaml
+frontend/package-lock.json
+
+# ===============================
+# ⚙️  BACKEND (Express)
+# ===============================
+backend/node_modules/
+backend/dist/
+backend/build/
+backend/uploads/
+backend/logs/
+backend/.env
+backend/.env.*
+backend/npm-debug.log*
+backend/yarn-debug.log*
+backend/yarn-error.log*
+backend/pnpm-lock.yaml
+backend/package-lock.json
+
+# ===============================
+# 🧠  EDITOR / IDE
+# ===============================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.swp
+*.iml
+
+# ===============================
+# 🔍  OS FILES
+# ===============================
+ehthumbs.db
+Icon?
+Desktop.ini
+
+# ===============================
+# 🚀  DEPLOYMENT / TEMP
+# ===============================
+coverage/
+.cache/
+tmp/
+temp/
+*.local
+*.env.backup
+*.log.old
+*.bak
+out/
+build/
+dist/

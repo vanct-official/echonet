@@ -1,0 +1,183 @@
+[{
+  "_id": {
+    "$oid": "68fb9b94ec1104c6b4ea5db5"
+  },
+  "username": "vanct",
+  "firstname": "Chu Thế",
+  "lastname": "Văn",
+  "dob": {
+    "$date": "2003-06-25T00:00:00.000Z"
+  },
+  "gender": true,
+  "email": "chuthevan450.com",
+  "phone": "0976812898",
+  "passwordHash": "$2b$10$R95WRubCFuZu9pBqTjFw.ORGpkrDj6vMmaXXwuo8DIQleaZNMZy6O",
+  "role": "admin",
+  "followed": [
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    }
+  ],
+  "followers": [],
+  "bio": "Hello, I am John!",
+  "createdAt": {
+    "$date": "2025-10-24T15:30:28.064Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-25T08:57:39.947Z"
+  },
+  "__v": 6,
+  "isActive": true,
+  "isVerified": true
+},
+{
+  "_id": {
+    "$oid": "68fb9c254e61561a56f85a99"
+  },
+  "username": "jane_smith",
+  "firstname": "Jane",
+  "lastname": "Smith",
+  "dob": {
+    "$date": "1992-08-20T00:00:00.000Z"
+  },
+  "gender": false,
+  "email": "jane@example.com",
+  "phone": "0987654321",
+  "passwordHash": "$2b$10$8r7U3Ygu7hiJ6tUVxbDY3uywnfZGPm/u2bQrJiT4PDQ3ej7UFiHzS",
+  "role": "user",
+  "followed": [],
+  "followers": [
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    }
+  ],
+  "bio": "Jane here!",
+  "createdAt": {
+    "$date": "2025-10-24T15:32:53.446Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-25T08:28:12.294Z"
+  },
+  "__v": 1,
+  "isActive": true,
+  "isVerified": true
+},
+{
+  "_id": {
+    "$oid": "68fb9c424e61561a56f85a9c"
+  },
+  "username": "alice_wang",
+  "firstname": "Alice",
+  "lastname": "Wang",
+  "dob": {
+    "$date": "1985-02-10T00:00:00.000Z"
+  },
+  "gender": false,
+  "email": "alice@example.com",
+  "phone": "5556667777",
+  "passwordHash": "$2b$10$sklDRL7l1YEGXcoGwX75qOnlkjr8f7wnJ.wEuegG2X2GSvKCLetIy",
+  "role": "user",
+  "followed": [],
+  "followers": [],
+  "bio": "Inspector Alice.",
+  "createdAt": {
+    "$date": "2025-10-24T15:33:22.709Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-25T06:43:36.657Z"
+  },
+  "__v": 0,
+  "isActive": true,
+  "isVerified": false
+},
+{
+  "_id": {
+    "$oid": "68fb9c5a4e61561a56f85a9f"
+  },
+  "username": "bob_lee",
+  "firstname": "Bob",
+  "lastname": "Lee",
+  "dob": {
+    "$date": "1988-12-01T00:00:00.000Z"
+  },
+  "gender": true,
+  "email": "bob@example.com",
+  "phone": "4445556666",
+  "passwordHash": "$2b$10$9YCrC/4zVb1CdLrFgHyiZeS1vAchhYD8kIuQRpXRPpS6gze9MbFMC",
+  "role": "user",
+  "followed": [],
+  "followers": [],
+  "bio": "Admin Bob.",
+  "createdAt": {
+    "$date": "2025-10-24T15:33:46.594Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-25T06:43:36.657Z"
+  },
+  "__v": 0,
+  "isActive": true,
+  "isVerified": false
+},
+{
+  "_id": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "username": "anhntv",
+  "firstname": "Nguyễn Thị",
+  "lastname": "Vân Anh",
+  "dob": {
+    "$date": "2003-09-13T00:00:00.000Z"
+  },
+  "gender": false,
+  "email": "081h0jhj04@spymail.one",
+  "phone": "0976812891",
+  "passwordHash": "$2b$10$8hhFAj6Gfrnly2aJSojmi.a.4/CWdsJidgvJo4mvxEp4vVm0GdKpW",
+  "role": "user",
+  "followed": [],
+  "followers": [
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    }
+  ],
+  "bio": "",
+  "createdAt": {
+    "$date": "2025-10-25T06:24:42.204Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-25T08:57:39.945Z"
+  },
+  "__v": 5,
+  "isActive": true,
+  "isVerified": false
+},
+{
+  "_id": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "username": "tuantv",
+  "firstname": "Trần Văn",
+  "lastname": "Tuấn",
+  "dob": {
+    "$date": "1996-10-08T00:00:00.000Z"
+  },
+  "gender": true,
+  "email": "akltuuxij@10mail.org",
+  "phone": "0976812892",
+  "passwordHash": "$2b$10$N3IN0LEdm9TEFayIWDy/GuqSimbISjBkOgCkiVElR8gslHEhsKAYy",
+  "role": "user",
+  "isActive": true,
+  "isVerified": false,
+  "followed": [],
+  "followers": [],
+  "bio": "",
+  "createdAt": {
+    "$date": "2025-10-25T12:08:08.668Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-25T12:08:08.668Z"
+  },
+  "__v": 0
+}]

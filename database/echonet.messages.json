@@ -1,0 +1,84 @@
+[{
+  "_id": {
+    "$oid": "68fcf98bbcf1d26421c194c4"
+  },
+  "conversation": {
+    "$oid": "68fcf98bbcf1d26421c194c2"
+  },
+  "sender": {
+    "$oid": "68fb9c254e61561a56f85a99"
+  },
+  "content": "Hello bạn",
+  "mediaURL": null,
+  "type": "text",
+  "readBy": [
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    }
+  ],
+  "createdAt": {
+    "$date": "2025-10-25T16:23:39.165Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-25T16:26:22.523Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68fcfe1dbcf1d26421c195a3"
+  },
+  "conversation": {
+    "$oid": "68fcf98bbcf1d26421c194c2"
+  },
+  "sender": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "content": "Hello",
+  "mediaURL": null,
+  "type": "text",
+  "readBy": [
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    }
+  ],
+  "createdAt": {
+    "$date": "2025-10-25T16:43:09.460Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-25T16:43:09.460Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68fcfe39bcf1d26421c195a9"
+  },
+  "conversation": {
+    "$oid": "68fcf98bbcf1d26421c194c2"
+  },
+  "sender": {
+    "$oid": "68fb9c254e61561a56f85a99"
+  },
+  "content": "Hello",
+  "mediaURL": null,
+  "type": "text",
+  "readBy": [
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    }
+  ],
+  "createdAt": {
+    "$date": "2025-10-25T16:43:37.674Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-25T16:52:20.853Z"
+  },
+  "__v": 0
+}]

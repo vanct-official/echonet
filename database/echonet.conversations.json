@@ -1,0 +1,25 @@
+[{
+  "_id": {
+    "$oid": "68fcf98bbcf1d26421c194c2"
+  },
+  "participants": [
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    }
+  ],
+  "isGroupChat": false,
+  "groupName": null,
+  "latestMessage": {
+    "$oid": "68fcfe39bcf1d26421c195a9"
+  },
+  "createdAt": {
+    "$date": "2025-10-25T16:23:39.158Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-25T16:43:37.677Z"
+  },
+  "__v": 0
+}]

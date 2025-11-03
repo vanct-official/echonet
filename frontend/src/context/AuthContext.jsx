@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
       // ✅ Lưu thông tin vào localStorage
       localStorage.setItem("token", token);
       if (role) localStorage.setItem("userRole", role);
-      setUser(userData || { username, role });
+      setUser(userData || { username, firstname, lastname, role });
 
       // ✅ Chuyển hướng theo vai trò
       if (role === "admin") {

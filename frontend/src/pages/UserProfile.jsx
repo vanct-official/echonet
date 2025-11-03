@@ -1,3 +1,4 @@
+// src/pages/UserProfilePage.jsx
 import React, { useState, useEffect } from "react";
 import { Box, VStack, Flex, Spinner, Text } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
@@ -5,9 +6,11 @@ import axios from "axios";
 import ProfileHeader from "../components/Profiles/ProfileHeader";
 import Post from "../components/posts/Post";
 import Sidebar from "../components/Sidebar";
+import { useAuth } from "../context/AuthContext";
 
-export default function UserProfilePage({ currentUser }) {
+export default function UserProfilePage() {
   const { id } = useParams();
+  const { user: currentUser } = useAuth(); // ✅ lấy currentUser từ context
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loadingUser, setLoadingUser] = useState(true);
@@ -18,35 +21,27 @@ export default function UserProfilePage({ currentUser }) {
 
   const token = localStorage.getItem("token");
 
-  // Lấy thông tin user và khởi tạo isFollowing
+  // 🟡 Lấy thông tin người dùng (profile)
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const res = await axios.get(`http://localhost:5000/api/users/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUser(res.data);
+        const userData = res.data;
+        setUser(userData);
 
-        // Set trạng thái follow và followers count
-        // 💡 SỬA LỖI TẠI ĐÂY: Đảm bảo so sánh ID chính xác
         if (currentUser && currentUser._id) {
-          // 1. Chuẩn hóa ID của người dùng hiện tại
           const currentUserId = currentUser._id.toString();
-
-          // 2. Chuẩn hóa mảng Followers (Lọc bỏ null/undefined và đảm bảo là chuỗi)
-          const followersIds = (res.data.followers || [])
+          const followersIds = (userData.followers || [])
             .map((f) => f && f.toString())
-            .filter(Boolean); // Lọc bỏ giá trị null/undefined/rỗng
+            .filter(Boolean);
 
-          // 3. Thiết lập trạng thái
           setIsFollowing(followersIds.includes(currentUserId));
-        } else {
-          // Trường hợp currentUser chưa được tải hoặc không tồn tại
-          setIsFollowing(false);
         }
 
-        setFollowersCount(res.data.followers?.length || 0);
-        setFollowingCount(res.data.followed?.length || 0);
+        setFollowersCount(userData.followers?.length || 0);
+        setFollowingCount(userData.followed?.length || 0);
       } catch (err) {
         console.error("Error fetching user:", err);
       } finally {
@@ -54,9 +49,9 @@ export default function UserProfilePage({ currentUser }) {
       }
     };
     fetchUser();
-  }, [id, token, currentUser]); // Thêm currentUser vào dependency array là đúng
+  }, [id, token, currentUser]);
 
-  // Lấy posts (Giữ nguyên)
+  // 🟡 Lấy bài đăng của user
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -74,43 +69,29 @@ export default function UserProfilePage({ currentUser }) {
     fetchPosts();
   }, [id, token]);
 
-  // handleFollowToggle (Đã sửa lỗi token ở bước trước, giữ nguyên logic này)
+  // 🟢 Follow / Unfollow
   const handleFollowToggle = async () => {
-    if (!token) {
-      alert("Vui lòng đăng nhập");
-      return;
-    }
-
-    // Đảm bảo currentUser có tồn tại
-    if (!currentUser) {
-      alert("Thông tin người dùng hiện tại chưa được tải. Vui lòng thử lại.");
-      return;
-    }
+    if (!token) return alert("Vui lòng đăng nhập");
+    if (!currentUser) return alert("Thông tin người dùng chưa tải xong.");
 
     try {
-      if (!isFollowing) {
-        await axios.post(
-          `http://localhost:5000/api/users/${id}/follow`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setIsFollowing(true);
-        setFollowersCount((prev) => prev + 1);
-      } else {
-        await axios.post(
-          `http://localhost:5000/api/users/${id}/unfollow`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setIsFollowing(false);
-        setFollowersCount((prev) => prev - 1);
-      }
+      const url = `http://localhost:5000/api/users/${id}/${
+        isFollowing ? "unfollow" : "follow"
+      }`;
+      await axios.post(
+        url,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setIsFollowing(!isFollowing);
+      setFollowersCount((prev) => prev + (isFollowing ? -1 : 1));
     } catch (err) {
       console.error("Error toggling follow:", err);
       alert("Có lỗi xảy ra. Vui lòng thử lại.");
     }
   };
 
+  // 🟣 Hiển thị giao diện
   if (loadingUser)
     return <Spinner size="lg" display="block" mx="auto" mt={10} />;
 

@@ -115,7 +115,7 @@ export default function Sidebar() {
             <Avatar size="sm" name={user.username} />
             <VStack align="start" spacing={0} flex="1" overflow="hidden">
               <Text fontWeight="bold" isTruncated>
-                {user.lastname || user.username}
+                {user.firstname} {user.lastname}
               </Text>
               <Text fontSize="sm" color="gray.500" isTruncated>
                 @{user.username}

@@ -40,20 +40,24 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     try {
       const res = await axios.post(LOGIN_API_URL, { username, password });
-      const { token, user: userData, role } = res.data;
+
+      // ✅ Backend trả { user: {...}, token: "..." }
+      const { user: userData, token } = res.data;
 
       if (!token) throw new Error("Token not returned from API.");
 
-      // ✅ Lưu thông tin vào localStorage
+      // ✅ Lưu token + role vào localStorage
       localStorage.setItem("token", token);
-      if (role) localStorage.setItem("userRole", role);
-      setUser(userData || { username, firstname, lastname, role });
+      if (userData.role) localStorage.setItem("userRole", userData.role);
+
+      // ✅ Cập nhật state user
+      setUser(userData);
 
       // ✅ Chuyển hướng theo vai trò
-      if (role === "admin") {
-        navigate("/admin/dashboard"); // 👉 chuyển sang dashboard admin
+      if (userData.role === "admin") {
+        navigate("/admin/dashboard");
       } else {
-        navigate("/"); // user bình thường về trang chủ
+        navigate("/");
       }
 
       return true;
@@ -77,5 +81,8 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+// Quên mật khẩu
+
 
 export const useAuth = () => useContext(AuthContext);

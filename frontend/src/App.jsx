@@ -12,6 +12,9 @@ import UserProfilePage from "./pages/UserProfile.jsx";
 import AdminUsersPage from "./pages/AdminPages/AdminUser.jsx";
 import AdminDashboard from "./pages/AdminPages/AdminDashboard.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
+import VerifyOtpPage from "./pages/VerifyOtpPage.jsx";
+import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -49,6 +52,9 @@ export default function App() {
             path="/login"
             element={<LoginPage setCurrentUser={setCurrentUser} />}
           />{" "}
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/verify-otp" element={<VerifyOtpPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           {/* Truyền setter */}
           <Route path="/register" element={<RegisterPage />} />
           {/* Truyền currentUser vào các Route cần dùng */}

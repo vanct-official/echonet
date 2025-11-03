@@ -3,15 +3,20 @@ import mongoose from "mongoose";
 const otpTempSchema = new mongoose.Schema(
   {
     email: { type: String, required: true },
-    username: { type: String, required: true },
-    firstname: { type: String, required: true },
-    lastname: { type: String, required: true },
-    phone: { type: String, required: true },
-    dob: { type: Date, required: true },
-    gender: { type: Boolean, required: true },
-    password: { type: String, required: true }, // lưu password đã hash
+    username: { type: String},
+    firstname: { type: String},
+    lastname: { type: String},
+    phone: { type: String},
+    dob: { type: Date},
+    gender: { type: Boolean},
+    password: { type: String}, // lưu password đã hash
     otp: { type: String, required: true }, // 6 chữ số
     expiresAt: { type: Date, required: true }, // thời gian hết hạn OTP
+    purpose: {
+      type: String,
+      enum: ["register", "forgot-password"],
+      required: true,
+    },
   },
   { timestamps: true }
 );

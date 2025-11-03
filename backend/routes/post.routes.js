@@ -5,8 +5,9 @@ import {
   createPost,
   toggleLike,
   addComment,
+  updatePost, 
 } from "../controllers/post.controller.js";
-import { protect } from "../middleware/auth.middleware.js"; // middleware JWT
+import { protect  } from "../middleware/auth.middleware.js"; // middleware JWT
 import upload from "../middleware/upload.middleware.js";
 
 const router = express.Router();
@@ -25,5 +26,8 @@ router.put("/:id/like", protect, toggleLike);
 
 // Comment
 router.post("/:id/comment", protect, addComment);
+
+// Cập nhật bài viết
+router.put("/:id", protect, upload.array("media", 10), updatePost);
 
 export default router;

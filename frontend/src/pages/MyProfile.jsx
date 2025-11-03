@@ -120,7 +120,26 @@ export default function MyProfile() {
         </Box>
 
         <CreatePost
-          onPostCreated={(newPost) => setPosts([newPost, ...posts])}
+          onPostCreated={(newPost) => {
+            const populatedPost = {
+              ...newPost,
+              author: {
+                _id: user._id,
+                username: user.username,
+                avatar: user.avatar,
+                isVerified: user.isVerified,
+              },
+            };
+
+            setPosts((prev) => {
+              const updated = [populatedPost, ...prev];
+              return updated.sort(
+                (a, b) =>
+                  new Date(b.updatedAt || b.createdAt) -
+                  new Date(a.updatedAt || a.createdAt)
+              );
+            });
+          }}
         />
 
         {/* Danh sách bài đăng */}
@@ -130,7 +149,39 @@ export default function MyProfile() {
               Bạn chưa có bài đăng nào.
             </Text>
           ) : (
-            posts.map((post) => <Post key={post._id} post={post} />)
+            posts
+              .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+              .map((post) => (
+                <Post
+                  key={post._id}
+                  post={post}
+                  currentUser={user} // ✅ để hiển thị nút chỉnh sửa
+                  onPostUpdated={(updatedPost) => {
+                    const populatedPost = {
+                      ...updatedPost,
+                      author: {
+                        _id: user._id,
+                        username: user.username,
+                        avatar: user.avatar,
+                        isVerified: user.isVerified,
+                      },
+                    };
+
+                    setPosts((prev) => {
+                      const updated = prev.map((p) =>
+                        p._id === populatedPost._id ? populatedPost : p
+                      );
+                      return updated.sort(
+                        (a, b) =>
+                          new Date(b.updatedAt || b.createdAt) -
+                          new Date(a.updatedAt || a.createdAt)
+                      );
+                    });
+                  }}
+
+                />
+              ))
+
           )}
         </VStack>
       </Box>

@@ -25,11 +25,12 @@ import {
   FaShare,
   FaRetweet,
 } from "react-icons/fa";
-import { EditIcon } from "@chakra-ui/icons";
+import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import EditPostModal from "./EditPostModal.jsx";
 import VerifiedBadgeSVG from "/verified-badge-svgrepo-com.svg";
+import { deletePost } from "../../api/post";
 
 // ✅ Component hiển thị tích xanh
 const VerifiedBadgeIcon = () => (
@@ -43,7 +44,7 @@ const VerifiedBadgeIcon = () => (
   />
 );
 
-export default function Post({ post, currentUser, onPostUpdated }) {
+export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }) {
   const [postData, setPostData] = useState(post || {});
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(post?.likes?.length || 0);
@@ -235,20 +236,65 @@ export default function Post({ post, currentUser, onPostUpdated }) {
               </Text>
             </Flex>
 
-            {/* Nút chỉnh sửa */}
+
             {canEdit && (
-              <IconButton
-                icon={<EditIcon />}
-                aria-label="Chỉnh sửa bài viết"
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  onClose();
-                  setTimeout(onEditOpen, 200);
-                }}
-                mt={2}
-              />
+              <HStack spacing={2}>
+                {/* Nút chỉnh sửa */}
+                <IconButton
+                  icon={<EditIcon />}
+                  aria-label="Chỉnh sửa bài viết"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    onClose();
+                    setTimeout(onEditOpen, 200);
+                  }}
+                  mt={2}
+                />
+
+                {/* Nút xóa bài viết */}
+                <IconButton
+                    icon={<DeleteIcon />}
+                    aria-label="Xóa bài viết"
+                    size="sm"
+                    variant="ghost"
+                    color="gray.600"
+                    _hover={{ color: "red.500" }}
+                  onClick={async () => {
+                    if (!window.confirm("Bạn có chắc chắn muốn xóa bài viết này?")) return;
+
+                    try {
+                      const token = localStorage.getItem("token");
+                      await deletePost(postData._id, token);
+
+                      toast({
+                        title: "Đã xóa bài viết",
+                        description: "Bài viết đã được xóa thành công.",
+                        status: "success",
+                        duration: 3000,
+                        isClosable: true,
+                      });
+
+                      if (typeof onPostDeleted === "function") {
+                        onPostDeleted(postData._id);
+                      }
+
+                      onClose();
+                    } catch (err) {
+                      toast({
+                        title: "Lỗi khi xóa bài viết",
+                        description: err.message || "Không thể xóa bài viết.",
+                        status: "error",
+                        duration: 3000,
+                        isClosable: true,
+                      });
+                    }
+                  }}
+                  mt={2}
+                />
+              </HStack>
             )}
+
           </ModalHeader>
 
           <ModalCloseButton />

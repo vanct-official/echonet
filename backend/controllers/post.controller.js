@@ -230,6 +230,47 @@ export const updatePost = async (req, res) => {
   }
 };
 
+// Xóa bài viết (người dùng xóa bài của mình, admin có thể xóa bất kỳ)
+export const deletePost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.user._id;
+
+    const post = await Post.findById(postId);
+    if (!post)
+      return res.status(404).json({ message: "Không tìm thấy bài viết" });
+
+    // ✅ Cho phép: chính chủ hoặc admin
+    if (post.author.toString() !== userId.toString() && req.user.role !== "admin") {
+      return res.status(403).json({ message: "Bạn không có quyền xóa bài viết này" });
+    }
+
+    // 🧹 Nếu bài viết có ảnh, xóa trên Cloudinary
+    if (post.images && post.images.length > 0) {
+      for (const url of post.images) {
+        try {
+          const publicId = url.split("/").pop().split(".")[0];
+          await cloudinary.uploader.destroy(`posts/${publicId}`);
+        } catch (err) {
+          console.warn("Không thể xóa ảnh trên Cloudinary:", err.message);
+        }
+      }
+    }
+
+    await post.deleteOne();
+
+    res.json({
+      message: "Đã xóa bài viết thành công",
+      id: postId,
+      deletedBy: req.user.username,
+    });
+  } catch (err) {
+    console.error("❌ Lỗi khi xóa bài viết:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 
 
 

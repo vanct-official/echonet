@@ -5,9 +5,10 @@ import {
   createPost,
   toggleLike,
   addComment,
-  updatePost, 
+  updatePost,
+  deletePost, 
 } from "../controllers/post.controller.js";
-import { protect  } from "../middleware/auth.middleware.js"; // middleware JWT
+import { protect, adminOnly } from "../middleware/auth.middleware.js"; // middleware JWT
 import upload from "../middleware/upload.middleware.js";
 
 const router = express.Router();
@@ -29,5 +30,11 @@ router.post("/:id/comment", protect, addComment);
 
 // Cập nhật bài viết
 router.put("/:id", protect, upload.array("media", 10), updatePost);
+
+// Xoá bài viết (chỉ chủ bài hoặc admin) - có thể thêm sau
+router.delete("/:id", protect, deletePost);
+
+// ✅ Route cho admin - có bảo vệ
+router.get("/admin/all", protect, adminOnly, getPosts);
 
 export default router;

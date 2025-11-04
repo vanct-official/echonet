@@ -31,3 +31,12 @@ export const protect = async (req, res, next) => {
     return res.status(401).json({ message: "Not authorized, token failed" });
   }
 };
+
+// ✅ Middleware dành riêng cho Admin (dùng cho route đặc biệt)
+export const adminOnly = (req, res, next) => {
+  if (req.user && req.user.role === "admin") {
+    next();
+  } else {
+    res.status(403).json({ message: "Chỉ admin mới được phép thực hiện hành động này" });
+  }
+};

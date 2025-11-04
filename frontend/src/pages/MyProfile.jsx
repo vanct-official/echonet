@@ -5,7 +5,7 @@ import {
   VStack,
   Text,
   Button,
-  Flex, // 💡 Thêm Flex
+  Flex,
 } from "@chakra-ui/react";
 import axios from "axios";
 import ProfileHeader from "../components/Profiles/ProfileHeader";
@@ -62,14 +62,16 @@ export default function MyProfile() {
     fetchPosts();
   }, []);
 
-  // --- Xử lý Loading và Layout ---
-  // Tôi đang sử dụng lại layout Flex từ UserProfilePage để Sidebar và Nội dung đặt cạnh nhau
+  // ✅ Khi bài viết bị xóa
+  const handlePostDeleted = (deletedId) => {
+    setPosts((prev) => prev.filter((p) => p._id !== deletedId));
+  };
 
+  // --- Loading state ---
   if (loadingUser || loadingPosts) {
     return (
       <Flex maxW="1200px" mx="auto" mt={5} gap={6} px={4}>
-        <Sidebar />{" "}
-        {/* Sidebar sẽ là loading skeleton nếu nó cũng fetch data */}
+        <Sidebar />
         <Box flex="1">
           <Skeleton circle size="20" mb={4} />
           <Skeleton height="24px" width="50%" mb={2} />
@@ -92,10 +94,9 @@ export default function MyProfile() {
     );
   }
 
-  // 💡 KHẮC PHỤC LỖI: Tính toán số lượng Followers và Following
+  // --- Tính toán số lượng ---
   const followersCount = user.followers?.length || 0;
   const followingCount = user.followed?.length || 0;
-  // Giả sử user.postsCount không có sẵn, chúng ta dùng độ dài mảng posts
   const postsCount = posts.length;
 
   // --- Hiển thị profile + bài đăng ---
@@ -103,13 +104,12 @@ export default function MyProfile() {
     <Flex maxW="1000px" mx="auto" mt={5} gap={6} px={4}>
       <Sidebar user={user} />
       <Box flex="1">
-        {/* 💡 SỬA LỖI: Truyền các props thống kê cần thiết */}
         <ProfileHeader
           user={user}
-          isCurrentUser={true} // Đây là trang cá nhân
+          isCurrentUser={true}
           followersCount={followersCount}
           followingCount={followingCount}
-          postsCount={postsCount} // Truyền số lượng bài đăng
+          postsCount={postsCount}
         />
 
         {/* Nút chức năng */}
@@ -150,12 +150,16 @@ export default function MyProfile() {
             </Text>
           ) : (
             posts
-              .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+              .sort(
+                (a, b) =>
+                  new Date(b.updatedAt || b.createdAt) -
+                  new Date(a.updatedAt || a.createdAt)
+              )
               .map((post) => (
                 <Post
                   key={post._id}
                   post={post}
-                  currentUser={user} // ✅ để hiển thị nút chỉnh sửa
+                  currentUser={user}
                   onPostUpdated={(updatedPost) => {
                     const populatedPost = {
                       ...updatedPost,
@@ -178,10 +182,9 @@ export default function MyProfile() {
                       );
                     });
                   }}
-
+                  onPostDeleted={handlePostDeleted} // ✅ thêm callback xóa
                 />
               ))
-
           )}
         </VStack>
       </Box>

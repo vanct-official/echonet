@@ -10,6 +10,7 @@ import RegisterPage from "./pages/RegisterPage.jsx";
 import SearchPage from "./pages/SearchPage.jsx";
 import UserProfilePage from "./pages/UserProfile.jsx";
 import AdminUsersPage from "./pages/AdminPages/AdminUser.jsx";
+import AdminPosts from "./pages/AdminPages/AdminPosts";
 import AdminDashboard from "./pages/AdminPages/AdminDashboard.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
@@ -111,6 +112,14 @@ export default function App() {
             element={
               <AdminRoute currentUser={currentUser}>
                 <AdminUsersPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/posts"
+            element={
+              <AdminRoute currentUser={currentUser}>
+                <AdminPosts />
               </AdminRoute>
             }
           />

@@ -17,6 +17,7 @@ import {
   ModalBody,
   useDisclosure,
   useToast,
+  Badge,
 } from "@chakra-ui/react";
 import {
   FaHeart,
@@ -168,7 +169,6 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
     if (typeof onPostUpdated === "function") {
       onPostUpdated(updatedPost);
     }
-
   };
 
   if (!postData || !postData._id) return null;
@@ -183,7 +183,10 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
         mb={4}
         maxWidth={1200}
         cursor="pointer"
-        _hover={{ bg: "gray.100" }}
+        bg={postData.status === "draft" ? "yellow.50" : "white"}
+        _hover={{
+          bg: postData.status === "draft" ? "yellow.100" : "gray.100",
+        }}
         onClick={onOpen}
       >
         <Flex align="center" justify="space-between" mb={2}>
@@ -196,6 +199,11 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
             <Flex align="center">
               <Text fontWeight="bold">{postData.author?.username || "Người dùng"}</Text>
               {postData.author?.isVerified && <VerifiedBadgeIcon />}
+              {postData.status === "draft" && (
+                <Badge ml={2} colorScheme="yellow" variant="subtle">
+                  Draft
+                </Badge>
+              )}
             </Flex>
           </Flex>
           <Text fontSize="sm" color="gray.500">
@@ -205,7 +213,6 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
               <>{formatDate(postData.createdAt)}</>
             )}
           </Text>
-
         </Flex>
 
         {postData?.content && <Text isTruncated>{postData.content}</Text>}
@@ -230,12 +237,16 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
               <Flex align="center">
                 <Text fontWeight="bold">{postData.author?.username || "Người dùng"}</Text>
                 {postData.author?.isVerified && <VerifiedBadgeIcon />}
+                {postData.status === "draft" && (
+                  <Badge ml={2} colorScheme="yellow" variant="subtle">
+                    Draft
+                  </Badge>
+                )}
               </Flex>
               <Text fontSize="sm" color="gray.500">
                 {formatDate(postData.createdAt)}
               </Text>
             </Flex>
-
 
             {canEdit && (
               <HStack spacing={2}>
@@ -254,12 +265,12 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
 
                 {/* Nút xóa bài viết */}
                 <IconButton
-                    icon={<DeleteIcon />}
-                    aria-label="Xóa bài viết"
-                    size="sm"
-                    variant="ghost"
-                    color="gray.600"
-                    _hover={{ color: "red.500" }}
+                  icon={<DeleteIcon />}
+                  aria-label="Xóa bài viết"
+                  size="sm"
+                  variant="ghost"
+                  color="gray.600"
+                  _hover={{ color: "red.500" }}
                   onClick={async () => {
                     if (!window.confirm("Bạn có chắc chắn muốn xóa bài viết này?")) return;
 
@@ -294,6 +305,56 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
                 />
               </HStack>
             )}
+            {canEdit && postData.status === "draft" && (
+              <Button
+                colorScheme="green"
+                size="sm"
+                ml={2}
+                mt={2}
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem("token");
+                    const res = await axios.put(
+                      `${API_URL}/api/posts/${postData._id}`,
+                      { status: "published" },
+                      { headers: { Authorization: `Bearer ${token}` } }
+                    );
+
+                    const updatedPost = res.data.post || res.data; // 🟢 đảm bảo lấy đúng object bài viết
+
+                    toast({
+                      title: "Đăng công khai thành công!",
+                      status: "success",
+                      duration: 2000,
+                      isClosable: true,
+                    });
+
+                    // 🟢 Cập nhật lại bài viết trong modal
+                    setPostData((prev) => ({ ...prev, ...updatedPost, status: "published" }));
+
+                    // 🟢 Cập nhật ở HomeFeed / Profile
+                    if (typeof onPostUpdated === "function") {
+                      onPostUpdated({ ...postData, ...updatedPost, status: "published" });
+                    }
+
+                    // 🟢 Đóng modal để tránh flash “mất bài”
+                    onClose();
+                  } catch (err) {
+                    toast({
+                      title: "Lỗi khi đăng bài",
+                      description:
+                        err.response?.data?.message || "Không thể đăng bài.",
+                      status: "error",
+                      duration: 3000,
+                      isClosable: true,
+                    });
+                  }
+                }}
+              >
+                Đăng công khai
+              </Button>
+            )}
+
 
           </ModalHeader>
 

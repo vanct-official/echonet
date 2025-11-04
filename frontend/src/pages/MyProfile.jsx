@@ -119,6 +119,7 @@ export default function MyProfile() {
           </Button>
         </Box>
 
+        {/* Component tạo bài viết */}
         <CreatePost
           onPostCreated={(newPost) => {
             const populatedPost = {
@@ -142,11 +143,15 @@ export default function MyProfile() {
           }}
         />
 
-        {/* Danh sách bài đăng */}
-        <VStack align="stretch" spacing={4} mt={4}>
+        {/* 📰 Tất cả bài viết (đã đăng & nháp) */}
+        <VStack align="stretch" spacing={4} mt={6}>
+          <Text fontWeight="bold" fontSize="lg" mb={2}>
+            📰 Bài viết của bạn
+          </Text>
+
           {posts.length === 0 ? (
-            <Text color="gray.500" textAlign="center" mt={10}>
-              Bạn chưa có bài đăng nào.
+            <Text color="gray.500" textAlign="center">
+              Bạn chưa có bài viết nào.
             </Text>
           ) : (
             posts
@@ -182,7 +187,7 @@ export default function MyProfile() {
                       );
                     });
                   }}
-                  onPostDeleted={handlePostDeleted} // ✅ thêm callback xóa
+                  onPostDeleted={handlePostDeleted}
                 />
               ))
           )}

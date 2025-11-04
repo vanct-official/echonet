@@ -240,10 +240,48 @@ export default function EditPostModal({ isOpen, onClose, post, onUpdated }) {
           <Button variant="ghost" mr={3} onClick={onClose}>
             Hủy
           </Button>
+
+          {/* 🆕 Nút Đăng bài (chỉ khi đang ở trạng thái draft) */}
+          {post?.status === "draft" && (
+            <Button
+              colorScheme="green"
+              mr={3}
+              onClick={async () => {
+                try {
+                  const res = await axios.put(
+                    `${API_URL}/api/posts/${post._id}/publish`,
+                    {},
+                    { headers: { Authorization: `Bearer ${token}` } }
+                  );
+                  toast({
+                    title: "Đã đăng bài viết",
+                    description: "Bài nháp đã được đăng thành công.",
+                    status: "success",
+                    duration: 2500,
+                    isClosable: true,
+                  });
+                  if (onUpdated) onUpdated(res.data.post);
+                  onClose();
+                } catch (error) {
+                  toast({
+                    title: "Lỗi khi đăng bài",
+                    description: error.response?.data?.message || "Không thể đăng bài.",
+                    status: "error",
+                    duration: 2500,
+                    isClosable: true,
+                  });
+                }
+              }}
+            >
+              Đăng bài
+            </Button>
+          )}
+
           <Button colorScheme="blue" onClick={handleSubmit} isLoading={isLoading}>
             Lưu thay đổi
           </Button>
         </ModalFooter>
+
       </ModalContent>
     </Modal>
   );

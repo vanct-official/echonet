@@ -1,313 +1,179 @@
-[{
-  "_id": {
-    "$oid": "68fba4a9f91651c15cb3eb2a"
-  },
-  "author": {
-    "$oid": "68fb9b94ec1104c6b4ea5db5"
-  },
-  "content": "Hello world! Đây là bài đăng đầu tiên.",
-  "images": [
-    "https://via.placeholder.com/400"
-  ],
-  "likes": [
-    {
-      "$oid": "68fb9b94ec1104c6b4ea5db5"
-    },
-    {
-      "$oid": "68fb9c254e61561a56f85a99"
-    }
-  ],
-  "comments": [
-    {
-      "user": {
-        "$oid": "68fb9c254e61561a56f85a99"
-      },
-      "text": "Hello",
-      "_id": {
-        "$oid": "68fc3b3eb360c9c8e7f95a34"
-      },
-      "createdAt": {
-        "$date": "2025-10-25T02:51:42.786Z"
+[
+  {
+    "_id": { "$oid": "68fba4a9f91651c15cb3eb2a" },
+    "author": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
+    "content": "Hello world! Đây là bài đăng đầu tiên.",
+    "images": ["https://via.placeholder.com/400"],
+    "likes": [
+      { "$oid": "68fb9b94ec1104c6b4ea5db5" },
+      { "$oid": "68fb9c254e61561a56f85a99" }
+    ],
+    "comments": [
+      {
+        "user": { "$oid": "68fb9c254e61561a56f85a99" },
+        "text": "Hello",
+        "_id": { "$oid": "68fc3b3eb360c9c8e7f95a34" },
+        "createdAt": { "$date": "2025-10-25T02:51:42.786Z" }
       }
-    }
-  ],
-  "createdAt": {
-    "$date": "2025-10-24T16:09:13.843Z"
+    ],
+    "status": "published",
+    "createdAt": { "$date": "2025-10-24T16:09:13.843Z" },
+    "updatedAt": { "$date": "2025-10-25T02:54:44.535Z" },
+    "__v": 7
   },
-  "updatedAt": {
-    "$date": "2025-10-25T02:54:44.535Z"
+  {
+    "_id": { "$oid": "68fc3d1bb360c9c8e7f95ace" },
+    "author": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
+    "content": "Hello đây là bài đăng thứ 2 của mình nha",
+    "images": [],
+    "likes": [],
+    "comments": [],
+    "status": "published",
+    "createdAt": { "$date": "2025-10-25T02:59:39.592Z" },
+    "updatedAt": { "$date": "2025-11-03T02:41:04.770Z" },
+    "__v": 16
   },
-  "__v": 7
-},
-{
-  "_id": {
-    "$oid": "68fc3d1bb360c9c8e7f95ace"
-  },
-  "author": {
-    "$oid": "68fb9b94ec1104c6b4ea5db5"
-  },
-  "content": "Hello đây là bài đăng thứ 2 của mình nha",
-  "images": [],
-  "likes": [],
-  "comments": [],
-  "createdAt": {
-    "$date": "2025-10-25T02:59:39.592Z"
-  },
-  "updatedAt": {
-    "$date": "2025-10-25T02:59:39.592Z"
-  },
-  "__v": 0
-},
-{
-  "_id": {
-    "$oid": "68fc3dceb360c9c8e7f95b49"
-  },
-  "author": {
-    "$oid": "68fb9c254e61561a56f85a99"
-  },
-  "content": "Xin chào anh Văn",
-  "images": [
-    "blob:http://localhost:5173/db84244e-5c14-466a-a437-7765ebff1646"
-  ],
-  "likes": [
-    {
-      "$oid": "68fb9c254e61561a56f85a99"
-    },
-    {
-      "$oid": "68fb9b94ec1104c6b4ea5db5"
-    }
-  ],
-  "comments": [
-    {
-      "user": {
-        "$oid": "68fb9b94ec1104c6b4ea5db5"
+  {
+    "_id": { "$oid": "68fc3dceb360c9c8e7f95b49" },
+    "author": { "$oid": "68fb9c254e61561a56f85a99" },
+    "content": "Xin chào anh Văn",
+    "images": ["blob:http://localhost:5173/db84244e-5c14-466a-a437-7765ebff1646"],
+    "likes": [
+      { "$oid": "68fb9c254e61561a56f85a99" },
+      { "$oid": "68fb9b94ec1104c6b4ea5db5" }
+    ],
+    "comments": [
+      {
+        "user": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
+        "text": "Chất thế nhờ",
+        "_id": { "$oid": "68fc3dfab360c9c8e7f95b5f" },
+        "createdAt": { "$date": "2025-10-25T03:03:22.562Z" }
       },
-      "text": "Chất thế nhờ",
-      "_id": {
-        "$oid": "68fc3dfab360c9c8e7f95b5f"
+      {
+        "user": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
+        "text": "Lô",
+        "_id": { "$oid": "68fc76e484a97e25bcc48112" },
+        "createdAt": { "$date": "2025-10-25T07:06:12.800Z" }
       },
-      "createdAt": {
-        "$date": "2025-10-25T03:03:22.562Z"
+      {
+        "user": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
+        "text": "Lô",
+        "_id": { "$oid": "68fc78f484a97e25bcc481be" },
+        "createdAt": { "$date": "2025-10-25T07:15:00.878Z" }
       }
-    },
-    {
-      "user": {
-        "$oid": "68fb9b94ec1104c6b4ea5db5"
+    ],
+    "status": "published",
+    "createdAt": { "$date": "2025-10-25T03:02:38.951Z" },
+    "updatedAt": { "$date": "2025-10-25T07:15:00.879Z" },
+    "__v": 5
+  },
+  {
+    "_id": { "$oid": "68fc41b6257311f2cfe7658c" },
+    "author": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
+    "content": "hello",
+    "images": [
+      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761362358/posts/hoyr3fj5he4gylwlywl7.jpg"
+    ],
+    "likes": [{ "$oid": "68fb9c254e61561a56f85a99" }],
+    "comments": [],
+    "status": "published",
+    "createdAt": { "$date": "2025-10-25T03:19:18.478Z" },
+    "updatedAt": { "$date": "2025-10-25T03:20:21.342Z" },
+    "__v": 1
+  },
+  {
+    "_id": { "$oid": "68fc4376257311f2cfe765e0" },
+    "author": { "$oid": "68fb9c254e61561a56f85a99" },
+    "content": "Hello đồng bào",
+    "images": [
+      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761362805/posts/jsp21rgylnbe4ukwts6f.png"
+    ],
+    "likes": [{ "$oid": "68fb9b94ec1104c6b4ea5db5" }],
+    "comments": [
+      {
+        "user": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
+        "text": "Quét mã ah",
+        "_id": { "$oid": "68fc766e84a97e25bcc480fe" },
+        "createdAt": { "$date": "2025-10-25T07:04:14.682Z" }
       },
-      "text": "Lô",
-      "_id": {
-        "$oid": "68fc76e484a97e25bcc48112"
-      },
-      "createdAt": {
-        "$date": "2025-10-25T07:06:12.800Z"
+      {
+        "user": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
+        "text": "ko nhé",
+        "_id": { "$oid": "68fc771d84a97e25bcc48148" },
+        "createdAt": { "$date": "2025-10-25T07:07:09.902Z" }
       }
-    },
-    {
-      "user": {
-        "$oid": "68fb9b94ec1104c6b4ea5db5"
-      },
-      "text": "Lô",
-      "_id": {
-        "$oid": "68fc78f484a97e25bcc481be"
-      },
-      "createdAt": {
-        "$date": "2025-10-25T07:15:00.878Z"
+    ],
+    "status": "published",
+    "createdAt": { "$date": "2025-10-25T03:26:46.136Z" },
+    "updatedAt": { "$date": "2025-10-25T07:07:42.947Z" },
+    "__v": 3
+  },
+  {
+    "_id": { "$oid": "68fc7ab484a97e25bcc4820e" },
+    "author": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
+    "content": "Cool Ngầu",
+    "images": [
+      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761376948/posts/k0zxm7xxb3m1i13nzol9.png"
+    ],
+    "likes": [{ "$oid": "68fb9b94ec1104c6b4ea5db5" }],
+    "comments": [],
+    "status": "published",
+    "createdAt": { "$date": "2025-10-25T07:22:28.642Z" },
+    "updatedAt": { "$date": "2025-10-25T07:22:35.359Z" },
+    "__v": 1
+  },
+  {
+    "_id": { "$oid": "68fcb3982b435575f59e64b0" },
+    "author": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
+    "content": "đăng nhiều ảnh này",
+    "images": [
+      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761391506/posts/poidl0zibm0sfryrm85v.jpg",
+      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761391508/posts/hpr5lat81nmicoammhep.png",
+      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761391510/posts/g7wuxwbkmclzpvb9rt1x.png",
+      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761391511/posts/gvhpyeohyejbppaibpgh.png"
+    ],
+    "likes": [{ "$oid": "68fc6d2adf2a81282ba34875" }],
+    "comments": [
+      {
+        "user": { "$oid": "68fc6d2adf2a81282ba34875" },
+        "text": "Ui, đẹp",
+        "_id": { "$oid": "68fcb5522b435575f59e65a6" },
+        "createdAt": { "$date": "2025-10-25T11:32:34.320Z" }
       }
-    }
-  ],
-  "createdAt": {
-    "$date": "2025-10-25T03:02:38.951Z"
+    ],
+    "status": "published",
+    "createdAt": { "$date": "2025-10-25T11:25:12.299Z" },
+    "updatedAt": { "$date": "2025-10-25T11:32:34.322Z" },
+    "__v": 4
   },
-  "updatedAt": {
-    "$date": "2025-10-25T07:15:00.879Z"
+  {
+    "_id": { "$oid": "68fcb5b22b435575f59e6604" },
+    "author": { "$oid": "68fc6d2adf2a81282ba34875" },
+    "content": "Xin chào cộng đồng Echonet",
+    "images": [],
+    "likes": [
+      { "$oid": "68fc6d2adf2a81282ba34875" },
+      { "$oid": "68fb9c254e61561a56f85a99" }
+    ],
+    "comments": [],
+    "status": "published",
+    "createdAt": { "$date": "2025-10-25T11:34:10.645Z" },
+    "updatedAt": { "$date": "2025-10-25T13:47:23.023Z" },
+    "__v": 4
   },
-  "__v": 5
-},
-{
-  "_id": {
-    "$oid": "68fc41b6257311f2cfe7658c"
-  },
-  "author": {
-    "$oid": "68fb9b94ec1104c6b4ea5db5"
-  },
-  "content": "hello",
-  "images": [
-    "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761362358/posts/hoyr3fj5he4gylwlywl7.jpg"
-  ],
-  "likes": [
-    {
-      "$oid": "68fb9c254e61561a56f85a99"
-    }
-  ],
-  "comments": [],
-  "createdAt": {
-    "$date": "2025-10-25T03:19:18.478Z"
-  },
-  "updatedAt": {
-    "$date": "2025-10-25T03:20:21.342Z"
-  },
-  "__v": 1
-},
-{
-  "_id": {
-    "$oid": "68fc4376257311f2cfe765e0"
-  },
-  "author": {
-    "$oid": "68fb9c254e61561a56f85a99"
-  },
-  "content": "Hello đồng bào",
-  "images": [
-    "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761362805/posts/jsp21rgylnbe4ukwts6f.png"
-  ],
-  "likes": [
-    {
-      "$oid": "68fb9b94ec1104c6b4ea5db5"
-    }
-  ],
-  "comments": [
-    {
-      "user": {
-        "$oid": "68fb9b94ec1104c6b4ea5db5"
-      },
-      "text": "Quét mã ah",
-      "_id": {
-        "$oid": "68fc766e84a97e25bcc480fe"
-      },
-      "createdAt": {
-        "$date": "2025-10-25T07:04:14.682Z"
-      }
-    },
-    {
-      "user": {
-        "$oid": "68fb9b94ec1104c6b4ea5db5"
-      },
-      "text": "ko nhé",
-      "_id": {
-        "$oid": "68fc771d84a97e25bcc48148"
-      },
-      "createdAt": {
-        "$date": "2025-10-25T07:07:09.902Z"
-      }
-    }
-  ],
-  "createdAt": {
-    "$date": "2025-10-25T03:26:46.136Z"
-  },
-  "updatedAt": {
-    "$date": "2025-10-25T07:07:42.947Z"
-  },
-  "__v": 3
-},
-{
-  "_id": {
-    "$oid": "68fc7ab484a97e25bcc4820e"
-  },
-  "author": {
-    "$oid": "68fb9b94ec1104c6b4ea5db5"
-  },
-  "content": "Cool Ngầu",
-  "images": [
-    "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761376948/posts/k0zxm7xxb3m1i13nzol9.png"
-  ],
-  "likes": [
-    {
-      "$oid": "68fb9b94ec1104c6b4ea5db5"
-    }
-  ],
-  "comments": [],
-  "createdAt": {
-    "$date": "2025-10-25T07:22:28.642Z"
-  },
-  "updatedAt": {
-    "$date": "2025-10-25T07:22:35.359Z"
-  },
-  "__v": 1
-},
-{
-  "_id": {
-    "$oid": "68fcb3982b435575f59e64b0"
-  },
-  "author": {
-    "$oid": "68fb9b94ec1104c6b4ea5db5"
-  },
-  "content": "đăng nhiều ảnh này",
-  "images": [
-    "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761391506/posts/poidl0zibm0sfryrm85v.jpg",
-    "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761391508/posts/hpr5lat81nmicoammhep.png",
-    "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761391510/posts/g7wuxwbkmclzpvb9rt1x.png",
-    "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761391511/posts/gvhpyeohyejbppaibpgh.png"
-  ],
-  "likes": [
-    {
-      "$oid": "68fc6d2adf2a81282ba34875"
-    }
-  ],
-  "comments": [
-    {
-      "user": {
-        "$oid": "68fc6d2adf2a81282ba34875"
-      },
-      "text": "Ui, đẹp",
-      "_id": {
-        "$oid": "68fcb5522b435575f59e65a6"
-      },
-      "createdAt": {
-        "$date": "2025-10-25T11:32:34.320Z"
-      }
-    }
-  ],
-  "createdAt": {
-    "$date": "2025-10-25T11:25:12.299Z"
-  },
-  "updatedAt": {
-    "$date": "2025-10-25T11:32:34.322Z"
-  },
-  "__v": 4
-},
-{
-  "_id": {
-    "$oid": "68fcb5b22b435575f59e6604"
-  },
-  "author": {
-    "$oid": "68fc6d2adf2a81282ba34875"
-  },
-  "content": "Xin chào cộng đồng Echonet",
-  "images": [],
-  "likes": [
-    {
-      "$oid": "68fc6d2adf2a81282ba34875"
-    },
-    {
-      "$oid": "68fb9c254e61561a56f85a99"
-    }
-  ],
-  "comments": [],
-  "createdAt": {
-    "$date": "2025-10-25T11:34:10.645Z"
-  },
-  "updatedAt": {
-    "$date": "2025-10-25T13:47:23.023Z"
-  },
-  "__v": 4
-},
-{
-  "_id": {
-    "$oid": "68fee35613f1636c454a4545"
-  },
-  "author": {
-    "$oid": "68fb9c254e61561a56f85a99"
-  },
-  "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-  "images": [
-    "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761534806/posts/bhlgsl8haaymayflkvl8.png"
-  ],
-  "likes": [],
-  "comments": [],
-  "createdAt": {
-    "$date": "2025-10-27T03:13:26.189Z"
-  },
-  "updatedAt": {
-    "$date": "2025-10-27T03:13:26.189Z"
-  },
-  "__v": 0
-}]
+  {
+    "_id": { "$oid": "690827629ab963e7c2378d7e" },
+    "author": { "$oid": "690815f5c24f2e30eb67c9d1" },
+    "content": "testA",
+    "images": [
+      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1762179547/posts/upjsqhjukhmzdykbnkrb.png",
+      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1762179575/posts/hrfkll3tllzmhrsnuobf.jpg"
+    ],
+    "likes": [],
+    "comments": [],
+    "status": "published",
+    "createdAt": { "$date": "2025-11-03T03:54:10.875Z" },
+    "updatedAt": { "$date": "2025-11-03T14:19:36.054Z" },
+    "__v": 10
+  }
+]

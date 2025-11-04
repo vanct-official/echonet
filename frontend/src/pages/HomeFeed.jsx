@@ -10,16 +10,51 @@ export default function HomeFeed({ currentUser }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    axios
-      .get("http://localhost:5000/api/posts", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      .then((res) => setPosts(res.data))
-      .catch((err) => console.error("Lỗi khi lấy bài viết:", err))
-      .finally(() => setLoading(false));
+    const fetchPosts = async () => {
+      const token = localStorage.getItem("token");
+  
+      try {
+        // 🔹 1. Lấy tất cả bài đăng công khai
+        const res = await axios.get("http://localhost:5000/api/posts", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+  
+        let allPosts = res.data;
+  
+        // 🔹 2. Nếu có đăng nhập, lấy thêm bài của chính người dùng
+        if (token) {
+          const myRes = await axios.get("http://localhost:5000/api/posts/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+  
+          // chỉ lấy bài nháp
+          const myDrafts = myRes.data.filter((p) => p.status === "draft");
+  
+          // Gộp lại, tránh trùng ID
+          allPosts = [
+            ...allPosts,
+            ...myDrafts.filter((d) => !allPosts.some((p) => p._id === d._id)),
+          ];
+        }
+  
+        // 🔹 3. Sắp xếp lại: bài mới nhất lên đầu
+        allPosts.sort(
+          (a, b) =>
+            new Date(b.updatedAt || b.createdAt) -
+            new Date(a.updatedAt || a.createdAt)
+        );
+  
+        setPosts(allPosts);
+      } catch (err) {
+        console.error("Lỗi khi lấy bài viết:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchPosts();
   }, []);
+  
 
   // ✅ Khi có bài viết mới tạo
   const handlePostCreated = (newPost) => {
@@ -65,7 +100,11 @@ export default function HomeFeed({ currentUser }) {
             Không có bài viết nào để hiển thị.
           </Text>
         ) : (
-          posts.map((post) => (
+          posts.filter(
+            (p) =>
+              p.status === "published" ||
+              (p.status === "draft" && p.author?._id === currentUser?._id)
+          ).map((post) => (
             <Post
               key={post._id}
               post={post}

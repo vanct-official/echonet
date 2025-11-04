@@ -17,8 +17,14 @@ const postSchema = new mongoose.Schema(
         createdAt: { type: Date, default: Date.now },
       },
     ],
+    // 🆕 Trạng thái bài viết: 'draft' hoặc 'published'
+    status: {
+      type: String,
+      enum: ["draft", "published"],
+      default: "published",
+    },
   },
-  { timestamps: true } // tạo createdAt và updatedAt tự động
+  { timestamps: true }
 );
 
 const Post = mongoose.model("Post", postSchema);

@@ -5,7 +5,7 @@ import cloudinary from "../config/cloudinary.js";
 // Lấy danh sách tất cả post, mới nhất (tạo hoặc chỉnh sửa) lên đầu
 export const getPosts = async (req, res) => {
   try {
-    const posts = await Post.find()
+    const posts = await Post.find({ status: "published" }) // 🆕 chỉ lấy bài đã đăng
       .sort({ updatedAt: -1, createdAt: -1 })
       .populate("author", "username avatar")
       .populate("comments.user", "username avatar");
@@ -16,6 +16,7 @@ export const getPosts = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 
 // Export bài đăng của chính người dùng đăng nhập
@@ -34,24 +35,65 @@ export const getMyPosts = async (req, res) => {
   }
 };
 
+//Lấy bài viết nháp của người dùng đăng nhập
+export const getDraftPosts = async (req, res) => {
+  try {
+    const drafts = await Post.find({
+      author: req.user._id,
+      status: "draft",
+    })
+      .sort({ updatedAt: -1 })
+      .populate("author", "username avatar");
+
+    res.json(drafts);
+  } catch (err) {
+    console.error("Error in getDraftPosts:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Đăng bài từ nháp 
+export const publishPost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: "Không tìm thấy bài viết" });
+
+    // ✅ Chỉ cho phép chính chủ hoặc admin đăng bài
+    if (post.author.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+      return res.status(403).json({ message: "Không có quyền đăng bài này" });
+    }
+
+    if (post.status === "published") {
+      return res.status(400).json({ message: "Bài viết đã được đăng rồi" });
+    }
+
+    post.status = "published";
+    await post.save();
+
+    const populatedPost = await post.populate("author", "username avatar");
+    res.json({ message: "Bài viết đã được đăng thành công", post: populatedPost });
+  } catch (err) {
+    console.error("Error in publishPost:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
 // Tạo post với ảnh upload lên Cloudinary
 export const createPost = async (req, res) => {
   try {
-    const { content } = req.body;
+    const { content, status = "published" } = req.body; // 🆕 nhận thêm status
     let images = [];
 
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
-        // Chuyển upload_stream sang Promise để await
         const result = await new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
             { folder: "posts" },
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            }
+            (error, result) => (error ? reject(error) : resolve(result))
           );
-          stream.end(file.buffer); // gửi buffer lên Cloudinary
+          stream.end(file.buffer);
         });
         images.push(result.secure_url);
       }
@@ -61,6 +103,7 @@ export const createPost = async (req, res) => {
       author: req.user._id,
       content,
       images,
+      status, // 🆕 thêm status vào DB
     });
 
     await newPost.save();
@@ -71,6 +114,7 @@ export const createPost = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // Like / unlike post
 export const toggleLike = async (req, res) => {
@@ -139,7 +183,10 @@ export const updatePost = async (req, res) => {
     // ==========================================
     if (content) post.content = content;
     if (tags) post.tags = tags;
-
+    // ✅ Cập nhật trạng thái (draft / published)
+    if (req.body.status) {
+      post.status = req.body.status;
+    }
     // ==========================================
     // Giữ lại ảnh cũ còn tồn tại
     // ==========================================

@@ -8,8 +8,8 @@ import {
   Image,
   IconButton,
   useToast,
-  Textarea, // 💡 Import Textarea
-  useColorModeValue, // 💡 Import hook để hỗ trợ Dark Mode
+  Textarea,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { CloseIcon } from "@chakra-ui/icons";
 
@@ -22,12 +22,12 @@ export default function CreatePost({ onPostCreated }) {
 
   const API_URL = "http://localhost:5000";
 
-  // 💡 Lấy giá trị màu nền thích hợp cho Light/Dark Mode
   const boxBg = useColorModeValue("white", "gray.700");
   const focusBorderColor = useColorModeValue("blue.400", "blue.300");
   const inputBg = useColorModeValue("white", "gray.800");
 
-  const handleSubmit = async () => {
+  // 🆕 HÀM CHUNG CHO CẢ "ĐĂNG" & "LƯU NHÁP"
+  const handleSubmit = async (status = "published") => {
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -35,7 +35,7 @@ export default function CreatePost({ onPostCreated }) {
         title: "Lỗi",
         description: "Vui lòng đăng nhập để tạo bài viết",
         status: "error",
-        duration: 3,
+        duration: 3000,
         isClosable: true,
       });
       return;
@@ -43,10 +43,10 @@ export default function CreatePost({ onPostCreated }) {
 
     if (!content.trim() && images.length === 0) {
       toast({
-        title: "Lỗi",
+        title: "Thiếu nội dung",
         description: "Vui lòng nhập nội dung hoặc chọn hình ảnh",
         status: "warning",
-        duration: 3,
+        duration: 3000,
         isClosable: true,
       });
       return;
@@ -57,48 +57,41 @@ export default function CreatePost({ onPostCreated }) {
     try {
       const formData = new FormData();
       formData.append("content", content);
+      formData.append("status", status); // 🆕 Gửi trạng thái lên server
       images.forEach((img) => formData.append("images", img));
 
       const res = await fetch(`${API_URL}/api/posts`, {
         method: "POST",
-        // Lưu ý: Không đặt Content-Type cho FormData, browser sẽ tự thêm boundary
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
-      // Xử lý lỗi HTTP (bao gồm 4xx và 5xx)
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(
-          errorData.message || `HTTP error! status: ${res.status}`
-        );
-      }
+      if (!res.ok) throw new Error("Không thể tạo bài viết");
 
       const data = await res.json();
 
       toast({
-        title: "Thành công",
-        description: "Bài viết đã được tạo",
+        title: status === "draft" ? "Đã lưu nháp" : "Đã đăng bài",
+        description:
+          status === "draft"
+            ? "Bài viết được lưu ở trạng thái nháp."
+            : "Bài viết đã được đăng thành công.",
         status: "success",
-        duration: 3,
+        duration: 3000,
         isClosable: true,
       });
 
       onPostCreated(data);
       setContent("");
       setImages([]);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (err) {
       console.error(err);
       toast({
         title: "Lỗi",
-        description: err.message || "Không thể tạo bài viết. Vui lòng thử lại.",
+        description: err.message,
         status: "error",
-        duration: 3,
+        duration: 3000,
         isClosable: true,
       });
     } finally {
@@ -112,50 +105,29 @@ export default function CreatePost({ onPostCreated }) {
   };
 
   const removeImage = (index) => {
-    // ... (logic xóa ảnh giữ nguyên)
-    setImages((prev) => {
-      const updated = prev.filter((_, i) => i !== index);
-      return updated;
-    });
-  };
-
-  const handleKeyDown = (e) => {
-    // Gửi bằng Ctrl+Enter (hoặc Cmd+Enter trên Mac)
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-      handleSubmit();
-    }
+    setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
-    <Box
-      mb={4}
-      p={4}
-      borderWidth="1px"
-      borderRadius="md"
-      bg={boxBg} // 💡 Áp dụng nền thích ứng Dark Mode
-      boxShadow="sm"
-    >
-      {/* Content Input chuyển sang Textarea */}
-      <Textarea // 💡 Đã đổi thành Textarea
+    <Box mb={4} p={4} borderWidth="1px" borderRadius="md" bg={boxBg} boxShadow="sm">
+      <Textarea
         placeholder="Bạn đang nghĩ gì?"
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        onKeyDown={handleKeyDown}
         mb={3}
         borderRadius="md"
-        focusBorderColor={focusBorderColor} // 💡 Áp dụng màu viền focus thích ứng
-        bg={inputBg} // 💡 Áp dụng nền input thích ứng
-        minHeight="100px" // Đặt chiều cao tối thiểu cho Textarea
+        focusBorderColor={focusBorderColor}
+        bg={inputBg}
+        minHeight="100px"
         isDisabled={isLoading}
       />
 
-      {/* Preview hình ảnh (Giữ nguyên) */}
       {images.length > 0 && (
         <HStack mb={3} spacing={3} overflowX="auto" pb={2}>
           {images.map((img, i) => (
-            <Box key={`${i}-${img.name}`} position="relative" flexShrink={0}>
+            <Box key={i} position="relative" flexShrink={0}>
               <Image
-                src={URL.createObjectURL(img) || "/placeholder.svg"}
+                src={URL.createObjectURL(img)}
                 boxSize="100px"
                 objectFit="cover"
                 borderRadius="md"
@@ -167,16 +139,13 @@ export default function CreatePost({ onPostCreated }) {
                 top={0}
                 right={0}
                 colorScheme="red"
-                aria-label="Remove image"
                 onClick={() => removeImage(i)}
-                isDisabled={isLoading}
               />
             </Box>
           ))}
         </HStack>
       )}
 
-      {/* Upload & Submit */}
       <VStack align="stretch" spacing={3}>
         <Input
           type="file"
@@ -188,15 +157,28 @@ export default function CreatePost({ onPostCreated }) {
           ref={fileInputRef}
           isDisabled={isLoading}
         />
-        <Button
-          colorScheme="blue"
-          onClick={handleSubmit}
-          isDisabled={!content.trim() && images.length === 0}
-          isLoading={isLoading}
-          loadingText="Đang đăng..."
-        >
-          Đăng
-        </Button>
+
+        <HStack spacing={3}>
+          {/* 🆕 Nút Lưu nháp */}
+          <Button
+            colorScheme="gray"
+            onClick={() => handleSubmit("draft")}
+            isLoading={isLoading}
+            loadingText="Đang lưu..."
+          >
+            Lưu nháp
+          </Button>
+
+          {/* Nút Đăng */}
+          <Button
+            colorScheme="blue"
+            onClick={() => handleSubmit("published")}
+            isLoading={isLoading}
+            loadingText="Đang đăng..."
+          >
+            Đăng
+          </Button>
+        </HStack>
       </VStack>
     </Box>
   );

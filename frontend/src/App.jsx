@@ -12,6 +12,7 @@ import UserProfilePage from "./pages/UserProfile.jsx";
 import AdminUsersPage from "./pages/AdminPages/AdminUser.jsx";
 import AdminPosts from "./pages/AdminPages/AdminPosts";
 import AdminDashboard from "./pages/AdminPages/AdminDashboard.jsx";
+import ChatPage from "./pages/ChatPage.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import VerifyOtpPage from "./pages/VerifyOtpPage.jsx";
@@ -64,6 +65,14 @@ export default function App() {
             element={
               <ProtectedRoute isAuthenticated={!!currentUser}>
                 <HomeFeed currentUser={currentUser} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/chat"
+            element={
+              <ProtectedRoute isAuthenticated={!!currentUser}>
+                <ChatPage currentUser={currentUser} />
               </ProtectedRoute>
             }
           />

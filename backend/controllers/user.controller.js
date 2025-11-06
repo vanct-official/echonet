@@ -147,3 +147,17 @@ export const searchUsers = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const getFollowedUsers = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+      .populate("followed", "username firstname lastname _id"); // chỉ lấy thông tin cần
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // ✅ Kiểm tra tránh undefined
+    res.json(user.followed || []);
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách followed:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

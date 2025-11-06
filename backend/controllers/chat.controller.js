@@ -2,46 +2,52 @@ import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
 import cloudinary from "../config/cloudinary.js"; // config Cloudinary
 
-// Gửi tin nhắn text hoặc media
+// Gửi tin nhắn text hoặc media (ĐÃ SỬA LỖI)
 export const sendMessage = async (req, res) => {
-  try {
-    const { conversation, sender, content, type } = req.body;
-    let mediaURL = null;
+  try {
+    // 1. ✅ Lấy sender từ req.user (đã được middleware protect xác thực)
+    const sender = req.user._id; 
+    
+    // 2. Lấy conversation, text, và type từ req.body
+    // CHÚ Ý: Giả định frontend gửi trường 'text' thay vì 'content'
+    const { conversation, text, type } = req.body; 
+    let mediaURL = null;
 
-    // Upload file lên Cloudinary nếu có
-    if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "chat_media",
-        resource_type: "auto",
-      });
-      mediaURL = result.secure_url;
-    }
+    // Upload file lên Cloudinary nếu có (giữ nguyên logic)
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "chat_media",
+        resource_type: "auto",
+      });
+      mediaURL = result.secure_url;
+    }
 
-    if (!conversation || !sender || (!content && !mediaURL)) {
-      return res.status(400).json({ message: "Thiếu dữ liệu gửi tin nhắn" });
-    }
+    // 3. ✅ Kiểm tra dữ liệu: Phải có ID conversation và phải có nội dung (text) hoặc file (mediaURL)
+    if (!conversation || (!text && !mediaURL)) {
+      return res.status(400).json({ message: "Thiếu ID cuộc trò chuyện hoặc nội dung tin nhắn" });
+    }
 
-    const newMessage = await Message.create({
-      conversation,
-      sender,
-      content: content || null,
-      mediaURL,
-      type: mediaURL ? "image" : type || "text",
-      readBy: [sender],
-    });
+    const newMessage = await Message.create({
+      conversation,
+      sender, // ✅ Dùng sender đã xác thực
+      content: text || null, // ✅ Dùng 'text' từ frontend làm 'content'
+      mediaURL,
+      type: mediaURL ? "image" : type || "text",
+      readBy: [sender],
+    });
 
-    await Conversation.findByIdAndUpdate(conversation, {
-      latestMessage: newMessage._id,
-    });
+    await Conversation.findByIdAndUpdate(conversation, {
+      latestMessage: newMessage._id,
+    });
 
-    const populated = await newMessage.populate("sender", "username avatar");
-    res.status(201).json(populated);
-  } catch (error) {
-    console.error("❌ Lỗi gửi tin nhắn:", error);
-    res
-      .status(500)
-      .json({ message: "Không thể gửi tin nhắn", error: error.message });
-  }
+    const populated = await newMessage.populate("sender", "username avatar");
+    res.status(201).json(populated);
+  } catch (error) {
+    console.error("❌ Lỗi gửi tin nhắn:", error);
+    res
+      .status(500)
+      .json({ message: "Không thể gửi tin nhắn", error: error.message });
+  }
 };
 
 // Lấy tin nhắn theo conversation

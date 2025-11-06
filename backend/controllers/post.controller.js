@@ -17,8 +17,6 @@ export const getPosts = async (req, res) => {
   }
 };
 
-
-
 // Export bài đăng của chính người dùng đăng nhập
 export const getMyPosts = async (req, res) => {
   try {
@@ -78,8 +76,6 @@ export const publishPost = async (req, res) => {
   }
 };
 
-
-
 // Tạo post với ảnh upload lên Cloudinary
 export const createPost = async (req, res) => {
   try {
@@ -115,15 +111,16 @@ export const createPost = async (req, res) => {
   }
 };
 
-
-// Like / unlike post
+// Like / Unlike post
 export const toggleLike = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
     const userId = req.user._id;
-    if (post.likes.includes(userId)) {
+    const isLiked = post.likes.includes(userId);
+
+    if (isLiked) {
       // unlike
       post.likes = post.likes.filter(
         (id) => id.toString() !== userId.toString()
@@ -132,28 +129,42 @@ export const toggleLike = async (req, res) => {
       // like
       post.likes.push(userId);
     }
+
     await post.save();
-    res.json({ likes: post.likes.length });
+
+    // ✅ Trả về mảng userId để frontend xử lý dễ hơn
+    res.status(200).json({ likes: post.likes });
   } catch (err) {
-    console.error(err);
+    console.error("toggleLike error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
+
 // Comment vào post
 export const addComment = async (req, res) => {
   try {
+
+    // Lấy bài viết
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
+    // Thêm comment
     const { text } = req.body;
     post.comments.push({ user: req.user._id, text });
     await post.save();
-    const populatedPost = await post.populate(
+
+    // 🆕 Populate user info trong comment
+    const populated = await Post.findById(post._id).populate(
       "comments.user",
-      "username avatar"
+      "username avatar isVerified"
     );
-    res.json(populatedPost.comments);
+
+    // ✅ Trả về comment vừa thêm
+    const newComment = populated.comments[populated.comments.length - 1];
+
+    // Trả về comment mới tạo
+    res.status(201).json(newComment);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

@@ -45,7 +45,12 @@ const VerifiedBadgeIcon = () => (
   />
 );
 
-export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }) {
+export default function Post({
+  post,
+  currentUser,
+  onPostUpdated,
+  onPostDeleted,
+}) {
   const [postData, setPostData] = useState(post || {});
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(post?.likes?.length || 0);
@@ -57,7 +62,11 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
   const viewDisclosure = useDisclosure();
   const editDisclosure = useDisclosure();
   const { isOpen, onOpen, onClose } = viewDisclosure;
-  const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = editDisclosure;
+  const {
+    isOpen: isEditOpen,
+    onOpen: onEditOpen,
+    onClose: onEditClose,
+  } = editDisclosure;
 
   const toast = useToast();
   const token = localStorage.getItem("token");
@@ -107,9 +116,24 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
       );
 
       const updatedLikes = Array.isArray(res.data.likes) ? res.data.likes : [];
-      setLikesCount(updatedLikes.length);
-      setLiked(updatedLikes.includes(currentUser._id));
-      setPostData((prev) => ({ ...prev, likes: updatedLikes }));
+
+      // ✅ Cập nhật số lượt like và trạng thái like
+      setLikesCount(updatedLikes.length); // Update số lượt like
+      setLiked(updatedLikes.includes(currentUser._id)); // Update trạng thái like
+
+      // ✅ Tạo object post mới với likes đã cập nhật
+      const updatedPost = {
+        ...postData,
+        likes: updatedLikes,
+      };
+
+      // ✅ Cập nhật lại postData
+      setPostData(updatedPost);
+
+      // ✅ Gọi callback để update ở HomeFeed/Profile
+      if (typeof onPostUpdated === "function") {
+        onPostUpdated(updatedPost);
+      }
     } catch (err) {
       console.error(err);
       toast({
@@ -145,8 +169,31 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (res.data) setComments((prev) => [...prev, res.data]);
+      // ✅ Lấy comment mới từ server
+      const newCommentObj = res.data;
+
+      // Nếu backend chưa populate user, tự gắn currentUser
+      if (!newCommentObj.user || typeof newCommentObj.user === "string") {
+        newCommentObj.user = {
+          _id: currentUser._id,
+          username: currentUser.username,
+          avatar: currentUser.avatar,
+          isVerified: currentUser.isVerified,
+        };
+      }
+
+      // ✅ Cập nhật comments
+      const updatedComments = [...comments, newCommentObj];
+      const updatedPost = { ...postData, comments: updatedComments };
+
+      setComments(updatedComments);
       setNewComment("");
+      setPostData(updatedPost);
+
+      // ✅ Báo ngược lên component cha (HomeFeed)
+      if (typeof onPostUpdated === "function") {
+        onPostUpdated(updatedPost);
+      }
     } catch (err) {
       console.error(err);
       toast({
@@ -161,7 +208,53 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
     }
   };
 
-  const formatDate = (iso) => (iso ? new Date(iso).toLocaleString("vi-VN") : "");
+  // 🕒 Format thời gian hiển thị: "3 giờ trước", "2 ngày trước", "1 tuần trước", hoặc "ngày 5 tháng 6"
+  const formatTimeAgo = (isoDate) => {
+    if (!isoDate) return "";
+
+    const date = new Date(isoDate);
+    const now = new Date();
+    const diffMs = now - date; // chênh lệch mili-giây
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHours = Math.floor(diffMin / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    const diffWeeks = Math.floor(diffDays / 7);
+
+    // ✅ Dưới 1 giờ
+    if (diffHours < 1) {
+      if (diffMin < 1) return "Vừa xong";
+      return `${diffMin} phút trước`;
+    }
+
+    // ✅ Trong vòng 1 ngày
+    if (diffHours < 24) {
+      return `${diffHours} giờ trước`;
+    }
+
+    // ✅ Trong vòng 7 ngày
+    if (diffDays < 7) {
+      return `${diffDays} ngày trước`;
+    }
+
+    // ✅ Trong vòng 4 tuần
+    if (diffWeeks < 4) {
+      return `${diffWeeks} tuần trước`;
+    }
+
+    // ✅ Cùng năm → hiển thị "ngày X tháng Y"
+    const nowYear = now.getFullYear();
+    const dateYear = date.getFullYear();
+
+    if (nowYear === dateYear) {
+      return `ngày ${date.getDate()} tháng ${date.getMonth() + 1}`;
+    }
+
+    // ✅ Khác năm → hiển thị "ngày X tháng Y năm Z"
+    return `ngày ${date.getDate()} tháng ${
+      date.getMonth() + 1
+    } năm ${date.getFullYear()}`;
+  };
 
   // ✅ Nhận dữ liệu mới khi chỉnh sửa thành công
   const handleUpdated = (updatedPost) => {
@@ -197,7 +290,9 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
               name={postData.author?.username || "Người dùng"}
             />
             <Flex align="center">
-              <Text fontWeight="bold">{postData.author?.username || "Người dùng"}</Text>
+              <Text fontWeight="bold">
+                {postData.author?.username || "Người dùng"}
+              </Text>
               {postData.author?.isVerified && <VerifiedBadgeIcon />}
               {postData.status === "draft" && (
                 <Badge ml={2} colorScheme="yellow" variant="subtle">
@@ -208,9 +303,9 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
           </Flex>
           <Text fontSize="sm" color="gray.500">
             {postData.updatedAt && postData.updatedAt !== postData.createdAt ? (
-              <>Đã chỉnh sửa • {formatDate(postData.updatedAt)}</>
+              <>Đã chỉnh sửa • {formatTimeAgo(postData.updatedAt)}</>
             ) : (
-              <>{formatDate(postData.createdAt)}</>
+              <>{formatTimeAgo(postData.createdAt)}</>
             )}
           </Text>
         </Flex>
@@ -235,7 +330,9 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
           <ModalHeader>
             <Flex align="center" justify="space-between">
               <Flex align="center">
-                <Text fontWeight="bold">{postData.author?.username || "Người dùng"}</Text>
+                <Text fontWeight="bold">
+                  {postData.author?.username || "Người dùng"}
+                </Text>
                 {postData.author?.isVerified && <VerifiedBadgeIcon />}
                 {postData.status === "draft" && (
                   <Badge ml={2} colorScheme="yellow" variant="subtle">
@@ -244,7 +341,7 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
                 )}
               </Flex>
               <Text fontSize="sm" color="gray.500">
-                {formatDate(postData.createdAt)}
+                {formatTimeAgo(postData.createdAt)}
               </Text>
             </Flex>
 
@@ -272,7 +369,10 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
                   color="gray.600"
                   _hover={{ color: "red.500" }}
                   onClick={async () => {
-                    if (!window.confirm("Bạn có chắc chắn muốn xóa bài viết này?")) return;
+                    if (
+                      !window.confirm("Bạn có chắc chắn muốn xóa bài viết này?")
+                    )
+                      return;
 
                     try {
                       const token = localStorage.getItem("token");
@@ -330,11 +430,19 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
                     });
 
                     // 🟢 Cập nhật lại bài viết trong modal
-                    setPostData((prev) => ({ ...prev, ...updatedPost, status: "published" }));
+                    setPostData((prev) => ({
+                      ...prev,
+                      ...updatedPost,
+                      status: "published",
+                    }));
 
                     // 🟢 Cập nhật ở HomeFeed / Profile
                     if (typeof onPostUpdated === "function") {
-                      onPostUpdated({ ...postData, ...updatedPost, status: "published" });
+                      onPostUpdated({
+                        ...postData,
+                        ...updatedPost,
+                        status: "published",
+                      });
                     }
 
                     // 🟢 Đóng modal để tránh flash “mất bài”
@@ -354,8 +462,6 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
                 Đăng công khai
               </Button>
             )}
-
-
           </ModalHeader>
 
           <ModalCloseButton />
@@ -389,45 +495,73 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
                   onClick={handleLike}
                   isLoading={isLiking}
                 />
-                <IconButton icon={<FaComment />} aria-label="Comment" variant="ghost" />
-                <IconButton icon={<FaRetweet />} aria-label="Repost" variant="ghost" />
-                <IconButton icon={<FaShare />} aria-label="Share" variant="ghost" />
+                <IconButton
+                  icon={<FaComment />}
+                  aria-label="Comment"
+                  variant="ghost"
+                />
+                <IconButton
+                  icon={<FaRetweet />}
+                  aria-label="Repost"
+                  variant="ghost"
+                />
+                <IconButton
+                  icon={<FaShare />}
+                  aria-label="Share"
+                  variant="ghost"
+                />
               </HStack>
 
               <Text fontSize="sm" color="gray.500">
                 {likesCount} lượt thích • {comments.length} bình luận
               </Text>
 
-              <VStack align="stretch" spacing={2} maxH="300px" overflowY="auto">
-                {Array.isArray(comments) && comments.length > 0 ? (
-                  comments.map((c) => (
-                    <Flex key={c._id} align="flex-start">
-                      <Avatar
-                        size="sm"
-                        src={c.user?.avatar}
-                        mr={2}
-                        name={c.user?.username}
-                      />
-                      <Box flex={1}>
-                        <HStack spacing={1}>
-                          <Text fontWeight="bold" fontSize="sm">
-                            {c.user?.username || "Người dùng"}
-                          </Text>
-                          {c.user?.isVerified && <VerifiedBadgeIcon />}
-                        </HStack>
-                        <Text fontSize="xs" color="gray.500">
-                          {formatDate(c.createdAt)}
-                        </Text>
-                        <Text fontSize="sm">{c.text}</Text>
-                      </Box>
-                    </Flex>
-                  ))
-                ) : (
-                  <Text color="gray.500" fontSize="sm">
-                    Chưa có bình luận nào
-                  </Text>
-                )}
-              </VStack>
+             <VStack
+  align="start"
+  spacing={3}
+  maxH="300px"
+  overflowY="auto"
+  w="full"
+  pl={0}
+>
+  {Array.isArray(comments) && comments.length > 0 ? (
+    comments.map((c) => (
+      <Flex key={c._id} align="flex-start" w="full">
+        <Avatar
+          size="sm"
+          src={c.user?.avatar}
+          name={c.user?.username}
+          mr={3}
+          mt={1}
+        />
+        <Box
+          flex="1"
+          bg="gray.50"
+          p={2}
+          borderRadius="md"
+          boxShadow="sm"
+          _hover={{ bg: "gray.100" }}
+        >
+          <HStack spacing={1}>
+            <Text fontWeight="bold" fontSize="sm">
+              {c.user?.username || "Người dùng"}
+            </Text>
+            {c.user?.isVerified && <VerifiedBadgeIcon />}
+          </HStack>
+          <Text fontSize="xs" color="gray.500">
+            {formatTimeAgo(c.createdAt)}
+          </Text>
+          <Text fontSize="sm">{c.text}</Text>
+        </Box>
+      </Flex>
+    ))
+  ) : (
+    <Text color="gray.500" fontSize="sm">
+      Chưa có bình luận nào
+    </Text>
+  )}
+</VStack>
+
 
               {/* Input bình luận */}
               <HStack mt={2} w="full">

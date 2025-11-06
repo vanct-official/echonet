@@ -12,38 +12,38 @@ export default function HomeFeed({ currentUser }) {
   useEffect(() => {
     const fetchPosts = async () => {
       const token = localStorage.getItem("token");
-  
+
       try {
         // 🔹 1. Lấy tất cả bài đăng công khai
         const res = await axios.get("http://localhost:5000/api/posts", {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
-  
+
         let allPosts = res.data;
-  
+
         // 🔹 2. Nếu có đăng nhập, lấy thêm bài của chính người dùng
         if (token) {
           const myRes = await axios.get("http://localhost:5000/api/posts/me", {
             headers: { Authorization: `Bearer ${token}` },
           });
-  
+
           // chỉ lấy bài nháp
           const myDrafts = myRes.data.filter((p) => p.status === "draft");
-  
+
           // Gộp lại, tránh trùng ID
           allPosts = [
             ...allPosts,
             ...myDrafts.filter((d) => !allPosts.some((p) => p._id === d._id)),
           ];
         }
-  
+
         // 🔹 3. Sắp xếp lại: bài mới nhất lên đầu
         allPosts.sort(
           (a, b) =>
             new Date(b.updatedAt || b.createdAt) -
             new Date(a.updatedAt || a.createdAt)
         );
-  
+
         setPosts(allPosts);
       } catch (err) {
         console.error("Lỗi khi lấy bài viết:", err);
@@ -51,28 +51,39 @@ export default function HomeFeed({ currentUser }) {
         setLoading(false);
       }
     };
-  
+
     fetchPosts();
   }, []);
-  
 
   // ✅ Khi có bài viết mới tạo
   const handlePostCreated = (newPost) => {
     setPosts((prev) => [newPost, ...prev]);
   };
 
-  // ✅ Khi bài viết được chỉnh sửa
+  // ✅ Khi bài viết được chỉnh sửa / like / comment / cập nhật trạng thái
   const handlePostUpdated = (updatedPost) => {
+    if (!updatedPost || !updatedPost._id) return;
+
     setPosts((prev) => {
-      const updated = prev.map((p) =>
-        p._id === updatedPost._id ? updatedPost : p
+      const exists = prev.some((p) => p._id === updatedPost._id);
+
+      let updatedList;
+      if (exists) {
+        // Cập nhật bài viết cũ
+        updatedList = prev.map((p) =>
+          p._id === updatedPost._id ? updatedPost : p
+        );
+      } else {
+        // Nếu chưa có (VD: bài đăng công khai mới được publish)
+        updatedList = [updatedPost, ...prev];
+      }
+
+      // 🔥 Đảm bảo sắp xếp theo updatedAt mới nhất
+      return updatedList.sort(
+        (a, b) =>
+          new Date(b.updatedAt || b.createdAt) -
+          new Date(a.updatedAt || a.createdAt)
       );
-      // 🔥 Sắp xếp lại thứ tự để bài vừa sửa lên đầu
-      return updated.sort((a, b) => {
-        const aTime = new Date(a.updatedAt || a.createdAt).getTime();
-        const bTime = new Date(b.updatedAt || b.createdAt).getTime();
-        return bTime - aTime;
-      });
     });
   };
 
@@ -100,19 +111,21 @@ export default function HomeFeed({ currentUser }) {
             Không có bài viết nào để hiển thị.
           </Text>
         ) : (
-          posts.filter(
-            (p) =>
-              p.status === "published" ||
-              (p.status === "draft" && p.author?._id === currentUser?._id)
-          ).map((post) => (
-            <Post
-              key={post._id}
-              post={post}
-              currentUser={currentUser}
-              onPostUpdated={handlePostUpdated} // ✅ thêm callback
-              onPostDeleted={handlePostDeleted} // ✅ (nếu bạn có nút xóa sau này)
-            />
-          ))
+          posts
+            .filter(
+              (p) =>
+                p.status === "published" ||
+                (p.status === "draft" && p.author?._id === currentUser?._id)
+            )
+            .map((post) => (
+              <Post
+                key={post._id}
+                post={post}
+                currentUser={currentUser}
+                onPostUpdated={handlePostUpdated} // ✅ thêm callback
+                onPostDeleted={handlePostDeleted} // ✅ (nếu bạn có nút xóa sau này)
+              />
+            ))
         )}
       </Box>
     </Flex>

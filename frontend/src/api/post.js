@@ -35,3 +35,10 @@ export const fetchPostById = async (id) => {
   const res = await API.get(`/posts/${id}`);
   return res.data;
 };
+
+// 🔁 Repost bài viết
+export const repostPost = async (id) => {
+  const res = await API.post(`/posts/${id}/repost`);
+  return res.data;
+};
+

@@ -17,6 +17,7 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import VerifyOtpPage from "./pages/VerifyOtpPage.jsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
+import AdminMyPost from "./pages/AdminPages/AdminMyPost.jsx";
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -129,6 +130,14 @@ export default function App() {
             element={
               <AdminRoute currentUser={currentUser}>
                 <AdminPosts />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/myposts"
+            element={
+              <AdminRoute currentUser={currentUser}>
+                <AdminMyPost myPostsOnly={true} />
               </AdminRoute>
             }
           />

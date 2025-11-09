@@ -50,6 +50,6 @@ router.post("/:id/repost", protect, repostPost);
 router.get("/admin/all", protect, adminOnly, getPosts);
 
 // 🟢 Repost (hoặc Quote Repost)
-router.post("/:id/repost", verifyToken, repostPost);
+router.post("/:id/repost", repostPost);
 
 export default router;

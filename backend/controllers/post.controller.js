@@ -399,7 +399,6 @@ else {
 };
 
 // ✅ Repost bài viết
-// ✅ Repost bài viết
 export const repostPost = async (req, res) => {
   try {
     const { content = "" } = req.body;

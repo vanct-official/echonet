@@ -116,81 +116,80 @@ export default function AdminDashboard() {
 
   return (
     // 💡 SỬ DỤNG FLEX LAYOUT ĐỂ HIỂN THỊ SIDEBAR VÀ NỘI DUNG CẠNH NHAU
-    <Flex maxW="1500px" mx="auto" minH="100vh" gap={0}>
-        
+    <Flex w="100%" minH="100vh">
       {/* 1. ADMIN SIDEBAR */}
       <AdminSidebar />
-    <Box maxW="1200px" mx="auto" p={6}>
-      <Heading mb={8} display="flex" alignItems="center">
-        <Icon as={FaChartLine} mr={3} color="blue.500" />
-        Bảng Điều Khiển Quản Trị
-      </Heading>
-
-      {/* 1. Các Chỉ số Tổng quan */}
-      <SimpleGrid columns={{ base: 1, md: 4 }} spacing={6} mb={10}>
-        <StatCard
-          icon={FaUsers}
-          label="Tổng số Người dùng"
-          number={stats.totalUsers.toLocaleString()}
-          helpText={`+${stats.newUsersToday} hôm nay`}
-          color="teal.500"
-        />
-        <StatCard
-          icon={FaNewspaper}
-          label="Tổng số Bài viết"
-          number={stats.totalPosts.toLocaleString()}
-          helpText="Tăng trưởng ổn định"
-          color="red.500"
-        />
-        <StatCard
-          icon={FaEnvelopeOpenText}
-          label="Chưa xác minh Email"
-          number={stats.unverifiedUsers.toLocaleString()}
-          helpText="Cần gửi email nhắc nhở"
-          color="orange.500"
-        />
-        <StatCard
-          icon={FaUserShield}
-          label="Quản trị viên"
-          number="4" // Giả định
-          helpText="Đảm bảo an toàn hệ thống"
-          color="blue.500"
-        />
-      </SimpleGrid>
-
-      {/* 2. Liên kết Nhanh */}
-      <Box mb={10}>
-        <Heading size="md" mb={4}>
-          Liên kết Nhanh
+      <Box ml="250px" flex="1" p={6}>
+        <Heading mb={8} display="flex" alignItems="center">
+          <Icon as={FaChartLine} mr={3} color="blue.500" />
+          Bảng Điều Khiển Quản Trị
         </Heading>
-        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
-          {quickLinks.map((link) => (
-            <Button
-              key={link.path}
-              leftIcon={<Icon as={link.icon} />}
-              colorScheme={link.color}
-              variant="outline"
-              h="100px"
-              fontSize="xl"
-              onClick={() => navigate(link.path)}
-            >
-              {link.label}
-            </Button>
-          ))}
+
+        {/* 1. Các Chỉ số Tổng quan */}
+        <SimpleGrid columns={{ base: 1, md: 4 }} spacing={6} mb={10}>
+          <StatCard
+            icon={FaUsers}
+            label="Tổng số Người dùng"
+            number={stats.totalUsers.toLocaleString()}
+            helpText={`+${stats.newUsersToday} hôm nay`}
+            color="teal.500"
+          />
+          <StatCard
+            icon={FaNewspaper}
+            label="Tổng số Bài viết"
+            number={stats.totalPosts.toLocaleString()}
+            helpText="Tăng trưởng ổn định"
+            color="red.500"
+          />
+          <StatCard
+            icon={FaEnvelopeOpenText}
+            label="Chưa xác minh Email"
+            number={stats.unverifiedUsers.toLocaleString()}
+            helpText="Cần gửi email nhắc nhở"
+            color="orange.500"
+          />
+          <StatCard
+            icon={FaUserShield}
+            label="Quản trị viên"
+            number="4" // Giả định
+            helpText="Đảm bảo an toàn hệ thống"
+            color="blue.500"
+          />
         </SimpleGrid>
-      </Box>
 
-      {/* 3. Lịch sử hoạt động (Tùy chọn - Giữ chỗ) */}
-      <Box p={5} shadow="md" borderWidth="1px" borderRadius="lg">
-        <Heading size="md" mb={3}>
-          Hoạt động Gần đây
-        </Heading>
-        <Text color="gray.500">
-          [Khu vực này có thể hiển thị các hành động quản trị viên mới nhất hoặc
-          các báo cáo lỗi.]
-        </Text>
+        {/* 2. Liên kết Nhanh */}
+        <Box mb={10}>
+          <Heading size="md" mb={4}>
+            Liên kết Nhanh
+          </Heading>
+          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+            {quickLinks.map((link) => (
+              <Button
+                key={link.path}
+                leftIcon={<Icon as={link.icon} />}
+                colorScheme={link.color}
+                variant="outline"
+                h="100px"
+                fontSize="xl"
+                onClick={() => navigate(link.path)}
+              >
+                {link.label}
+              </Button>
+            ))}
+          </SimpleGrid>
+        </Box>
+
+        {/* 3. Lịch sử hoạt động (Tùy chọn - Giữ chỗ) */}
+        <Box p={5} shadow="md" borderWidth="1px" borderRadius="lg">
+          <Heading size="md" mb={3}>
+            Hoạt động Gần đây
+          </Heading>
+          <Text color="gray.500">
+            [Khu vực này có thể hiển thị các hành động quản trị viên mới nhất
+            hoặc các báo cáo lỗi.]
+          </Text>
+        </Box>
       </Box>
-    </Box>
     </Flex>
   );
 }

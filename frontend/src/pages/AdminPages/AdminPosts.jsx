@@ -25,6 +25,7 @@ import {
 import { DeleteIcon, ArrowBackIcon } from "@chakra-ui/icons";
 import { deletePost, fetchAllPosts } from "../../api/post";
 import { useNavigate } from "react-router-dom";
+import AdminSidebar from "../../components/AdminSidebar";
 
 export default function AdminPosts() {
   const [posts, setPosts] = useState([]);
@@ -96,19 +97,10 @@ export default function AdminPosts() {
   }
 
   return (
-    <Box maxW="1000px" mx="auto" mt={10} px={4}>
-      {/* 🔙 Nút quay lại */}
-      <Button
-        leftIcon={<ArrowBackIcon />}
-        colorScheme="blue"
-        variant="outline"
-        size="sm"
-        mb={4}
-        onClick={() => navigate("/admin/dashboard")}
-      >
-        Quay lại
-      </Button>
-
+<Flex w="100%" minH="100vh">            
+          {/* 1. ADMIN SIDEBAR */}
+          <AdminSidebar/>
+      <Box ml="250px" flex="1" p={6}>
       <Heading size="lg" mb={6}>
         🛠️ Quản lý bài viết (Admin)
       </Heading>
@@ -229,5 +221,6 @@ export default function AdminPosts() {
         </ModalContent>
       </Modal>
     </Box>
+    </Flex>
   );
 }

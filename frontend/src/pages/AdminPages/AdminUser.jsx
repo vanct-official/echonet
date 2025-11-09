@@ -120,12 +120,12 @@ export default function AdminUsersPage() {
 
   // 🔹 Giao diện chính
   return (
-    <Flex maxW="1500px" mx="auto" minH="100vh" bg="gray.50">
+    <Flex w="100%" minH="100vh">
       {/* Sidebar */}
       <AdminSidebar />
 
       {/* Content */}
-      <Box flex={1} p={6} bg="white">
+      <Box ml="250px" flex="1" p={6}>
         <Heading mb={8}>Quản lý Người dùng</Heading>
 
         {/* Thanh tìm kiếm và lọc */}

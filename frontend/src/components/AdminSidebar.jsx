@@ -22,6 +22,7 @@ const adminMenuItems = [
   { name: "Dashboard", icon: FaTachometerAlt, path: "/admin/dashboard" },
   { name: "Quản lý Người dùng", icon: FaUsers, path: "/admin/users" },
   { name: "Quản lý Bài viết", icon: FaNewspaper, path: "/admin/posts" },
+  { name: "Bài viết của tôi", icon: FaNewspaper, path: "/admin/myposts" },
   { name: "Cài đặt Chung", icon: FaCog, path: "/admin/settings" },
 ];
 
@@ -40,7 +41,7 @@ export default function AdminSidebar() {
       w={{ base: "full", md: 64 }} // Chiều rộng 64 (256px)
       p={5}
       // Tạo thanh sidebar cố định
-      position={{ base: "relative", md: "sticky" }}
+      position="fixed"
       top={0}
       h={{ base: "auto", md: "100vh" }}
       borderRightWidth="1px"

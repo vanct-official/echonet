@@ -19,6 +19,7 @@ import {
   Textarea,
   useDisclosure,
   useToast,
+  SimpleGrid,
   Badge,
 } from "@chakra-ui/react";
 import {
@@ -62,7 +63,9 @@ export default function Post({
   const [isCommentLoading, setIsCommentLoading] = useState(false);
   const [isRepostModalOpen, setIsRepostModalOpen] = useState(false);
   const [repostText, setRepostText] = useState("");
-
+  // 🖼️ Modal xem ảnh
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
 
   const viewDisclosure = useDisclosure();
   const editDisclosure = useDisclosure();
@@ -92,7 +95,6 @@ export default function Post({
     }
   }, [post]);
 
-
   // ✅ Kiểm tra like ban đầu
   useEffect(() => {
     if (currentUser && Array.isArray(postData.likes)) {
@@ -108,10 +110,7 @@ export default function Post({
 
   // ✅ Không cho phép repost chính bài của mình
   const canRepost =
-    currentUser &&
-    postData?.author &&
-    currentUser._id !== postData.author._id;
-
+    currentUser && postData?.author && currentUser._id !== postData.author._id;
 
   // ✅ Xử lý Like
   const handleLike = async () => {
@@ -270,8 +269,9 @@ export default function Post({
     }
 
     // ✅ Khác năm → hiển thị "ngày X tháng Y năm Z"
-    return `ngày ${date.getDate()} tháng ${date.getMonth() + 1
-      } năm ${date.getFullYear()}`;
+    return `ngày ${date.getDate()} tháng ${
+      date.getMonth() + 1
+    } năm ${date.getFullYear()}`;
   };
 
   // ✅ Nhận dữ liệu mới khi chỉnh sửa thành công
@@ -287,7 +287,6 @@ export default function Post({
       onPostUpdated(updatedPost);
     }
   };
-
 
   if (!postData || !postData._id) return null;
 
@@ -336,7 +335,6 @@ export default function Post({
         </Flex>
 
         {/* Nếu là bài repost */}
-        {/* Nếu là bài repost */}
         {postData.repostOf && postData.repostOf.author ? (
           // 🟢 Bài gốc còn tồn tại
           <>
@@ -357,7 +355,9 @@ export default function Post({
                 <b>{postData.repostOf?.author?.username}</b>
               </Text>
 
-              {postData.repostOf?.content && <Text>{postData.repostOf.content}</Text>}
+              {postData.repostOf?.content && (
+                <Text>{postData.repostOf.content}</Text>
+              )}
 
               {Array.isArray(postData.repostOf?.images) &&
                 postData.repostOf.images.length > 0 && (
@@ -402,7 +402,7 @@ export default function Post({
           </>
         )}
 
-        {Array.isArray(postData.images) && postData.images.length > 0 && (
+        {/* {Array.isArray(postData.images) && postData.images.length > 0 && (
           <Image
             src={postData.images[0]}
             borderRadius="md"
@@ -410,7 +410,7 @@ export default function Post({
             maxH="200px"
             objectFit="cover"
           />
-        )}
+        )} */}
       </Box>
 
       {/* Modal chi tiết bài viết */}
@@ -459,13 +459,19 @@ export default function Post({
                   color="gray.600"
                   _hover={{ color: "red.500" }}
                   onClick={async () => {
-                    if (!window.confirm("Bạn có chắc chắn muốn xóa bài viết này?")) return;
+                    if (
+                      !window.confirm("Bạn có chắc chắn muốn xóa bài viết này?")
+                    )
+                      return;
 
                     try {
                       const token = localStorage.getItem("token");
-                      const res = await axios.delete(`${API_URL}/api/posts/${postData._id}`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                      });
+                      const res = await axios.delete(
+                        `${API_URL}/api/posts/${postData._id}`,
+                        {
+                          headers: { Authorization: `Bearer ${token}` },
+                        }
+                      );
 
                       toast({
                         title: "Đã xóa bài viết",
@@ -476,10 +482,16 @@ export default function Post({
                       });
 
                       // ✅ Nếu đây là bài repost, cập nhật lại số lượt chia sẻ trên bài gốc
-                      if (postData.repostOf && typeof onPostUpdated === "function") {
+                      if (
+                        postData.repostOf &&
+                        typeof onPostUpdated === "function"
+                      ) {
                         const updatedOriginal = {
                           ...postData.repostOf,
-                          repostCount: Math.max((postData.repostOf.repostCount || 1) - 1, 0),
+                          repostCount: Math.max(
+                            (postData.repostOf.repostCount || 1) - 1,
+                            0
+                          ),
                         };
                         onPostUpdated(updatedOriginal);
                       }
@@ -489,13 +501,14 @@ export default function Post({
                         onPostDeleted(postData._id, postData.repostOf?._id);
                       }
 
-
                       onClose();
                     } catch (err) {
                       console.error("Lỗi khi xóa:", err);
                       toast({
                         title: "Lỗi khi xóa bài viết",
-                        description: err.response?.data?.message || "Không thể xóa bài viết.",
+                        description:
+                          err.response?.data?.message ||
+                          "Không thể xóa bài viết.",
                         status: "error",
                         duration: 3000,
                         isClosable: true,
@@ -570,15 +583,33 @@ export default function Post({
             <VStack align="start" spacing={4}>
               {postData?.content && <Text>{postData.content}</Text>}
 
-              {Array.isArray(postData.images) &&
-                postData.images.map((img, i) => (
-                  <Image
-                    key={i}
-                    src={img || "/placeholder.svg"}
-                    borderRadius="md"
-                    alt={`Post image ${i + 1}`}
-                  />
-                ))}
+              {Array.isArray(postData.images) && postData.images.length > 0 && (
+                <SimpleGrid
+                  columns={{ base: 1, sm: 2, md: 3 }}
+                  spacing={3}
+                  mt={2}
+                >
+                  {postData.images.map((img, i) => (
+                    <Image
+                      key={i}
+                      src={img || "/placeholder.svg"}
+                      borderRadius="md"
+                      alt={`Post image ${i + 1}`}
+                      objectFit="cover"
+                      w="100%"
+                      h="200px"
+                      fallbackSrc="/placeholder.svg"
+                      cursor="pointer"
+                      _hover={{ transform: "scale(1.03)", transition: "0.2s" }}
+                      onClick={(e) => {
+                        e.stopPropagation(); // tránh đóng modal post
+                        setSelectedImage(img);
+                        setIsImageModalOpen(true);
+                      }}
+                    />
+                  ))}
+                </SimpleGrid>
+              )}
 
               {postData?.video && (
                 <video
@@ -605,7 +636,9 @@ export default function Post({
                     <b>{postData.repostOf?.author?.username}</b>
                   </Text>
 
-                  {postData.repostOf?.content && <Text>{postData.repostOf.content}</Text>}
+                  {postData.repostOf?.content && (
+                    <Text>{postData.repostOf.content}</Text>
+                  )}
 
                   {Array.isArray(postData.repostOf?.images) &&
                     postData.repostOf.images.length > 0 && (
@@ -634,8 +667,6 @@ export default function Post({
                   </Text>
                 </Box>
               ) : null}
-
-
 
               <HStack spacing={4}>
                 <IconButton
@@ -669,8 +700,6 @@ export default function Post({
                   isDisabled={!canRepost}
                 />
 
-
-
                 <IconButton
                   icon={<FaShare />}
                   aria-label="Share"
@@ -682,7 +711,6 @@ export default function Post({
                 {likesCount} lượt thích • {comments.length} bình luận •{" "}
                 {postData.repostCount || 0} lượt chia sẻ lại
               </Text>
-
 
               <VStack
                 align="start"
@@ -730,7 +758,6 @@ export default function Post({
                 )}
               </VStack>
 
-
               {/* Input bình luận */}
               <HStack mt={2} w="full">
                 <Input
@@ -766,7 +793,10 @@ export default function Post({
         onUpdated={handleUpdated}
       />
 
-      <Modal isOpen={isRepostModalOpen} onClose={() => setIsRepostModalOpen(false)}>
+      <Modal
+        isOpen={isRepostModalOpen}
+        onClose={() => setIsRepostModalOpen(false)}
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Chia sẻ lại bài viết</ModalHeader>
@@ -809,7 +839,6 @@ export default function Post({
                     }
                   }
 
-
                   // 🟢 Đóng cả hai modal
                   setIsRepostModalOpen(false);
                   onClose(); // <--- thêm dòng này
@@ -817,7 +846,9 @@ export default function Post({
                 } catch (err) {
                   toast({
                     title: "Lỗi khi repost",
-                    description: err.response?.data?.message || "Không thể repost bài viết này.",
+                    description:
+                      err.response?.data?.message ||
+                      "Không thể repost bài viết này.",
                     status: "error",
                     duration: 3000,
                     isClosable: true,
@@ -827,14 +858,39 @@ export default function Post({
             >
               Đăng
             </Button>
-
-
           </ModalFooter>
         </ModalContent>
       </Modal>
 
-
-
+      {/* 🖼️ Modal xem ảnh to */}
+      <Modal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        size="4xl"
+        isCentered
+      >
+        <ModalOverlay />
+        <ModalContent bg="transparent" boxShadow="none" maxW="90vw">
+          <ModalCloseButton color="white" zIndex={10} />
+          <ModalBody p={0}>
+            <Flex
+              align="center"
+              justify="center"
+              bg="blackAlpha.800"
+              borderRadius="md"
+            >
+              <Image
+                src={selectedImage}
+                alt="Preview"
+                maxH="90vh"
+                maxW="100%"
+                objectFit="contain"
+                borderRadius="md"
+              />
+            </Flex>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </>
   );
 }

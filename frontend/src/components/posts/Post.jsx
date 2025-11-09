@@ -113,11 +113,25 @@ export default function Post({
     currentUser && postData?.author && currentUser._id !== postData.author._id;
 
   // ✅ Xử lý Like
-  const handleLike = async () => {
+  const handleLike = async (e) => {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+
     if (!token) {
       toast({
         title: "Lỗi",
         description: "Vui lòng đăng nhập để thích bài viết.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    if (!currentUser?._id) {
+      toast({
+        title: "Lỗi",
+        description: "Không thể xác định người dùng. Vui lòng đăng nhập lại.",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -135,25 +149,15 @@ export default function Post({
 
       const updatedLikes = Array.isArray(res.data.likes) ? res.data.likes : [];
 
-      // ✅ Cập nhật số lượt like và trạng thái like
-      setLikesCount(updatedLikes.length); // Update số lượt like
-      setLiked(updatedLikes.includes(currentUser._id)); // Update trạng thái like
+      setLikesCount(updatedLikes.length);
+      setLiked(updatedLikes.includes(currentUser?._id)); // ✅ null-safe
 
-      // ✅ Tạo object post mới với likes đã cập nhật
-      const updatedPost = {
-        ...postData,
-        likes: updatedLikes,
-      };
-
-      // ✅ Cập nhật lại postData
+      const updatedPost = { ...postData, likes: updatedLikes };
       setPostData(updatedPost);
 
-      // ✅ Gọi callback để update ở HomeFeed/Profile
-      if (typeof onPostUpdated === "function") {
-        onPostUpdated(updatedPost);
-      }
+      if (typeof onPostUpdated === "function") onPostUpdated(updatedPost);
     } catch (err) {
-      console.error(err);
+      console.error("❌ handleLike error:", err);
       toast({
         title: "Lỗi",
         description: err.response?.data?.message || "Không thể thích bài viết",

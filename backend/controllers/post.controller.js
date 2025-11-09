@@ -6,7 +6,7 @@ import cloudinary from "../config/cloudinary.js";
 export const getPosts = async (req, res) => {
   try {
     const posts = await Post.find({ status: "published" })
-      .sort({ updatedAt: -1, createdAt: -1 })
+      .sort({ createdAt: -1 })
       .populate([
         { path: "author", select: "username avatar" },
         { path: "comments.user", select: "username avatar" },
@@ -139,28 +139,26 @@ export const toggleLike = async (req, res) => {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
-    const userId = req.user._id;
-    const isLiked = post.likes.includes(userId);
+    const userId = req.user._id.toString();
+    const isLiked = post.likes.some(id => id.toString() === userId);
 
     if (isLiked) {
-      // unlike
-      post.likes = post.likes.filter(
-        (id) => id.toString() !== userId.toString()
-      );
+      // Unlike
+      post.likes = post.likes.filter(id => id.toString() !== userId);
     } else {
-      // like
+      // Like
       post.likes.push(userId);
     }
 
     await post.save();
 
-    // ✅ Trả về mảng userId để frontend xử lý dễ hơn
     res.status(200).json({ likes: post.likes });
   } catch (err) {
     console.error("toggleLike error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // Comment vào post
 export const addComment = async (req, res) => {

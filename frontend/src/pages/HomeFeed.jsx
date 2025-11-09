@@ -3,6 +3,7 @@ import axios from "axios";
 import { Box, Flex, Spinner, Text } from "@chakra-ui/react";
 import Post from "../components/posts/Post.jsx";
 import Sidebar from "../components/Sidebar.jsx";
+import RightSidebar from "../components/RightSidebar.jsx";
 import CreatePost from "../components/posts/CreatePost.jsx";
 
 export default function HomeFeed({ currentUser }) {
@@ -11,32 +12,32 @@ export default function HomeFeed({ currentUser }) {
 
   const fetchPosts = async () => {
     const token = localStorage.getItem("token");
-  
+
     try {
       const res = await axios.get("http://localhost:5000/api/posts", {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-  
+
       let allPosts = res.data;
-  
+
       if (token) {
         const myRes = await axios.get("http://localhost:5000/api/posts/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
-  
+
         const myDrafts = myRes.data.filter((p) => p.status === "draft");
         allPosts = [
           ...allPosts,
           ...myDrafts.filter((d) => !allPosts.some((p) => p._id === d._id)),
         ];
       }
-  
+
       allPosts.sort(
         (a, b) =>
           new Date(b.updatedAt || b.createdAt) -
           new Date(a.updatedAt || a.createdAt)
       );
-  
+
       setPosts(allPosts);
     } catch (err) {
       console.error("Lỗi khi lấy bài viết:", err);
@@ -44,11 +45,10 @@ export default function HomeFeed({ currentUser }) {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchPosts();
   }, []);
-  
 
   // ✅ Khi có bài viết mới tạo
   const handlePostCreated = (newPost) => {
@@ -100,16 +100,14 @@ export default function HomeFeed({ currentUser }) {
 
   return (
     <Flex w="100%" minH="100vh">
-      {/* Sidebar */}
+      {/* Sidebar trái */}
       <Sidebar user={currentUser} />
-
-      {/* Feed */}
-      <Box ml="250px" flex="1" p={6}>
+      {/* Feed ở giữa */}
+      <Box ml="250px" mr="250px" flex="1" p={6}>
         <CreatePost
           isDisabled={!currentUser}
           onPostCreated={handlePostCreated}
         />
-
         {loading ? (
           <Spinner size="lg" display="block" mx="auto" mt={10} />
         ) : posts.length === 0 ? (
@@ -128,12 +126,15 @@ export default function HomeFeed({ currentUser }) {
                 key={post._id}
                 post={post}
                 currentUser={currentUser}
-                onPostUpdated={handlePostUpdated} // ✅ thêm callback
-                onPostDeleted={handlePostDeleted} // ✅ (nếu bạn có nút xóa sau này)
+                onPostUpdated={handlePostUpdated}
+                onPostDeleted={handlePostDeleted}
               />
             ))
         )}
       </Box>
+
+      {/* Sidebar phải */}
+        <RightSidebar />
     </Flex>
   );
 }

@@ -3,6 +3,7 @@ import axios from "axios";
 import { Box, Flex, Spinner, Text } from "@chakra-ui/react";
 import Post from "../components/posts/Post.jsx";
 import Sidebar from "../components/Sidebar.jsx";
+import RightSidebar from "../components/RightSidebar.jsx";
 import CreatePost from "../components/posts/CreatePost.jsx";
 
 export default function HomeFeed({ currentUser }) {
@@ -103,41 +104,55 @@ export default function HomeFeed({ currentUser }) {
   
 
   return (
-    <Flex maxW="1000px" mx="auto" mt={5}>
-      {/* Sidebar */}
-      <Sidebar user={currentUser} />
+    <Flex
+  maxW="100%"
+  mx="auto"
+  mt={5}
+  align="flex-start"
+  justify="center"
+  gap="20px"   
+>
+  {/* Sidebar trái */}
+  <Box w="230px" position="sticky" top="0" h="100vh">
+    <Sidebar user={currentUser} />
+  </Box>
 
-      {/* Feed */}
-      <Box flex={1} p={5}>
-        <CreatePost
-          isDisabled={!currentUser}
-          onPostCreated={handlePostCreated}
-        />
+  {/* Feed ở giữa */}
+  <Box flex="1" px={5} maxW="1000px">
+    <CreatePost
+      isDisabled={!currentUser}
+      onPostCreated={handlePostCreated}
+    />
+    {loading ? (
+      <Spinner size="lg" display="block" mx="auto" mt={10} />
+    ) : posts.length === 0 ? (
+      <Text textAlign="center" color="gray.500" mt={10}>
+        Không có bài viết nào để hiển thị.
+      </Text>
+    ) : (
+      posts
+        .filter(
+          (p) =>
+            p.status === "published" ||
+            (p.status === "draft" && p.author?._id === currentUser?._id)
+        )
+        .map((post) => (
+          <Post
+            key={post._id}
+            post={post}
+            currentUser={currentUser}
+            onPostUpdated={handlePostUpdated}
+            onPostDeleted={handlePostDeleted}
+          />
+        ))
+    )}
+  </Box>
 
-        {loading ? (
-          <Spinner size="lg" display="block" mx="auto" mt={10} />
-        ) : posts.length === 0 ? (
-          <Text textAlign="center" color="gray.500" mt={10}>
-            Không có bài viết nào để hiển thị.
-          </Text>
-        ) : (
-          posts
-            .filter(
-              (p) =>
-                p.status === "published" ||
-                (p.status === "draft" && p.author?._id === currentUser?._id)
-            )
-            .map((post) => (
-              <Post
-                key={post._id}
-                post={post}
-                currentUser={currentUser}
-                onPostUpdated={handlePostUpdated} // ✅ thêm callback
-                onPostDeleted={handlePostDeleted} // ✅ (nếu bạn có nút xóa sau này)
-              />
-            ))
-        )}
-      </Box>
-    </Flex>
+  {/* Sidebar phải */}
+  <Box w="230px" position="sticky" top="0" h="100vh">
+    <RightSidebar />
+  </Box>
+</Flex>
+  
   );
 }

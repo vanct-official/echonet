@@ -97,18 +97,14 @@ export default function HomeFeed({ currentUser }) {
         .filter((p) => p._id !== deletedId)
     );
   };
-  
-  
-  
-  
 
   return (
-    <Flex maxW="1000px" mx="auto" mt={5}>
+    <Flex w="100%" minH="100vh">
       {/* Sidebar */}
       <Sidebar user={currentUser} />
 
       {/* Feed */}
-      <Box flex={1} p={5}>
+      <Box ml="250px" flex="1" p={6}>
         <CreatePost
           isDisabled={!currentUser}
           onPostCreated={handlePostCreated}

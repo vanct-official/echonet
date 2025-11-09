@@ -40,7 +40,7 @@ export default function Sidebar() {
 
   return (
     <Box
-      w="56"
+      w="64"
       px={2}
       py={4}
       borderRightWidth="1px"

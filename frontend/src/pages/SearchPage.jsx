@@ -111,11 +111,10 @@ export default function SearchPage({ currentUser }) {
   );
 
   return (
-    <Flex maxW="1000px" mx="auto" mt={5} gap={6}>
-      <Box w="250px" display={{ base: "none", md: "block" }}>
+    <Flex w="100%" minH="100vh">
         <Sidebar user={currentUser} />
-      </Box>
-
+      
+<Box ml="250px" flex="1" p={6}>
       <VStack flex={1} p={5} spacing={5} align="stretch">
         <Heading size="lg" mb={4}>
           Tìm kiếm Người dùng
@@ -151,6 +150,7 @@ export default function SearchPage({ currentUser }) {
           )}
         </VStack>
       </VStack>
+      </Box>
     </Flex>
   );
 }

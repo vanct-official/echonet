@@ -3,11 +3,15 @@ import { useState } from "react";
 import ConversationList from "../components/chat/ConversationList";
 import ChatWindow from "../components/chat/ChatWindow";
 import FollowedList from "../components/chat/FollowedList";
+import Sidebar from "../components/Sidebar";
 
 export default function ChatPage() {
   const [selectedConversation, setSelectedConversation] = useState(null);
 
   return (
+    <Flex w="100%" minH="100vh">
+      <Sidebar user={user} />
+      <Box ml="250px" flex="1" p={6}>
     <div
       style={{
         display: "flex",
@@ -28,5 +32,7 @@ export default function ChatPage() {
 
 
     </div>
+    </Box>
+    </Flex>
   );
 }

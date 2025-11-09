@@ -114,9 +114,9 @@ const handlePostDeleted = (deletedId, originalId) => {
 
   // --- Hiển thị profile + bài đăng ---
   return (
-    <Flex maxW="1000px" mx="auto" mt={5} gap={6} px={4}>
+    <Flex w="100%" minH="100vh">
       <Sidebar user={user} />
-      <Box flex="1">
+      <Box ml="250px" flex="1" p={6}>
         <ProfileHeader
           user={user}
           isCurrentUser={true}

@@ -337,10 +337,9 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
       {/* Card rút gọn */}
       <Box
         borderWidth="1px"
-        borderRadius="lg"
+        borderRadius="md"
         p={4}
         mb={4}
-        maxWidth={1200}
         cursor="pointer"
         bg={postData.status === "draft" ? "yellow.50" : "white"}
         _hover={{ bg: postData.status === "draft" ? "yellow.100" : "gray.100" }}

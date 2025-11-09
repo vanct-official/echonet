@@ -9,6 +9,7 @@ import {
   deletePost, 
   getDraftPosts,
   publishPost,
+  repostPost,
 } from "../controllers/post.controller.js";
 import { protect, adminOnly } from "../middleware/auth.middleware.js"; // middleware JWT
 import upload from "../middleware/upload.middleware.js";
@@ -44,5 +45,8 @@ router.delete("/:id", protect, deletePost);
 
 // ✅ Route cho admin - có bảo vệ
 router.get("/admin/all", protect, adminOnly, getPosts);
+
+// 🟢 Repost (hoặc Quote Repost)
+router.post("/:id/repost", verifyToken, repostPost);
 
 export default router;

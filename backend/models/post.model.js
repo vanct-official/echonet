@@ -7,6 +7,8 @@ const postSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    repostOf: { type: mongoose.Schema.Types.ObjectId, ref: "Post", default: null },
+    quoteText: { type: String, default: "" },
     content: { type: String, required: true },
     images: [{ type: String }], // URL ảnh
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // danh sách user đã like

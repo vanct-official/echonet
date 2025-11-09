@@ -140,7 +140,6 @@ export const toggleLike = async (req, res) => {
   }
 };
 
-
 // Comment vào post
 export const addComment = async (req, res) => {
   try {
@@ -328,8 +327,50 @@ export const deletePost = async (req, res) => {
   }
 };
 
+// Repost của một bài viết
+export const repostPost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { quoteText } = req.body;
 
+    // 1️⃣ Kiểm tra bài gốc tồn tại
+    const originalPost = await Post.findById(id);
+    if (!originalPost) {
+      return res.status(404).json({ message: "Original post not found" });
+    }
 
+    // 2️⃣ Kiểm tra người dùng đã repost bài này chưa (nếu bạn muốn hạn chế repost trùng)
+    const existingRepost = await Post.findOne({
+      author: req.user._id,
+      repostOf: id,
+    });
+    if (existingRepost) {
+      return res
+        .status(400)
+        .json({ message: "You have already reposted this post." });
+    }
 
+    // 3️⃣ Tạo bài repost mới
+    const repost = await Post.create({
+      author: req.user._id,
+      repostOf: id,
+      quoteText: quoteText || "",
+      content: "", // để trống vì bài này không có content riêng
+      images: [],
+      status: "published",
+    });
 
+    // 4️⃣ Populate để gửi về frontend
+    const populatedRepost = await Post.findById(repost._id)
+      .populate("author", "username avatar isVerified")
+      .populate({
+        path: "repostOf",
+        populate: { path: "author", select: "username avatar isVerified" },
+      });
 
+    res.status(201).json(populatedRepost);
+  } catch (err) {
+    console.error("Error in repostPost:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

@@ -15,6 +15,8 @@ import {
   ModalHeader,
   ModalCloseButton,
   ModalBody,
+  ModalFooter,
+  Textarea,
   useDisclosure,
   useToast,
   Badge,
@@ -58,6 +60,9 @@ export default function Post({
   const [newComment, setNewComment] = useState("");
   const [isLiking, setIsLiking] = useState(false);
   const [isCommentLoading, setIsCommentLoading] = useState(false);
+  const [isRepostModalOpen, setIsRepostModalOpen] = useState(false);
+  const [repostText, setRepostText] = useState("");
+
 
   const viewDisclosure = useDisclosure();
   const editDisclosure = useDisclosure();
@@ -80,6 +85,13 @@ export default function Post({
       setComments(Array.isArray(post.comments) ? post.comments : []);
     }
   }, [post]);
+  useEffect(() => {
+    // Nếu backend trả về bài repost đã mất repostOf (do bài gốc bị xoá)
+    if (post && !post.repostOf && postData.repostOf) {
+      setPostData((prev) => ({ ...prev, repostOf: null }));
+    }
+  }, [post]);
+
 
   // ✅ Kiểm tra like ban đầu
   useEffect(() => {
@@ -93,6 +105,13 @@ export default function Post({
     currentUser &&
     postData?.author &&
     (currentUser._id === postData.author._id || currentUser.role === "admin");
+
+  // ✅ Không cho phép repost chính bài của mình
+  const canRepost =
+    currentUser &&
+    postData?.author &&
+    currentUser._id !== postData.author._id;
+
 
   // ✅ Xử lý Like
   const handleLike = async () => {
@@ -251,18 +270,24 @@ export default function Post({
     }
 
     // ✅ Khác năm → hiển thị "ngày X tháng Y năm Z"
-    return `ngày ${date.getDate()} tháng ${
-      date.getMonth() + 1
-    } năm ${date.getFullYear()}`;
+    return `ngày ${date.getDate()} tháng ${date.getMonth() + 1
+      } năm ${date.getFullYear()}`;
   };
 
   // ✅ Nhận dữ liệu mới khi chỉnh sửa thành công
   const handleUpdated = (updatedPost) => {
+    // ✅ Nếu là repost mà dữ liệu trả về chưa có bài gốc -> giữ lại từ post cũ
+    if (postData.repostOf && !updatedPost.repostOf) {
+      updatedPost.repostOf = postData.repostOf;
+    }
+
     setPostData(updatedPost);
+
     if (typeof onPostUpdated === "function") {
       onPostUpdated(updatedPost);
     }
   };
+
 
   if (!postData || !postData._id) return null;
 
@@ -310,7 +335,72 @@ export default function Post({
           </Text>
         </Flex>
 
-        {postData?.content && <Text isTruncated>{postData.content}</Text>}
+        {/* Nếu là bài repost */}
+        {/* Nếu là bài repost */}
+        {postData.repostOf && postData.repostOf.author ? (
+          // 🟢 Bài gốc còn tồn tại
+          <>
+            {/* Nội dung chia sẻ của người repost */}
+            {postData?.content && <Text mb={2}>{postData.content}</Text>}
+
+            {/* Khung hiển thị bài viết gốc */}
+            <Box
+              border="1px"
+              borderColor="gray.200"
+              borderRadius="md"
+              bg="gray.50"
+              p={3}
+              mt={2}
+            >
+              <Text fontSize="sm" color="gray.600" mb={1}>
+                {postData.author?.username} đã repost bài viết của{" "}
+                <b>{postData.repostOf?.author?.username}</b>
+              </Text>
+
+              {postData.repostOf?.content && <Text>{postData.repostOf.content}</Text>}
+
+              {Array.isArray(postData.repostOf?.images) &&
+                postData.repostOf.images.length > 0 && (
+                  <Image
+                    src={postData.repostOf.images[0]}
+                    borderRadius="md"
+                    mt={2}
+                    maxH="200px"
+                    objectFit="cover"
+                  />
+                )}
+            </Box>
+          </>
+        ) : postData.wasRepost ? (
+          // 🔴 Bài từng là repost nhưng bài gốc đã bị xoá
+          <Box
+            border="1px"
+            borderColor="gray.200"
+            borderRadius="md"
+            bg="gray.100"
+            p={3}
+            mt={2}
+          >
+            <Text color="gray.600" fontStyle="italic">
+              Bài viết gốc đã bị xoá.
+            </Text>
+          </Box>
+        ) : (
+          // 🟢 Bài đăng thường
+          <>
+            {postData?.content && <Text isTruncated>{postData.content}</Text>}
+
+            {Array.isArray(postData.images) && postData.images.length > 0 && (
+              <Image
+                src={postData.images[0]}
+                borderRadius="md"
+                mt={2}
+                maxH="200px"
+                objectFit="cover"
+              />
+            )}
+          </>
+        )}
 
         {Array.isArray(postData.images) && postData.images.length > 0 && (
           <Image
@@ -369,14 +459,13 @@ export default function Post({
                   color="gray.600"
                   _hover={{ color: "red.500" }}
                   onClick={async () => {
-                    if (
-                      !window.confirm("Bạn có chắc chắn muốn xóa bài viết này?")
-                    )
-                      return;
+                    if (!window.confirm("Bạn có chắc chắn muốn xóa bài viết này?")) return;
 
                     try {
                       const token = localStorage.getItem("token");
-                      await deletePost(postData._id, token);
+                      const res = await axios.delete(`${API_URL}/api/posts/${postData._id}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                      });
 
                       toast({
                         title: "Đã xóa bài viết",
@@ -386,15 +475,27 @@ export default function Post({
                         isClosable: true,
                       });
 
-                      if (typeof onPostDeleted === "function") {
-                        onPostDeleted(postData._id);
+                      // ✅ Nếu đây là bài repost, cập nhật lại số lượt chia sẻ trên bài gốc
+                      if (postData.repostOf && typeof onPostUpdated === "function") {
+                        const updatedOriginal = {
+                          ...postData.repostOf,
+                          repostCount: Math.max((postData.repostOf.repostCount || 1) - 1, 0),
+                        };
+                        onPostUpdated(updatedOriginal);
                       }
+
+                      // ✅ Xóa bài viết khỏi danh sách
+                      if (typeof onPostDeleted === "function") {
+                        onPostDeleted(postData._id, postData.repostOf?._id);
+                      }
+
 
                       onClose();
                     } catch (err) {
+                      console.error("Lỗi khi xóa:", err);
                       toast({
                         title: "Lỗi khi xóa bài viết",
-                        description: err.message || "Không thể xóa bài viết.",
+                        description: err.response?.data?.message || "Không thể xóa bài viết.",
                         status: "error",
                         duration: 3000,
                         isClosable: true,
@@ -487,6 +588,55 @@ export default function Post({
                 />
               )}
 
+              {/* Nếu là repost */}
+              {postData.repostOf && postData.repostOf.author ? (
+                // 🟢 Bài gốc còn tồn tại
+                <Box
+                  border="1px"
+                  borderColor="gray.200"
+                  borderRadius="md"
+                  bg="gray.50"
+                  p={3}
+                  mt={2}
+                  w="full"
+                >
+                  <Text fontSize="sm" color="gray.600" mb={1}>
+                    {postData.author?.username} đã repost bài viết của{" "}
+                    <b>{postData.repostOf?.author?.username}</b>
+                  </Text>
+
+                  {postData.repostOf?.content && <Text>{postData.repostOf.content}</Text>}
+
+                  {Array.isArray(postData.repostOf?.images) &&
+                    postData.repostOf.images.length > 0 && (
+                      <Image
+                        src={postData.repostOf.images[0]}
+                        borderRadius="md"
+                        mt={2}
+                        maxH="200px"
+                        objectFit="cover"
+                      />
+                    )}
+                </Box>
+              ) : postData.wasRepost ? (
+                // 🔴 Bài từng là repost nhưng bài gốc đã bị xoá
+                <Box
+                  border="1px"
+                  borderColor="gray.200"
+                  borderRadius="md"
+                  bg="gray.100"
+                  p={3}
+                  mt={2}
+                  w="full"
+                >
+                  <Text color="gray.600" fontStyle="italic">
+                    Bài viết gốc đã bị xoá.
+                  </Text>
+                </Box>
+              ) : null}
+
+
+
               <HStack spacing={4}>
                 <IconButton
                   icon={liked ? <FaHeart color="red" /> : <FaRegHeart />}
@@ -501,10 +651,26 @@ export default function Post({
                   variant="ghost"
                 />
                 <IconButton
-                  icon={<FaRetweet />}
+                  icon={<FaRetweet color={canRepost ? "teal" : "gray"} />}
                   aria-label="Repost"
                   variant="ghost"
+                  onClick={() => {
+                    if (!canRepost) {
+                      toast({
+                        title: "Không thể chia sẻ bài viết của chính bạn",
+                        status: "info",
+                        duration: 2000,
+                        isClosable: true,
+                      });
+                      return;
+                    }
+                    setIsRepostModalOpen(true);
+                  }}
+                  isDisabled={!canRepost}
                 />
+
+
+
                 <IconButton
                   icon={<FaShare />}
                   aria-label="Share"
@@ -513,54 +679,56 @@ export default function Post({
               </HStack>
 
               <Text fontSize="sm" color="gray.500">
-                {likesCount} lượt thích • {comments.length} bình luận
+                {likesCount} lượt thích • {comments.length} bình luận •{" "}
+                {postData.repostCount || 0} lượt chia sẻ lại
               </Text>
 
-             <VStack
-  align="start"
-  spacing={3}
-  maxH="300px"
-  overflowY="auto"
-  w="full"
-  pl={0}
->
-  {Array.isArray(comments) && comments.length > 0 ? (
-    comments.map((c) => (
-      <Flex key={c._id} align="flex-start" w="full">
-        <Avatar
-          size="sm"
-          src={c.user?.avatar}
-          name={c.user?.username}
-          mr={3}
-          mt={1}
-        />
-        <Box
-          flex="1"
-          bg="gray.50"
-          p={2}
-          borderRadius="md"
-          boxShadow="sm"
-          _hover={{ bg: "gray.100" }}
-        >
-          <HStack spacing={1}>
-            <Text fontWeight="bold" fontSize="sm">
-              {c.user?.username || "Người dùng"}
-            </Text>
-            {c.user?.isVerified && <VerifiedBadgeIcon />}
-          </HStack>
-          <Text fontSize="xs" color="gray.500">
-            {formatTimeAgo(c.createdAt)}
-          </Text>
-          <Text fontSize="sm">{c.text}</Text>
-        </Box>
-      </Flex>
-    ))
-  ) : (
-    <Text color="gray.500" fontSize="sm">
-      Chưa có bình luận nào
-    </Text>
-  )}
-</VStack>
+
+              <VStack
+                align="start"
+                spacing={3}
+                maxH="300px"
+                overflowY="auto"
+                w="full"
+                pl={0}
+              >
+                {Array.isArray(comments) && comments.length > 0 ? (
+                  comments.map((c) => (
+                    <Flex key={c._id} align="flex-start" w="full">
+                      <Avatar
+                        size="sm"
+                        src={c.user?.avatar}
+                        name={c.user?.username}
+                        mr={3}
+                        mt={1}
+                      />
+                      <Box
+                        flex="1"
+                        bg="gray.50"
+                        p={2}
+                        borderRadius="md"
+                        boxShadow="sm"
+                        _hover={{ bg: "gray.100" }}
+                      >
+                        <HStack spacing={1}>
+                          <Text fontWeight="bold" fontSize="sm">
+                            {c.user?.username || "Người dùng"}
+                          </Text>
+                          {c.user?.isVerified && <VerifiedBadgeIcon />}
+                        </HStack>
+                        <Text fontSize="xs" color="gray.500">
+                          {formatTimeAgo(c.createdAt)}
+                        </Text>
+                        <Text fontSize="sm">{c.text}</Text>
+                      </Box>
+                    </Flex>
+                  ))
+                ) : (
+                  <Text color="gray.500" fontSize="sm">
+                    Chưa có bình luận nào
+                  </Text>
+                )}
+              </VStack>
 
 
               {/* Input bình luận */}
@@ -597,6 +765,76 @@ export default function Post({
         post={postData}
         onUpdated={handleUpdated}
       />
+
+      <Modal isOpen={isRepostModalOpen} onClose={() => setIsRepostModalOpen(false)}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Chia sẻ lại bài viết</ModalHeader>
+          <ModalBody>
+            <Textarea
+              placeholder="Thêm lời chia sẻ của bạn (tùy chọn)..."
+              value={repostText}
+              onChange={(e) => setRepostText(e.target.value)}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              colorScheme="blue"
+              onClick={async () => {
+                try {
+                  const token = localStorage.getItem("token");
+                  const res = await axios.post(
+                    `${API_URL}/api/posts/${postData._id}/repost`,
+                    { content: repostText },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                  );
+
+                  toast({
+                    title: "Đã chia sẻ lại bài viết!",
+                    status: "success",
+                    duration: 2000,
+                    isClosable: true,
+                  });
+
+                  if (typeof onPostUpdated === "function") {
+                    // 🆕 Cập nhật bài repost mới
+                    onPostUpdated(res.data);
+
+                    // 🆕 Đồng thời cập nhật repostCount cho bài gốc
+                    if (postData._id) {
+                      onPostUpdated({
+                        ...postData,
+                        repostCount: (postData.repostCount || 0) + 1,
+                      });
+                    }
+                  }
+
+
+                  // 🟢 Đóng cả hai modal
+                  setIsRepostModalOpen(false);
+                  onClose(); // <--- thêm dòng này
+                  setRepostText("");
+                } catch (err) {
+                  toast({
+                    title: "Lỗi khi repost",
+                    description: err.response?.data?.message || "Không thể repost bài viết này.",
+                    status: "error",
+                    duration: 3000,
+                    isClosable: true,
+                  });
+                }
+              }}
+            >
+              Đăng
+            </Button>
+
+
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+
+
     </>
   );
 }

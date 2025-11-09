@@ -43,6 +43,9 @@ router.put("/:id/publish", protect, publishPost);
 // Xoá bài viết (chỉ chủ bài hoặc admin) - có thể thêm sau
 router.delete("/:id", protect, deletePost);
 
+// Repost bài viết
+router.post("/:id/repost", protect, repostPost);
+
 // ✅ Route cho admin - có bảo vệ
 router.get("/admin/all", protect, adminOnly, getPosts);
 

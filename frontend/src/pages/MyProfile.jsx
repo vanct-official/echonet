@@ -63,9 +63,22 @@ export default function MyProfile() {
   }, []);
 
   // ✅ Khi bài viết bị xóa
-  const handlePostDeleted = (deletedId) => {
-    setPosts((prev) => prev.filter((p) => p._id !== deletedId));
-  };
+const handlePostDeleted = (deletedId, originalId) => {
+  setPosts((prev) =>
+    prev
+      .map((p) => {
+        // Nếu là bài repost của bài vừa bị xóa → xóa liên kết và đánh dấu mất gốc
+        if (p.repostOf?._id === deletedId) {
+          return { ...p, repostOf: undefined, wasRepost: true };
+        }
+        return p;
+      })
+      // Xóa bài chính bị xóa
+      .filter((p) => p._id !== deletedId)
+  );
+};
+
+  
 
   // --- Loading state ---
   if (loadingUser || loadingPosts) {

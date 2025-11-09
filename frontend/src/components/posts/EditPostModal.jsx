@@ -70,59 +70,72 @@ export default function EditPostModal({ isOpen, onClose, post, onUpdated }) {
   const handleRemoveVideo = () => setVideoFile(null);
 
   // ✅ Gửi dữ liệu cập nhật
-  const handleSubmit = async () => {
-    if (!content.trim() && existingMedia.length === 0 && !videoFile && mediaFiles.length === 0) {
-      toast({
-        title: "Thiếu nội dung",
-        description: "Vui lòng nhập nội dung hoặc chọn ảnh/video.",
-        status: "warning",
-        duration: 2500,
-        isClosable: true,
-      });
-      return;
+  // ✅ Gửi dữ liệu cập nhật
+const handleSubmit = async () => {
+  if (
+    !content.trim() &&
+    existingMedia.length === 0 &&
+    !videoFile &&
+    mediaFiles.length === 0
+  ) {
+    toast({
+      title: "Thiếu nội dung",
+      description: "Vui lòng nhập nội dung hoặc chọn ảnh/video.",
+      status: "warning",
+      duration: 2500,
+      isClosable: true,
+    });
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const formData = new FormData();
+    formData.append("content", content);
+    existingMedia.forEach((url) => formData.append("existingImages", url));
+
+    mediaFiles.forEach((file) => formData.append("media", file));
+    if (videoFile instanceof File) {
+      formData.append("media", videoFile);
     }
 
-    setIsLoading(true);
+    const res = await axios.put(`${API_URL}/api/posts/${post._id}`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
-    try {
-      const formData = new FormData();
-      formData.append("content", content);
-      existingMedia.forEach((url) => formData.append("existingImages", url));
+    toast({
+      title: "Đã cập nhật bài viết",
+      status: "success",
+      duration: 2000,
+      isClosable: true,
+    });
 
-      mediaFiles.forEach((file) => formData.append("media", file));
-      if (videoFile instanceof File) {
-        formData.append("media", videoFile);
-      }
-
-      const res = await axios.put(`${API_URL}/api/posts/${post._id}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      toast({
-        title: "Đã cập nhật bài viết",
-        status: "success",
-        duration: 2000,
-        isClosable: true,
-      });
-
-      if (onUpdated) onUpdated(res.data.post || res.data);
-      onClose();
-    } catch (error) {
-      console.error("Lỗi cập nhật bài viết:", error);
-      toast({
-        title: "Lỗi cập nhật",
-        description: error.response?.data?.message || "Không thể cập nhật bài viết.",
-        status: "error",
-        duration: 2500,
-        isClosable: true,
-      });
-    } finally {
-      setIsLoading(false);
+    // ✅ Giữ lại dữ liệu bài gốc nếu là repost (tránh mất khi chưa reload)
+    const updated = res.data.post || res.data;
+    if (post.repostOf && !updated.repostOf) {
+      updated.repostOf = post.repostOf;
     }
-  };
+
+    if (onUpdated) onUpdated(updated);
+    onClose();
+  } catch (error) {
+    console.error("Lỗi cập nhật bài viết:", error);
+    toast({
+      title: "Lỗi cập nhật",
+      description:
+        error.response?.data?.message || "Không thể cập nhật bài viết.",
+      status: "error",
+      duration: 2500,
+      isClosable: true,
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // ✅ Hợp nhất hiển thị ảnh cũ và mới
   const allImages = [

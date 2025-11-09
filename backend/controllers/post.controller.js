@@ -5,10 +5,21 @@ import cloudinary from "../config/cloudinary.js";
 // Lấy danh sách tất cả post, mới nhất (tạo hoặc chỉnh sửa) lên đầu
 export const getPosts = async (req, res) => {
   try {
-    const posts = await Post.find({ status: "published" }) // 🆕 chỉ lấy bài đã đăng
+    const posts = await Post.find({ status: "published" })
       .sort({ updatedAt: -1, createdAt: -1 })
-      .populate("author", "username avatar")
-      .populate("comments.user", "username avatar");
+      .populate([
+        { path: "author", select: "username avatar" },
+        { path: "comments.user", select: "username avatar" },
+        {
+          path: "repostOf",
+          populate: [
+            { path: "author", select: "username avatar" },
+            { path: "comments.user", select: "username avatar" },
+          ],
+        },
+      ])
+      .lean(); 
+
 
     res.json(posts);
   } catch (err) {
@@ -17,14 +28,24 @@ export const getPosts = async (req, res) => {
   }
 };
 
+
 // Export bài đăng của chính người dùng đăng nhập
 export const getMyPosts = async (req, res) => {
   try {
-    console.log("Current user:", req.user); // debug
     const posts = await Post.find({ author: req.user._id })
       .sort({ createdAt: -1 })
-      .populate("author", "username avatar")
-      .populate("comments.user", "username avatar");
+      .populate([
+        { path: "author", select: "username avatar" },
+        { path: "comments.user", select: "username avatar" },
+        {
+          path: "repostOf",
+          populate: [
+            { path: "author", select: "username avatar" },
+            { path: "comments.user", select: "username avatar" },
+          ],
+        },
+      ])
+      .lean();
 
     res.json(posts);
   } catch (err) {
@@ -32,6 +53,7 @@ export const getMyPosts = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 //Lấy bài viết nháp của người dùng đăng nhập
 export const getDraftPosts = async (req, res) => {
@@ -189,24 +211,38 @@ export const updatePost = async (req, res) => {
     }
 
     // ==========================================
-    // Cập nhật nội dung & thẻ
+    // ✅ Nếu là bài repost → chỉ cho phép sửa phần chia sẻ (caption)
+    // ==========================================
+    if (post.repostOf) {
+      if (req.body.content !== undefined) {
+        post.content = req.body.content; // chỉ cập nhật caption cá nhân
+      }
+
+      // ❌ Không cho chỉnh ảnh, video, trạng thái hoặc xoá liên kết repost
+      await post.save();
+
+      const populatedPost = await post.populate([
+        { path: "author", select: "username avatar" },
+        { path: "repostOf", populate: { path: "author", select: "username avatar" } },
+      ]);
+
+      return res.status(200).json({
+        message: "Cập nhật caption repost thành công",
+        post: populatedPost,
+      });
+    }
+
+    // ==========================================
+    // Nếu KHÔNG phải repost → xử lý như cũ
     // ==========================================
     if (content) post.content = content;
     if (tags) post.tags = tags;
-    // ✅ Cập nhật trạng thái (draft / published)
-    if (req.body.status) {
-      post.status = req.body.status;
-    }
-    // ==========================================
-    // Giữ lại ảnh cũ còn tồn tại
-    // ==========================================
+    if (req.body.status) post.status = req.body.status;
+
     const remainingImages = Array.isArray(existingImages)
       ? existingImages
       : [existingImages].filter(Boolean);
 
-    // ==========================================
-    // Xử lý upload ảnh/video mới (nếu có)
-    // ==========================================
     let uploadedImages = [];
     let uploadedVideo = null;
 
@@ -235,7 +271,6 @@ export const updatePost = async (req, res) => {
 
       // Upload VIDEO mới
       if (videoFiles.length > 0) {
-        // Xóa video cũ nếu có
         if (post.video) {
           try {
             const publicId = post.video.split("/").pop().split(".")[0];
@@ -265,8 +300,6 @@ export const updatePost = async (req, res) => {
     // Hợp nhất ảnh cũ còn giữ lại + ảnh mới
     // ==========================================
     post.images = [...remainingImages, ...uploadedImages];
-
-    // Cập nhật video (nếu có mới)
     if (uploadedVideo) post.video = uploadedVideo;
 
     // ==========================================
@@ -287,23 +320,50 @@ export const updatePost = async (req, res) => {
   }
 };
 
-// Xóa bài viết (người dùng xóa bài của mình, admin có thể xóa bất kỳ)
+
+// 🗑️ Xóa bài viết (người dùng xóa bài của mình, admin có thể xóa bất kỳ)
 export const deletePost = async (req, res) => {
   try {
     const postId = req.params.id;
     const userId = req.user._id;
 
+    // ❌ BỎ .lean() để post vẫn là Mongoose Document
     const post = await Post.findById(postId);
     if (!post)
       return res.status(404).json({ message: "Không tìm thấy bài viết" });
 
-    // ✅ Cho phép: chính chủ hoặc admin
+    // ✅ Kiểm tra quyền
     if (post.author.toString() !== userId.toString() && req.user.role !== "admin") {
       return res.status(403).json({ message: "Bạn không có quyền xóa bài viết này" });
     }
 
-    // 🧹 Nếu bài viết có ảnh, xóa trên Cloudinary
-    if (post.images && post.images.length > 0) {
+    // ✅ Nếu đây là bài repost → giảm repostCount bài gốc
+    if (post.repostOf) {
+      const originalId =
+        typeof post.repostOf === "object" && post.repostOf._id
+          ? post.repostOf._id
+          : post.repostOf;
+
+      const originalPost = await Post.findById(originalId);
+      if (originalPost) {
+        originalPost.repostCount = Math.max((originalPost.repostCount || 1) - 1, 0);
+        await originalPost.save({ timestamps: false });
+      }
+    } 
+// ✅ Nếu là bài gốc → đánh dấu các bài repost từng chia sẻ nó
+else {
+  await Post.updateMany(
+    { repostOf: post._id },
+    {
+      $unset: { repostOf: "" }, // xoá hoàn toàn trường này
+      $set: { wasRepost: true } // đánh dấu từng là repost
+    },
+    { timestamps: false }
+  );
+}
+
+    // 🧹 Xoá ảnh trên Cloudinary nếu có
+    if (Array.isArray(post.images)) {
       for (const url of post.images) {
         try {
           const publicId = url.split("/").pop().split(".")[0];
@@ -314,6 +374,17 @@ export const deletePost = async (req, res) => {
       }
     }
 
+    // 🧹 Xoá video nếu có
+    if (post.video) {
+      try {
+        const publicId = post.video.split("/").pop().split(".")[0];
+        await cloudinary.uploader.destroy(`posts/${publicId}`, { resource_type: "video" });
+      } catch (err) {
+        console.warn("Không thể xóa video trên Cloudinary:", err.message);
+      }
+    }
+
+    // ✅ Xóa bài viết
     await post.deleteOne();
 
     res.json({
@@ -327,50 +398,52 @@ export const deletePost = async (req, res) => {
   }
 };
 
-// Repost của một bài viết
+// ✅ Repost bài viết
+// ✅ Repost bài viết
 export const repostPost = async (req, res) => {
   try {
+    const { content = "" } = req.body;
     const { id } = req.params;
-    const { quoteText } = req.body;
 
-    // 1️⃣ Kiểm tra bài gốc tồn tại
     const originalPost = await Post.findById(id);
-    if (!originalPost) {
-      return res.status(404).json({ message: "Original post not found" });
-    }
+    if (!originalPost)
+      return res.status(404).json({ message: "Post not found" });
 
-    // 2️⃣ Kiểm tra người dùng đã repost bài này chưa (nếu bạn muốn hạn chế repost trùng)
-    const existingRepost = await Post.findOne({
+    // 🟢 Tạo bài repost
+    const repost = new Post({
       author: req.user._id,
-      repostOf: id,
-    });
-    if (existingRepost) {
-      return res
-        .status(400)
-        .json({ message: "You have already reposted this post." });
-    }
-
-    // 3️⃣ Tạo bài repost mới
-    const repost = await Post.create({
-      author: req.user._id,
-      repostOf: id,
-      quoteText: quoteText || "",
-      content: "", // để trống vì bài này không có content riêng
-      images: [],
+      content,
+      repostOf: originalPost._id,
       status: "published",
+      wasRepost: true   // 🧩 Thêm dòng này
     });
 
-    // 4️⃣ Populate để gửi về frontend
+    await repost.save();
+
+    // 🟢 Tăng repostCount an toàn
+    originalPost.repostCount = (originalPost.repostCount || 0) + 1;
+    await originalPost.save({ timestamps: false }); // Giữ nguyên updatedAt của bài gốc
+
+    // 🟢 Populate bài repost vừa tạo
     const populatedRepost = await Post.findById(repost._id)
-      .populate("author", "username avatar isVerified")
+      .populate("author", "username avatar")
       .populate({
         path: "repostOf",
-        populate: { path: "author", select: "username avatar isVerified" },
+        populate: { path: "author", select: "username avatar" },
       });
 
     res.status(201).json(populatedRepost);
   } catch (err) {
-    console.error("Error in repostPost:", err);
+    console.error("❌ Lỗi khi repost:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+
+
+
+
+
+
+

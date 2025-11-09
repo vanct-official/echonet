@@ -9,51 +9,46 @@ export default function HomeFeed({ currentUser }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      const token = localStorage.getItem("token");
-
-      try {
-        // 🔹 1. Lấy tất cả bài đăng công khai
-        const res = await axios.get("http://localhost:5000/api/posts", {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+  const fetchPosts = async () => {
+    const token = localStorage.getItem("token");
+  
+    try {
+      const res = await axios.get("http://localhost:5000/api/posts", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+  
+      let allPosts = res.data;
+  
+      if (token) {
+        const myRes = await axios.get("http://localhost:5000/api/posts/me", {
+          headers: { Authorization: `Bearer ${token}` },
         });
-
-        let allPosts = res.data;
-
-        // 🔹 2. Nếu có đăng nhập, lấy thêm bài của chính người dùng
-        if (token) {
-          const myRes = await axios.get("http://localhost:5000/api/posts/me", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          // chỉ lấy bài nháp
-          const myDrafts = myRes.data.filter((p) => p.status === "draft");
-
-          // Gộp lại, tránh trùng ID
-          allPosts = [
-            ...allPosts,
-            ...myDrafts.filter((d) => !allPosts.some((p) => p._id === d._id)),
-          ];
-        }
-
-        // 🔹 3. Sắp xếp lại: bài mới nhất lên đầu
-        allPosts.sort(
-          (a, b) =>
-            new Date(b.updatedAt || b.createdAt) -
-            new Date(a.updatedAt || a.createdAt)
-        );
-
-        setPosts(allPosts);
-      } catch (err) {
-        console.error("Lỗi khi lấy bài viết:", err);
-      } finally {
-        setLoading(false);
+  
+        const myDrafts = myRes.data.filter((p) => p.status === "draft");
+        allPosts = [
+          ...allPosts,
+          ...myDrafts.filter((d) => !allPosts.some((p) => p._id === d._id)),
+        ];
       }
-    };
-
+  
+      allPosts.sort(
+        (a, b) =>
+          new Date(b.updatedAt || b.createdAt) -
+          new Date(a.updatedAt || a.createdAt)
+      );
+  
+      setPosts(allPosts);
+    } catch (err) {
+      console.error("Lỗi khi lấy bài viết:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  useEffect(() => {
     fetchPosts();
   }, []);
+  
 
   // ✅ Khi có bài viết mới tạo
   const handlePostCreated = (newPost) => {
@@ -88,9 +83,24 @@ export default function HomeFeed({ currentUser }) {
   };
 
   // ✅ Khi bài viết bị xóa (tuỳ chọn)
-  const handlePostDeleted = (deletedId) => {
-    setPosts((prev) => prev.filter((p) => p._id !== deletedId));
+  const handlePostDeleted = (deletedId, originalId) => {
+    setPosts((prev) =>
+      prev
+        .map((p) => {
+          // Nếu bài repost trỏ đến bài gốc vừa bị xóa → bỏ liên kết repostOf
+          if (p.repostOf && p.repostOf._id === deletedId) {
+            return { ...p, repostOf: null };
+          }
+          return p;
+        })
+        // Xoá bài bị xóa (có thể là bài gốc hoặc bài repost)
+        .filter((p) => p._id !== deletedId)
+    );
   };
+  
+  
+  
+  
 
   return (
     <Flex maxW="1000px" mx="auto" mt={5}>

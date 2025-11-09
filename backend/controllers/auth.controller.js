@@ -25,8 +25,15 @@ export const registerRequest = async (req, res) => {
     } = req.body;
 
     // Kiểm tra trùng email/username
+    const existingUsername = await User.findOne({ username });
+    if (existingUsername)
+      return res.status(400).json({ message: "Username đã tồn tại" });
+
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: "Email đã tồn tại" });
+
+    const existingPhone = await User.findOne({ phone });
+    if (existingPhone) return res.status(400).json({ message: "Số điện thoại này đã tồn tại" });
 
     // Tạo OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 chữ số
@@ -116,12 +123,16 @@ export const loginUser = async (req, res) => {
           lastname: user.lastname,
           email: user.email,
           role: user.role,
+          isActive: user.isActive,
         },
         token: generateToken(user._id),
       });
-    } else {
+    } else if(user.isActive == false) { // Check if account is disabled
+      res.status(401).json({ message: "Tài khoản của bạn đã bị đình chỉ, hãy liên hệ admin qua email: vanctquantrivien@gmail.com. Trân trọng!" });
+    } else { // Invalid credentials
       res.status(401).json({ message: "Invalid email or password" });
     }
+    
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -171,7 +182,6 @@ export const forgotPassword = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 // Đặt lại mật khẩu (khi nhập OTP hợp lệ)
 // @desc    Xác thực OTP để đặt lại mật khẩu

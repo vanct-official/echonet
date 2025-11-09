@@ -36,6 +36,21 @@ export default function ProfileHeader({
             style={{ width: "20px", height: "20px" }}
           />
         )}
+        {user.role === "admin" && (
+          <Box
+            as="span"
+            bg="green.500"
+            color="white"
+            px={2}
+            py={1}
+            borderRadius="md"
+            fontSize="xs"
+            fontWeight="bold"
+            ml={2}
+          >
+            Admin
+          </Box>
+        )}
       </HStack>
       <Text fontSize="xl" fontWeight="medium">
         @{user.username}

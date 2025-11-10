@@ -9,6 +9,8 @@ import CreatePost from "../components/posts/CreatePost.jsx";
 export default function HomeFeed({ currentUser }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshSidebar, setRefreshSidebar] = useState(0); // 🆕 thêm state để reload sidebar
+  const [followedUsers, setFollowedUsers] = useState(new Set());
 
   const fetchPosts = async () => {
     const token = localStorage.getItem("token");
@@ -50,12 +52,10 @@ export default function HomeFeed({ currentUser }) {
     fetchPosts();
   }, []);
 
-  // ✅ Khi có bài viết mới tạo
   const handlePostCreated = (newPost) => {
     setPosts((prev) => [newPost, ...prev]);
   };
 
-  // ✅ Khi bài viết được chỉnh sửa / like / comment / cập nhật trạng thái
   const handlePostUpdated = (updatedPost) => {
     if (!updatedPost || !updatedPost._id) return;
 
@@ -64,16 +64,13 @@ export default function HomeFeed({ currentUser }) {
 
       let updatedList;
       if (exists) {
-        // Cập nhật bài viết cũ
         updatedList = prev.map((p) =>
           p._id === updatedPost._id ? updatedPost : p
         );
       } else {
-        // Nếu chưa có (VD: bài đăng công khai mới được publish)
         updatedList = [updatedPost, ...prev];
       }
 
-      // 🔥 Đảm bảo sắp xếp theo updatedAt mới nhất
       return updatedList.sort(
         (a, b) =>
           new Date(b.updatedAt || b.createdAt) -
@@ -82,27 +79,34 @@ export default function HomeFeed({ currentUser }) {
     });
   };
 
-  // ✅ Khi bài viết bị xóa (tuỳ chọn)
   const handlePostDeleted = (deletedId, originalId) => {
     setPosts((prev) =>
       prev
         .map((p) => {
-          // Nếu bài repost trỏ đến bài gốc vừa bị xóa → bỏ liên kết repostOf
           if (p.repostOf && p.repostOf._id === deletedId) {
             return { ...p, repostOf: null };
           }
           return p;
         })
-        // Xoá bài bị xóa (có thể là bài gốc hoặc bài repost)
         .filter((p) => p._id !== deletedId)
     );
   };
 
+  // 🆕 Khi follow/unfollow xong
+  const handleFollowChange = (userId, nextState) => {
+    setFollowedUsers(prev => {
+      const next = new Set(prev);
+      if (nextState) next.add(userId);
+      else next.delete(userId);
+      return next;
+    });
+    setRefreshSidebar(prev => prev + 1);
+  };
+  
+
   return (
     <Flex w="100%" minH="100vh">
-      {/* Sidebar trái */}
       <Sidebar user={currentUser} />
-      {/* Feed ở giữa */}
       <Box ml="250px" mr="250px" flex="1" p={6}>
         <CreatePost
           isDisabled={!currentUser}
@@ -123,18 +127,20 @@ export default function HomeFeed({ currentUser }) {
             )
             .map((post) => (
               <Post
-                key={post._id}
-                post={post}
-                currentUser={currentUser}
-                onPostUpdated={handlePostUpdated}
-                onPostDeleted={handlePostDeleted}
-              />
+              key={post._id}
+              post={post}
+              currentUser={currentUser}
+              isFollowing={followedUsers.has(post.author._id)} // ✅ truyền trạng thái
+              onFollowChange={handleFollowChange}
+              onPostUpdated={handlePostUpdated}
+              onPostDeleted={handlePostDeleted}
+            />
             ))
         )}
       </Box>
 
       {/* Sidebar phải */}
-        <RightSidebar />
+      <RightSidebar refreshTrigger={refreshSidebar} /> {/* 🆕 truyền trigger */}
     </Flex>
   );
 }

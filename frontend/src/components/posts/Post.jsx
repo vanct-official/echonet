@@ -26,11 +26,11 @@ import { FaHeart, FaRegHeart, FaComment, FaShare, FaRetweet } from "react-icons/
 import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 import EditPostModal from "./EditPostModal.jsx";
 import VerifiedBadgeSVG from "/verified-badge-svgrepo-com.svg";
-import { deletePost } from "../../api/post";
+import { deletePost as deletePostAPI } from "../../api/post";
 
-/** ---------- Utils ---------- */
 const API_URL = "http://localhost:5000";
 
 const formatTimeAgo = (isoDate) => {
@@ -38,8 +38,7 @@ const formatTimeAgo = (isoDate) => {
   const date = new Date(isoDate);
   const now = new Date();
   const diffMs = now - date;
-  const diffSec = Math.floor(diffMs / 1000);
-  const diffMin = Math.floor(diffSec / 60);
+  const diffMin = Math.floor(diffMs / 1000 / 60);
   const diffHours = Math.floor(diffMin / 60);
   const diffDays = Math.floor(diffHours / 24);
   const diffWeeks = Math.floor(diffDays / 7);
@@ -55,13 +54,40 @@ const formatTimeAgo = (isoDate) => {
     : `ngày ${date.getDate()} tháng ${date.getMonth() + 1} năm ${date.getFullYear()}`;
 };
 
-// ✅ Tích xanh
 const VerifiedBadgeIcon = () => (
   <Image src={VerifiedBadgeSVG} alt="Verified Badge" w="16px" h="16px" ml={1} display="inline-block" />
 );
 
-export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }) {
-  /** ---------- Local state ---------- */
+function RepostBlock({ actorName, repostOf }) {
+  if (!repostOf?.author) return null;
+  return (
+    <Box border="1px" borderColor="gray.200" borderRadius="md" bg="gray.50" p={3} mt={2} w="full">
+      <Text fontSize="sm" color="gray.600" mb={1}>
+        {actorName} đã repost bài viết của <b>{repostOf.author?.username}</b>
+      </Text>
+      {repostOf.content && <Text>{repostOf.content}</Text>}
+      {Array.isArray(repostOf.images) && repostOf.images.length > 0 && (
+        <Image
+          src={repostOf.images[0]}
+          borderRadius="md"
+          mt={2}
+          maxH="200px"
+          objectFit="cover"
+          alt="Repost image"
+        />
+      )}
+    </Box>
+  );
+}
+
+export default function Post({
+  post,
+  currentUser,
+  isFollowing,
+  onPostUpdated,
+  onPostDeleted,
+  onFollowChange,
+}) {
   const [postData, setPostData] = useState(post || {});
   const [newComment, setNewComment] = useState("");
   const [isLiking, setIsLiking] = useState(false);
@@ -78,7 +104,6 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
 
   const toast = useToast();
 
-  /** ---------- Derived values ---------- */
   const token = useMemo(() => localStorage.getItem("token"), []);
   const api = useMemo(
     () =>
@@ -89,41 +114,29 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
     [token]
   );
 
-  const likes = useMemo(() => (Array.isArray(postData?.likes) ? postData.likes : []), [postData?.likes]);
-  const comments = useMemo(() => (Array.isArray(postData?.comments) ? postData.comments : []), [postData?.comments]);
-
-  const liked = useMemo(() => {
-    if (!currentUser) return false;
-    return likes.includes(currentUser._id);
-  }, [likes, currentUser]);
-
+  const likes = Array.isArray(postData?.likes) ? postData.likes : [];
+  const comments = Array.isArray(postData?.comments) ? postData.comments : [];
+  const liked = !!(currentUser && likes.includes(currentUser._id));
   const likesCount = likes.length;
 
-  const canEdit = useMemo(() => {
-    const authorId = postData?.author?._id;
-    return Boolean(currentUser && authorId && (currentUser._id === authorId || currentUser.role === "admin"));
-  }, [currentUser, postData?.author?._id]);
+  const canEdit = !!(
+    currentUser &&
+    postData?.author?._id &&
+    (currentUser._id === postData.author._id || currentUser.role === "admin")
+  );
 
-  const canRepost = useMemo(() => {
-    const authorId = postData?.author?._id;
-    return Boolean(currentUser && authorId && currentUser._id !== authorId);
-  }, [currentUser, postData?.author?._id]);
+  const canRepost = !!(currentUser && postData?.author?._id && currentUser._id !== postData.author._id);
 
-  /** ---------- Effects ---------- */
-  // Sync khi prop post đổi
   useEffect(() => {
-    if (!post) return;
-    setPostData(post);
+    if (post) setPostData(post);
   }, [post]);
 
-  // Nếu backend trả về bài repost đã mất repostOf (do gốc bị xoá) nhưng local còn
   useEffect(() => {
     if (post && !post.repostOf && postData.repostOf) {
       setPostData((prev) => ({ ...prev, repostOf: null, wasRepost: true }));
     }
   }, [post, postData.repostOf]);
 
-  /** ---------- Handlers ---------- */
   const safeUpdateUpstream = useCallback(
     (updated) => {
       if (typeof onPostUpdated === "function") onPostUpdated(updated);
@@ -143,7 +156,6 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
       return;
     }
 
-    // ✅ Optimistic update
     setIsLiking(true);
     const userId = currentUser?._id;
     const prevLikes = likes;
@@ -158,7 +170,6 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
       setPostData((p) => ({ ...p, likes: serverLikes }));
       safeUpdateUpstream({ ...postData, likes: serverLikes });
     } catch (err) {
-      // rollback
       setPostData((p) => ({ ...p, likes: prevLikes }));
       toast({
         title: "Lỗi",
@@ -172,6 +183,48 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
     }
   }, [token, toast, currentUser?._id, likes, api, postData, safeUpdateUpstream]);
 
+  const handleFollowToggle = async (e, currentFollowState) => {
+    e.stopPropagation();
+    if (!token) {
+      toast({
+        title: "Vui lòng đăng nhập để theo dõi",
+        status: "info",
+        duration: 2000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    const nextState = !currentFollowState;
+
+    try {
+      const endpoint = nextState
+        ? `/api/users/${postData.author._id}/follow`
+        : `/api/users/${postData.author._id}/unfollow`;
+
+      await api.post(endpoint);
+
+      toast({
+        title: nextState ? "Đã theo dõi" : "Đã bỏ theo dõi",
+        status: "success",
+        duration: 1500,
+        isClosable: true,
+      });
+
+      if (typeof onFollowChange === "function") {
+        onFollowChange(postData.author._id, nextState);
+      }
+    } catch (err) {
+      toast({
+        title: "Lỗi khi cập nhật theo dõi",
+        description: err?.response?.data?.message || "Không thể thực hiện hành động này.",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+      });
+    }
+  };
+
   const handleAddComment = useCallback(async () => {
     const text = newComment.trim();
     if (!text) {
@@ -184,13 +237,21 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
       });
       return;
     }
-    setIsCommentLoading(true);
+    if (!token) {
+      toast({
+        title: "Cần đăng nhập",
+        description: "Vui lòng đăng nhập để bình luận.",
+        status: "info",
+        duration: 2000,
+        isClosable: true,
+      });
+      return;
+    }
 
+    setIsCommentLoading(true);
     try {
       const { data } = await api.post(`/api/posts/${postData._id}/comment`, { text });
       const incoming = data || {};
-
-      // Nếu backend chưa populate user
       const normalized = {
         ...incoming,
         user:
@@ -203,7 +264,6 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
                 isVerified: currentUser?.isVerified,
               },
       };
-
       const updated = { ...postData, comments: [...comments, normalized] };
       setPostData(updated);
       setNewComment("");
@@ -219,15 +279,16 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
     } finally {
       setIsCommentLoading(false);
     }
-  }, [newComment, api, postData, currentUser, comments, toast, safeUpdateUpstream]);
+  }, [newComment, api, postData, currentUser, comments, toast, safeUpdateUpstream, token]);
 
   const handleDelete = useCallback(async () => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa bài viết này?")) return;
-
     try {
-      // ưu tiên dùng API helper nếu đã có
-      await deletePost?.(postData._id, token) ??
-        api.delete(`/api/posts/${postData._id}`);
+      if (typeof deletePostAPI === "function") {
+        await deletePostAPI(postData._id, token);
+      } else {
+        await api.delete(`/api/posts/${postData._id}`);
+      }
 
       toast({
         title: "Đã xóa bài viết",
@@ -237,7 +298,6 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
         isClosable: true,
       });
 
-      // Nếu là repost, cập nhật count cho bài gốc
       if (postData?.repostOf && typeof onPostUpdated === "function") {
         const updatedOriginal = {
           ...postData.repostOf,
@@ -245,11 +305,9 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
         };
         onPostUpdated(updatedOriginal);
       }
-
       if (typeof onPostDeleted === "function") {
         onPostDeleted(postData._id, postData.repostOf?._id);
       }
-
       onClose();
     } catch (err) {
       toast({
@@ -260,21 +318,13 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
         isClosable: true,
       });
     }
-  }, [api, deletePost, postData, onPostUpdated, onPostDeleted, onClose, toast, token]);
+  }, [api, postData, onPostUpdated, onPostDeleted, onClose, toast, token]);
 
   const handlePublish = useCallback(async () => {
     try {
       const { data } = await api.put(`/api/posts/${postData._id}/publish`, {});
       const updatedPost = data?.post || data || {};
-  
-      toast({
-        title: "Đăng công khai thành công!",
-        status: "success",
-        duration: 2000,
-        isClosable: true,
-      });
-  
-      // giữ nguyên merge logic
+      toast({ title: "Đăng công khai thành công!", status: "success", duration: 2000, isClosable: true });
       const merged = { ...postData, ...updatedPost, status: "published" };
       setPostData(merged);
       safeUpdateUpstream(merged);
@@ -289,20 +339,25 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
       });
     }
   }, [api, postData, onClose, toast, safeUpdateUpstream]);
-  
 
   const handleRepost = useCallback(async () => {
+    if (!token) {
+      toast({
+        title: "Cần đăng nhập",
+        description: "Vui lòng đăng nhập để chia sẻ lại bài viết.",
+        status: "info",
+        duration: 2000,
+        isClosable: true,
+      });
+      return;
+    }
     try {
       const { data } = await api.post(`/api/posts/${postData._id}/repost`, { content: repostText });
-
       toast({ title: "Đã chia sẻ lại bài viết!", status: "success", duration: 2000, isClosable: true });
-
-      // Bắn lên parent 1) bài repost mới 2) tăng repostCount gốc
       if (typeof onPostUpdated === "function") {
         onPostUpdated(data);
         onPostUpdated({ ...postData, repostCount: (postData.repostCount || 0) + 1 });
       }
-
       setIsRepostModalOpen(false);
       onClose();
       setRepostText("");
@@ -315,11 +370,10 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
         isClosable: true,
       });
     }
-  }, [api, postData, repostText, onPostUpdated, onClose, toast]);
+  }, [api, postData, repostText, onPostUpdated, onClose, toast, token]);
 
   const handleUpdatedFromChild = useCallback(
     (updatedPost) => {
-      // Nếu là repost mà dữ liệu trả về chưa có bài gốc -> giữ lại từ post cũ
       if (postData?.repostOf && !updatedPost?.repostOf) {
         updatedPost = { ...updatedPost, repostOf: postData.repostOf };
       }
@@ -331,10 +385,8 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
 
   if (!postData || !postData._id) return null;
 
-  /** ---------- Render ---------- */
   return (
     <>
-      {/* Card rút gọn */}
       <Box
         borderWidth="1px"
         borderRadius="md"
@@ -349,8 +401,36 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
           <Flex align="center">
             <Avatar src={postData.author?.avatar} mr={2} name={postData.author?.username || "Người dùng"} />
             <Flex align="center">
-              <Text fontWeight="bold">{postData.author?.username || "Người dùng"}</Text>
+              <Link
+                to={`/user/${postData.author?._id}`}
+                style={{ textDecoration: "none" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Text
+                  as="span"
+                  fontWeight="bold"
+                  color="blue.600"
+                  _hover={{ textDecoration: "underline", color: "blue.700", cursor: "pointer" }}
+                >
+                  {postData.author?.username || "Người dùng"}
+                </Text>
+              </Link>
               {postData.author?.isVerified && <VerifiedBadgeIcon />}
+              {currentUser && currentUser._id !== postData.author?._id && (
+                <Text
+                  ml={2}
+                  fontSize="sm"
+                  color={isFollowing ? "gray.500" : "blue.500"}
+                  fontWeight="medium"
+                  _hover={{
+                    textDecoration: "underline",
+                    color: isFollowing ? "gray.600" : "blue.700",
+                  }}
+                  onClick={(e) => handleFollowToggle(e, isFollowing)}
+                >
+                  {isFollowing ? "Bỏ theo dõi" : "Theo dõi"}
+                </Text>
+              )}
               {postData.status === "draft" && (
                 <Badge ml={2} colorScheme="yellow" variant="subtle">
                   Draft
@@ -358,37 +438,26 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
               )}
             </Flex>
           </Flex>
+
           <Text fontSize="sm" color="gray.500">
-            {postData.updatedAt && postData.updatedAt !== postData.createdAt
-              ? <>Đã chỉnh sửa • {formatTimeAgo(postData.updatedAt)}</>
-              : <>{formatTimeAgo(postData.createdAt)}</>}
+            {postData.updatedAt && postData.updatedAt !== postData.createdAt ? (
+              <>Đã chỉnh sửa • {formatTimeAgo(postData.updatedAt)}</>
+            ) : (
+              <>{formatTimeAgo(postData.createdAt)}</>
+            )}
           </Text>
         </Flex>
 
-        {/* Nội dung card */}
         {postData.repostOf && postData.repostOf.author ? (
           <>
             {postData?.content && <Text mb={2}>{postData.content}</Text>}
-            <Box border="1px" borderColor="gray.200" borderRadius="md" bg="gray.50" p={3} mt={2}>
-              <Text fontSize="sm" color="gray.600" mb={1}>
-                {postData.author?.username} đã repost bài viết của <b>{postData.repostOf?.author?.username}</b>
-              </Text>
-              {postData.repostOf?.content && <Text>{postData.repostOf.content}</Text>}
-              {Array.isArray(postData.repostOf?.images) && postData.repostOf.images.length > 0 && (
-                <Image
-                  src={postData.repostOf.images[0]}
-                  borderRadius="md"
-                  mt={2}
-                  maxH="200px"
-                  objectFit="cover"
-                  alt="Repost image"
-                />
-              )}
-            </Box>
+            <RepostBlock actorName={postData.author?.username} repostOf={postData.repostOf} />
           </>
         ) : postData.wasRepost ? (
           <Box border="1px" borderColor="gray.200" borderRadius="md" bg="gray.100" p={3} mt={2}>
-            <Text color="gray.600" fontStyle="italic">Bài viết gốc đã bị xoá.</Text>
+            <Text color="gray.600" fontStyle="italic">
+              Bài viết gốc đã bị xoá.
+            </Text>
           </Box>
         ) : (
           <>
@@ -407,7 +476,6 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
         )}
       </Box>
 
-      {/* Modal chi tiết */}
       <Modal isOpen={isOpen} onClose={onClose} size="xl">
         <ModalOverlay />
         <ModalContent>
@@ -422,7 +490,9 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
                   </Badge>
                 )}
               </Flex>
-              <Text fontSize="sm" color="gray.500">{formatTimeAgo(postData.createdAt)}</Text>
+              <Text fontSize="sm" color="gray.500">
+                {formatTimeAgo(postData.createdAt)}
+              </Text>
             </Flex>
 
             {canEdit && (
@@ -455,7 +525,6 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
             )}
           </ModalHeader>
 
-          <ModalCloseButton />
           <ModalBody>
             <VStack align="start" spacing={4}>
               {postData?.content && <Text>{postData.content}</Text>}
@@ -485,64 +554,62 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
               )}
 
               {postData?.video && (
-                <video src={postData.video} controls style={{ width: "100%", borderRadius: 8 }} />
+                <video
+                  src={postData.video}
+                  controls
+                  style={{ width: "100%", borderRadius: 8 }}
+                  onClick={(e) => e.stopPropagation()}
+                />
               )}
 
-              {/* Repost block */}
               {postData.repostOf && postData.repostOf.author ? (
-                <Box border="1px" borderColor="gray.200" borderRadius="md" bg="gray.50" p={3} mt={2} w="full">
-                  <Text fontSize="sm" color="gray.600" mb={1}>
-                    {postData.author?.username} đã repost bài viết của <b>{postData.repostOf?.author?.username}</b>
-                  </Text>
-                  {postData.repostOf?.content && <Text>{postData.repostOf.content}</Text>}
-                  {Array.isArray(postData.repostOf?.images) && postData.repostOf.images.length > 0 && (
-                    <Image
-                      src={postData.repostOf.images[0]}
-                      borderRadius="md"
-                      mt={2}
-                      maxH="200px"
-                      objectFit="cover"
-                      alt="Repost image"
-                    />
-                  )}
-                </Box>
+                <RepostBlock actorName={postData.author?.username} repostOf={postData.repostOf} />
               ) : postData.wasRepost ? (
                 <Box border="1px" borderColor="gray.200" borderRadius="md" bg="gray.100" p={3} mt={2} w="full">
-                  <Text color="gray.600" fontStyle="italic">Bài viết gốc đã bị xoá.</Text>
+                  <Text color="gray.600" fontStyle="italic">
+                    Bài viết gốc đã bị xoá.
+                  </Text>
                 </Box>
               ) : null}
 
-              {/* Actions */}
               <HStack spacing={4}>
                 <IconButton
                   icon={liked ? <FaHeart color="red" /> : <FaRegHeart />}
                   aria-label="Like"
                   variant="ghost"
-                  onClick={handleLike}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleLike();
+                  }}
                   isLoading={isLiking}
                 />
-                <IconButton icon={<FaComment />} aria-label="Comment" variant="ghost" />
+                <IconButton icon={<FaComment />} aria-label="Comment" variant="ghost" onClick={(e) => e.stopPropagation()} />
                 <IconButton
                   icon={<FaRetweet color={canRepost ? "teal" : "gray"} />}
                   aria-label="Repost"
                   variant="ghost"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     if (!canRepost) {
-                      toast({ title: "Không thể chia sẻ bài viết của chính bạn", status: "info", duration: 2000, isClosable: true });
+                      toast({
+                        title: "Không thể chia sẻ bài viết của chính bạn",
+                        status: "info",
+                        duration: 2000,
+                        isClosable: true,
+                      });
                       return;
                     }
                     setIsRepostModalOpen(true);
                   }}
                   isDisabled={!canRepost}
                 />
-                <IconButton icon={<FaShare />} aria-label="Share" variant="ghost" />
+                <IconButton icon={<FaShare />} aria-label="Share" variant="ghost" onClick={(e) => e.stopPropagation()} />
               </HStack>
 
               <Text fontSize="sm" color="gray.500">
                 {likesCount} lượt thích • {comments.length} bình luận • {postData.repostCount || 0} lượt chia sẻ lại
               </Text>
 
-              {/* Comments */}
               <VStack align="start" spacing={3} maxH="300px" overflowY="auto" w="full" pl={0}>
                 {comments.length > 0 ? (
                   comments.map((c) => (
@@ -550,20 +617,25 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
                       <Avatar size="sm" src={c.user?.avatar} name={c.user?.username} mr={3} mt={1} />
                       <Box flex="1" bg="gray.50" p={2} borderRadius="md" boxShadow="sm" _hover={{ bg: "gray.100" }}>
                         <HStack spacing={1}>
-                          <Text fontWeight="bold" fontSize="sm">{c.user?.username || "Người dùng"}</Text>
+                          <Text fontWeight="bold" fontSize="sm">
+                            {c.user?.username || "Người dùng"}
+                          </Text>
                           {c.user?.isVerified && <VerifiedBadgeIcon />}
                         </HStack>
-                        <Text fontSize="xs" color="gray.500">{formatTimeAgo(c.createdAt)}</Text>
+                        <Text fontSize="xs" color="gray.500">
+                          {formatTimeAgo(c.createdAt)}
+                        </Text>
                         <Text fontSize="sm">{c.text}</Text>
                       </Box>
                     </Flex>
                   ))
                 ) : (
-                  <Text color="gray.500" fontSize="sm">Chưa có bình luận nào</Text>
+                  <Text color="gray.500" fontSize="sm">
+                    Chưa có bình luận nào
+                  </Text>
                 )}
               </VStack>
 
-              {/* Comment input */}
               <HStack mt={2} w="full">
                 <Input
                   placeholder="Viết bình luận..."
@@ -577,7 +649,14 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
                   }}
                   isDisabled={isCommentLoading}
                 />
-                <Button onClick={handleAddComment} colorScheme="blue" isLoading={isCommentLoading}>
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddComment();
+                  }}
+                  colorScheme="blue"
+                  isLoading={isCommentLoading}
+                >
                   Gửi
                 </Button>
               </HStack>
@@ -586,10 +665,8 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
         </ModalContent>
       </Modal>
 
-      {/* Modal chỉnh sửa */}
       <EditPostModal isOpen={isEditOpen} onClose={onEditClose} post={postData} onUpdated={handleUpdatedFromChild} />
 
-      {/* Modal repost */}
       <Modal isOpen={isRepostModalOpen} onClose={() => setIsRepostModalOpen(false)}>
         <ModalOverlay />
         <ModalContent>
@@ -609,21 +686,13 @@ export default function Post({ post, currentUser, onPostUpdated, onPostDeleted }
         </ModalContent>
       </Modal>
 
-      {/* Modal xem ảnh to */}
       <Modal isOpen={isImageModalOpen} onClose={() => setIsImageModalOpen(false)} size="4xl" isCentered>
         <ModalOverlay />
         <ModalContent bg="transparent" boxShadow="none" maxW="90vw">
           <ModalCloseButton color="white" zIndex={10} />
           <ModalBody p={0}>
             <Flex align="center" justify="center" bg="blackAlpha.800" borderRadius="md">
-              <Image
-                src={selectedImage}
-                alt="Preview"
-                maxH="90vh"
-                maxW="100%"
-                objectFit="contain"
-                borderRadius="md"
-              />
+              <Image src={selectedImage} alt="Preview" maxH="90vh" maxW="100%" objectFit="contain" borderRadius="md" />
             </Flex>
           </ModalBody>
         </ModalContent>

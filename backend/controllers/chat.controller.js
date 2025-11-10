@@ -109,7 +109,7 @@ export const getMessages = async (req, res) => {
     const messages = await Message.find({ conversation: conversationId })
       .populate("sender", "username avatar")
       .populate("conversation", "_id participants")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: 1 });
     console.log("Lấy tin nhắn cho convId:", conversationId);
 
     res.status(200).json(messages);

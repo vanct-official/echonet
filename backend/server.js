@@ -33,13 +33,6 @@ app.use(
   })
 );
 
-// routes
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/posts", postRoutes);
-app.use("/api/conversations", conversationRoutes);
-app.use("/api/chat", chatRoutes);
-app.use("/api/admin", adminRoutes);
 
 // create HTTP server
 const httpServer = createServer(app);
@@ -53,27 +46,37 @@ const io = new Server(httpServer, {
   },
 });
 
-// socket.io events
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
+// routes
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/conversations", conversationRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/admin", adminRoutes);
+
+
 io.on("connection", (socket) => {
-  console.log("New client connected", socket.id);
+  console.log("⚡ User connected:", socket.id);
 
-  // ✅ SỬA: join conversation
-  socket.on("joinConversation", (conversationId) => {
-    socket.join(conversationId);
-    console.log(`Socket ${socket.id} joined conversation ${conversationId}`);
-  });
+  // Join conversation room
+  socket.on("joinConversation", (conversationId) => {
+  socket.join(conversationId);
+  console.log(`🟢 Socket ${socket.id} joined room ${conversationId}`);
+});
 
-  // ✅ SỬA: handle sending messages - Nhận đối tượng message đã populated
-  socket.on("sendMessage", (message) => {
-    const roomId = message.conversation; 
-    
-    // Phát tin nhắn này cho tất cả client trong room đó (trừ người gửi)
-    socket.to(roomId).emit("receiveMessage", message);
-  });
+  // Khi nhận tin nhắn từ client
+  socket.on("sendMessage", (message) => {
+    const conversationId = message.conversation?._id || message.conversation;
+    console.log("📨 New message:", message.text || message.content);
 
-  socket.on("disconnect", () => {
-    console.log("Client disconnected", socket.id);
-  });
+    // Gửi lại tin nhắn cho tất cả người trong phòng (trừ sender)
+    io.to(conversationId).emit("receiveMessage", message);
+  });
 });
 
 // connect MongoDB and start server

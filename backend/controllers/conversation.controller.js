@@ -10,7 +10,7 @@ export const getUserConversations = async (req, res) => {
       .populate("participants", "username firstname lastname avatar")
       // 🔹 Populate tin nhắn cuối cùng và người gửi tin đó
       .populate({
-        path: "latestMessage",
+        path: "lastMessage",
         populate: {
           path: "sender",
           select: "username firstname lastname avatar",
@@ -37,7 +37,7 @@ export const createConversation = async (req, res) => {
     })
       .populate("participants", "username firstname lastname avatar")
       .populate({
-        path: "latestMessage",
+        path: "lastMessage",
         populate: {
           path: "sender",
           select: "username firstname lastname avatar",

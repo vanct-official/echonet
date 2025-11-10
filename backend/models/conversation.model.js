@@ -22,7 +22,7 @@ const ConversationSchema = new mongoose.Schema({
     },
     
     // 3. TIN NHẮN GẦN NHẤT (Tham chiếu)
-    latestMessage: {
+    lastMessage: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Message',
         default: null

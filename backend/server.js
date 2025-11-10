@@ -44,35 +44,34 @@ const httpServer = createServer(app);
 
 // setup Socket.IO
 const io = new Server(httpServer, {
-  cors: {
-    origin: process.env.FRONTEND_ROUTE,
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
+  cors: {
+    origin: process.env.FRONTEND_ROUTE,
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
 });
 
 // socket.io events
 io.on("connection", (socket) => {
-  console.log("New client connected", socket.id);
+  console.log("New client connected", socket.id);
 
-  // join room
-  socket.on("joinRoom", (roomId) => {
-    socket.join(roomId);
-    console.log(`Socket ${socket.id} joined room ${roomId}`);
-  });
+  // ✅ SỬA: join conversation
+  socket.on("joinConversation", (conversationId) => {
+    socket.join(conversationId);
+    console.log(`Socket ${socket.id} joined conversation ${conversationId}`);
+  });
 
-  // handle sending messages
-  socket.on("sendMessage", ({ roomId, message, senderId }) => {
-    io.to(roomId).emit("receiveMessage", {
-      message,
-      senderId,
-      timestamp: new Date(),
-    });
-  });
+  // ✅ SỬA: handle sending messages - Nhận đối tượng message đã populated
+  socket.on("sendMessage", (message) => {
+    const roomId = message.conversation; 
+    
+    // Phát tin nhắn này cho tất cả client trong room đó (trừ người gửi)
+    socket.to(roomId).emit("receiveMessage", message);
+  });
 
-  socket.on("disconnect", () => {
-    console.log("Client disconnected", socket.id);
-  });
+  socket.on("disconnect", () => {
+    console.log("Client disconnected", socket.id);
+  });
 });
 
 // connect MongoDB and start server

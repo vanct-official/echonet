@@ -40,29 +40,37 @@ export const getMessages = async (conversationId) => {
 
 // ✅ Sửa lại hàm sendMessage để nhận cả senderId
 // chatService.js (Hàm sendMessage đã sửa)
-export const sendMessage = async ({ conversationId, text }) => {
+export const sendMessage = async (data, isFormData = false) => {
   try {
-    const res = await axios.post(
-      `${API_URL}/chat/message`,
-      { conversation: conversationId, text }, 
-      getAuthHeaders()
-    );
+    const token = localStorage.getItem("token");
+    
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      // Nếu là FormData, bỏ Content-Type để Axios/trình duyệt tự set
+      ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),
+    };
+
+    const config = { headers };
+    const url = `${API_URL}/chat/message`; 
+
+    // Gửi request POST
+    const res = await axios.post(url, data, config);
     return res.data;
   } catch (error) {
     console.error("Lỗi khi gửi tin nhắn:", error);
-    // Ném lỗi để ChatWindow bắt được và không crash
     throw error; 
   }
 };
 
 // ✅ Đánh dấu tin nhắn là đã đọc
 export const markMessagesAsRead = async (conversationId) => {
-  const res = await axios.post(
-    `${API_URL}/chat/messages/${conversationId}/read`,
-    {},
-    getAuthHeaders()
-  );
-  return res.data;
+    try {
+        const res = await axios.post(`${API_URL}/chat/messages/${conversationId}/read`, {}, getAuthHeaders());
+        return res.data;
+    } catch (error) {
+        console.error("Lỗi khi đánh dấu tin nhắn đã đọc:", error);
+        throw error;
+    }
 };
 
 // ✅ Tạo cuộc trò chuyện mới (khi nhắn với người chưa từng nhắn)

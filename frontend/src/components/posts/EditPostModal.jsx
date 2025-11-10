@@ -17,6 +17,7 @@ import {
   useToast,
   Box,
   IconButton,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { CloseIcon } from "@chakra-ui/icons";
 import { useState, useEffect } from "react";

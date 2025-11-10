@@ -26,11 +26,13 @@ import {
   FaTimesCircle,
   FaUserShield,
   FaUser,
+  FaLock,
+  FaUnlock,
 } from "react-icons/fa";
 import axios from "axios";
 import AdminSidebar from "../../components/AdminSidebar";
 
-const API_BASE_URL = "http://localhost:5000/api/users/all";
+const API_BASE_URL = "http://localhost:5000/api";
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
@@ -40,11 +42,11 @@ export default function AdminUsersPage() {
   const toast = useToast();
   const token = localStorage.getItem("token");
 
-  // 🔹 Fetch danh sách người dùng
+  // 🟩 Fetch danh sách người dùng
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(API_BASE_URL, {
+      const res = await axios.get(`${API_BASE_URL}/users/all`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(res.data);
@@ -66,7 +68,7 @@ export default function AdminUsersPage() {
     if (token) fetchUsers();
   }, [token]);
 
-  // 🔹 Xử lý đổi quyền (Toggle Role)
+  // 🟨 Đổi quyền (admin <-> user)
   const handleToggleRole = async (userId, currentRole) => {
     const newRole = currentRole === "admin" ? "user" : "admin";
     try {
@@ -82,10 +84,9 @@ export default function AdminUsersPage() {
 
       toast({
         title: "Cập nhật thành công",
-        description: `Đã đổi quyền người dùng thành ${newRole}.`,
+        description: `Đã đổi quyền thành ${newRole}.`,
         status: "success",
         duration: 2000,
-        isClosable: true,
       });
     } catch (err) {
       console.error("Error toggling role:", err);
@@ -94,12 +95,45 @@ export default function AdminUsersPage() {
         description: "Không thể thay đổi quyền người dùng.",
         status: "error",
         duration: 2000,
-        isClosable: true,
       });
     }
   };
 
-  // 🔹 Tìm kiếm và lọc
+  // 🟦 Toggle Active / Lock Account
+  const handleToggleActive = async (userId, isActive) => {
+    try {
+      const res = await axios.put(
+        `${API_BASE_URL}/admin/${userId}/active`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const updated = res.data.user;
+      setUsers((prev) =>
+        prev.map((u) =>
+          u._id === userId ? { ...u, isActive: updated.isActive } : u
+        )
+      );
+
+      toast({
+        title: updated.isActive
+          ? "Đã kích hoạt tài khoản"
+          : "Đã khóa tài khoản",
+        status: updated.isActive ? "success" : "warning",
+        duration: 2000,
+      });
+    } catch (err) {
+      console.error("Error toggling active:", err);
+      toast({
+        title: "Lỗi hệ thống",
+        description: "Không thể cập nhật trạng thái tài khoản.",
+        status: "error",
+        duration: 2000,
+      });
+    }
+  };
+
+  // 🔍 Tìm kiếm & lọc
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -108,36 +142,30 @@ export default function AdminUsersPage() {
     return matchesSearch && matchesRole;
   });
 
-  // 🔹 Loading UI
-  if (loading) {
+  if (loading)
     return (
       <Flex maxW="1500px" mx="auto" minH="100vh">
         <AdminSidebar />
         <Spinner size="xl" m="auto" />
       </Flex>
     );
-  }
 
-  // 🔹 Giao diện chính
   return (
     <Flex w="100%" minH="100vh">
-      {/* Sidebar */}
       <AdminSidebar />
-
-      {/* Content */}
       <Box ml="250px" flex="1" p={6}>
         <Heading mb={8}>Quản lý Người dùng</Heading>
 
-        {/* Thanh tìm kiếm và lọc */}
+        {/* Bộ lọc & tìm kiếm */}
         <Flex mb={6} gap={4}>
           <Input
-            placeholder="Tìm kiếm theo Username hoặc Email..."
+            placeholder="Tìm kiếm Username hoặc Email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             flex={1}
           />
           <Select
-            placeholder="Lọc theo Quyền"
+            placeholder="Lọc theo quyền"
             value={filterRole}
             onChange={(e) => setFilterRole(e.target.value)}
             w="200px"
@@ -156,8 +184,10 @@ export default function AdminUsersPage() {
             <Tr>
               <Th>ID</Th>
               <Th>Username</Th>
+              <Th>Giới tính</Th>
               <Th>Email</Th>
               <Th>Quyền</Th>
+              <Th>Trạng thái</Th>
               <Th>Xác minh</Th>
               <Th>Hành động</Th>
             </Tr>
@@ -167,6 +197,13 @@ export default function AdminUsersPage() {
               <Tr key={user._id}>
                 <Td fontSize="xs">{user._id}</Td>
                 <Td fontWeight="bold">{user.username}</Td>
+                <Td>
+                  {user.gender === true
+                    ? "Nam"
+                    : user.gender === false
+                    ? "Nữ"
+                    : "Chưa rõ"}
+                </Td>
                 <Td>{user.email}</Td>
                 <Td>
                   <Box
@@ -182,6 +219,23 @@ export default function AdminUsersPage() {
                     {user.role.toUpperCase()}
                   </Box>
                 </Td>
+
+                {/* ✅ Cột Trạng thái */}
+                <Td>
+                  <Box
+                    as="span"
+                    px={2}
+                    py={1}
+                    borderRadius="full"
+                    bg={user.isActive ? "green.100" : "gray.200"}
+                    color={user.isActive ? "green.700" : "gray.600"}
+                    fontWeight="medium"
+                  >
+                    {user.isActive ? "Hoạt động" : "Bị khóa"}
+                  </Box>
+                </Td>
+
+                {/* Xác minh */}
                 <Td>
                   <Tooltip
                     label={user.isVerified ? "Đã xác minh" : "Chưa xác minh"}
@@ -191,8 +245,11 @@ export default function AdminUsersPage() {
                     </Box>
                   </Tooltip>
                 </Td>
+
+                {/* Các hành động */}
                 <Td>
                   <HStack spacing={2}>
+                    {/* Nút đổi quyền */}
                     <Tooltip
                       label={
                         user.role === "admin"
@@ -213,19 +270,24 @@ export default function AdminUsersPage() {
                       />
                     </Tooltip>
 
-                    <IconButton
-                      icon={<FaEdit />}
-                      size="sm"
-                      colorScheme="blue"
-                      aria-label="Edit user"
-                    />
-
-                    <IconButton
-                      icon={<FaTrash />}
-                      size="sm"
-                      colorScheme="red"
-                      aria-label="Delete user"
-                    />
+                    {/* Nút active / lock */}
+                    <Tooltip
+                      label={
+                        user.isActive
+                          ? "Khóa tài khoản"
+                          : "Kích hoạt lại tài khoản"
+                      }
+                    >
+                      <IconButton
+                        icon={user.isActive ? <FaLock /> : <FaUnlock />}
+                        size="sm"
+                        colorScheme={user.isActive ? "red" : "green"}
+                        onClick={() =>
+                          handleToggleActive(user._id, user.isActive)
+                        }
+                        aria-label="Toggle active"
+                      />
+                    </Tooltip>
                   </HStack>
                 </Td>
               </Tr>
@@ -235,7 +297,7 @@ export default function AdminUsersPage() {
 
         {filteredUsers.length === 0 && (
           <Text textAlign="center" mt={8} color="gray.500">
-            Không tìm thấy người dùng nào phù hợp.
+            Không tìm thấy người dùng phù hợp.
           </Text>
         )}
       </Box>

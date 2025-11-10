@@ -28,7 +28,6 @@ export const getPosts = async (req, res) => {
   }
 };
 
-
 // Export bài đăng của chính người dùng đăng nhập
 export const getMyPosts = async (req, res) => {
   try {
@@ -54,6 +53,32 @@ export const getMyPosts = async (req, res) => {
   }
 };
 
+// 📄 Lấy bài đăng của một user bất kỳ (theo userId)
+export const getUserPosts = async (req, res) => {
+  try {
+    const { id } = req.params; // Lấy userId từ URL
+
+    const posts = await Post.find({ author: id })
+      .sort({ createdAt: -1 })
+      .populate([
+        { path: "author", select: "username avatar isVerified" },
+        { path: "comments.user", select: "username avatar isVerified" },
+        {
+          path: "repostOf",
+          populate: [
+            { path: "author", select: "username avatar isVerified" },
+            { path: "comments.user", select: "username avatar isVerified" },
+          ],
+        },
+      ])
+      .lean();
+
+    res.json(posts);
+  } catch (err) {
+    console.error("Error in getUserPosts:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 //Lấy bài viết nháp của người dùng đăng nhập
 export const getDraftPosts = async (req, res) => {
@@ -158,7 +183,6 @@ export const toggleLike = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 // Comment vào post
 export const addComment = async (req, res) => {

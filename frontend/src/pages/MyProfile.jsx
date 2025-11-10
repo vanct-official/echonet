@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Skeleton,
-  VStack,
-  Text,
-  Button,
-  Flex,
-} from "@chakra-ui/react";
+import { Box, Skeleton, VStack, Text, Button, Flex } from "@chakra-ui/react";
 import axios from "axios";
 import ProfileHeader from "../components/Profiles/ProfileHeader";
 import Sidebar from "../components/Sidebar";
@@ -63,22 +56,20 @@ export default function MyProfile() {
   }, []);
 
   // ✅ Khi bài viết bị xóa
-const handlePostDeleted = (deletedId, originalId) => {
-  setPosts((prev) =>
-    prev
-      .map((p) => {
-        // Nếu là bài repost của bài vừa bị xóa → xóa liên kết và đánh dấu mất gốc
-        if (p.repostOf?._id === deletedId) {
-          return { ...p, repostOf: undefined, wasRepost: true };
-        }
-        return p;
-      })
-      // Xóa bài chính bị xóa
-      .filter((p) => p._id !== deletedId)
-  );
-};
-
-  
+  const handlePostDeleted = (deletedId, originalId) => {
+    setPosts((prev) =>
+      prev
+        .map((p) => {
+          // Nếu là bài repost của bài vừa bị xóa → xóa liên kết và đánh dấu mất gốc
+          if (p.repostOf?._id === deletedId) {
+            return { ...p, repostOf: undefined, wasRepost: true };
+          }
+          return p;
+        })
+        // Xóa bài chính bị xóa
+        .filter((p) => p._id !== deletedId)
+    );
+  };
 
   // --- Loading state ---
   if (loadingUser || loadingPosts) {
@@ -123,14 +114,8 @@ const handlePostDeleted = (deletedId, originalId) => {
           followersCount={followersCount}
           followingCount={followingCount}
           postsCount={postsCount}
+          onProfileUpdate={(updatedUser) => setUser(updatedUser)} // ✅ Thêm dòng này
         />
-
-        {/* Nút chức năng */}
-        <Box my={4}>
-          <Button colorScheme="blue" mr={2}>
-            Chỉnh sửa profile
-          </Button>
-        </Box>
 
         {/* Component tạo bài viết */}
         <CreatePost

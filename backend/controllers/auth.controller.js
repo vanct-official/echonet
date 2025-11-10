@@ -253,4 +253,32 @@ export const resetPassword = async (req, res) => {
   }
 };
 
+// Chỉnh sửa Profile
+export const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
+    let { firstname, lastname, phone, dob, gender, bio } = req.body;
+
+    // 🧠 Ép kiểu an toàn cho boolean
+    if (typeof gender === "string") {
+      gender = gender === "true"; // "true" -> true, "false" -> false
+    }
+
+    // Cập nhật các trường nếu được cung cấp
+    if (firstname !== undefined) user.firstname = firstname;
+    if (lastname !== undefined) user.lastname = lastname;
+    if (phone !== undefined) user.phone = phone;
+    if (dob !== undefined) user.dob = dob;
+    if (gender !== undefined) user.gender = gender;
+    if (bio !== undefined) user.bio = bio;
+
+    await user.save();
+
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

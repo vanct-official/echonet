@@ -21,6 +21,7 @@ import {
   useToast,
   SimpleGrid,
   Badge,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { FaHeart, FaRegHeart, FaComment, FaShare, FaRetweet } from "react-icons/fa";
 import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
@@ -32,6 +33,7 @@ import VerifiedBadgeSVG from "/verified-badge-svgrepo-com.svg";
 import { deletePost as deletePostAPI } from "../../api/post";
 
 const API_URL = "http://localhost:5000";
+
 
 const formatTimeAgo = (isoDate) => {
   if (!isoDate) return "";
@@ -59,13 +61,27 @@ const VerifiedBadgeIcon = () => (
 );
 
 function RepostBlock({ actorName, repostOf }) {
+
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const commentBg = useColorModeValue("gray.50", "gray.700");
+  const secondaryTextColor = useColorModeValue("gray.600", "gray.400");
+  const textColor = useColorModeValue("gray.800", "white");
+  
   if (!repostOf?.author) return null;
   return (
-    <Box border="1px" borderColor="gray.200" borderRadius="md" bg="gray.50" p={3} mt={2} w="full">
-      <Text fontSize="sm" color="gray.600" mb={1}>
+    <Box 
+      border="1px" 
+      borderColor={borderColor} 
+      borderRadius="md" 
+      bg={commentBg} 
+      p={3} 
+      mt={2} 
+      w="full"
+    >
+      <Text fontSize="sm" color={secondaryTextColor} mb={1}>
         {actorName} đã repost bài viết của <b>{repostOf.author?.username}</b>
       </Text>
-      {repostOf.content && <Text>{repostOf.content}</Text>}
+      {repostOf.content && <Text color={textColor}>{repostOf.content}</Text>}
       {Array.isArray(repostOf.images) && repostOf.images.length > 0 && (
         <Image
           src={repostOf.images[0]}
@@ -88,6 +104,21 @@ export default function Post({
   onPostDeleted,
   onFollowChange,
 }) {
+    const boxBg = useColorModeValue("white", "gray.700");
+  const focusBorderColor = useColorModeValue("blue.400", "blue.300");
+  const inputBg = useColorModeValue("white", "gray.800");
+
+// Thêm các biến màu sắc cho theme
+const bgColor = useColorModeValue("white", "gray.800");
+const hoverBg = useColorModeValue("gray.100", "gray.700");
+const borderColor = useColorModeValue("gray.200", "gray.600");
+const textColor = useColorModeValue("gray.800", "white");
+const secondaryTextColor = useColorModeValue("gray.600", "gray.400");
+const commentBg = useColorModeValue("gray.50", "gray.700");
+const commentHoverBg = useColorModeValue("gray.100", "gray.600");
+const draftBg = useColorModeValue("yellow.50", "yellow.900");
+const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
+
   const [postData, setPostData] = useState(post || {});
   const [newComment, setNewComment] = useState("");
   const [isLiking, setIsLiking] = useState(false);
@@ -389,12 +420,13 @@ export default function Post({
     <>
       <Box
         borderWidth="1px"
+        borderColor={borderColor}
         borderRadius="md"
         p={4}
         mb={4}
         cursor="pointer"
-        bg={postData.status === "draft" ? "yellow.50" : "white"}
-        _hover={{ bg: postData.status === "draft" ? "yellow.100" : "gray.100" }}
+        bg={postData.status === "draft" ? draftBg : bgColor}
+        _hover={{ bg: postData.status === "draft" ? draftHoverBg : hoverBg }}
         onClick={onOpen}
       >
         <Flex align="center" justify="space-between" mb={2}>
@@ -439,7 +471,7 @@ export default function Post({
             </Flex>
           </Flex>
 
-          <Text fontSize="sm" color="gray.500">
+          <Text fontSize="sm" color={secondaryTextColor}>
             {postData.updatedAt && postData.updatedAt !== postData.createdAt ? (
               <>Đã chỉnh sửa • {formatTimeAgo(postData.updatedAt)}</>
             ) : (
@@ -478,11 +510,13 @@ export default function Post({
 
       <Modal isOpen={isOpen} onClose={onClose} size="xl">
         <ModalOverlay />
-        <ModalContent>
+        <ModalContent bg={bgColor}>
           <ModalHeader>
             <Flex align="center" justify="space-between">
               <Flex align="center">
-                <Text fontWeight="bold">{postData.author?.username || "Người dùng"}</Text>
+                <Text fontWeight="bold" color={textColor}>
+                  {postData.author?.username || "Người dùng"}
+                </Text>
                 {postData.author?.isVerified && <VerifiedBadgeIcon />}
                 {postData.status === "draft" && (
                   <Badge ml={2} colorScheme="yellow" variant="subtle">
@@ -490,7 +524,7 @@ export default function Post({
                   </Badge>
                 )}
               </Flex>
-              <Text fontSize="sm" color="gray.500">
+              <Text fontSize="sm" color={secondaryTextColor}>
                 {formatTimeAgo(postData.createdAt)}
               </Text>
             </Flex>
@@ -527,7 +561,7 @@ export default function Post({
 
           <ModalBody>
             <VStack align="start" spacing={4}>
-              {postData?.content && <Text>{postData.content}</Text>}
+              <Text color={textColor}>{postData.content}</Text>
 
               {Array.isArray(postData.images) && postData.images.length > 0 && (
                 <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={3} mt={2}>
@@ -615,22 +649,33 @@ export default function Post({
                   comments.map((c) => (
                     <Flex key={c._id} align="flex-start" w="full">
                       <Avatar size="sm" src={c.user?.avatar} name={c.user?.username} mr={3} mt={1} />
-                      <Box flex="1" bg="gray.50" p={2} borderRadius="md" boxShadow="sm" _hover={{ bg: "gray.100" }}>
+                      <Box 
+                        flex="1" 
+                        bg={commentBg} 
+                        p={2} 
+                        borderRadius="md" 
+                        boxShadow="sm" 
+                        _hover={{ bg: commentHoverBg }}
+                        borderColor={borderColor}
+                        borderWidth="1px"
+                      >
                         <HStack spacing={1}>
-                          <Text fontWeight="bold" fontSize="sm">
+                          <Text fontWeight="bold" fontSize="sm" color={textColor}>
                             {c.user?.username || "Người dùng"}
                           </Text>
                           {c.user?.isVerified && <VerifiedBadgeIcon />}
                         </HStack>
-                        <Text fontSize="xs" color="gray.500">
+                        <Text fontSize="xs" color={secondaryTextColor}>
                           {formatTimeAgo(c.createdAt)}
                         </Text>
-                        <Text fontSize="sm">{c.text}</Text>
+                        <Text fontSize="sm" color={textColor}>
+                          {c.text}
+                        </Text>
                       </Box>
                     </Flex>
                   ))
                 ) : (
-                  <Text color="gray.500" fontSize="sm">
+                  <Text color={secondaryTextColor} fontSize="sm">
                     Chưa có bình luận nào
                   </Text>
                 )}
@@ -641,6 +686,11 @@ export default function Post({
                   placeholder="Viết bình luận..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
+                  bg={commentBg}
+                  color={textColor}
+                  borderColor={borderColor}
+                  _hover={{ borderColor: "blue.500" }}
+                  _focus={{ borderColor: "blue.500" }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();

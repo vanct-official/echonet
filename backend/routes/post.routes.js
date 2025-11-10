@@ -10,6 +10,7 @@ import {
   getDraftPosts,
   publishPost,
   repostPost,
+  getUserPosts,
 } from "../controllers/post.controller.js";
 import { protect, adminOnly } from "../middleware/auth.middleware.js"; // middleware JWT
 import upload from "../middleware/upload.middleware.js";
@@ -21,6 +22,9 @@ router.get("/", getPosts);
 
 // Lấy tất cả bài đăng của tôi
 router.get("/me", protect, getMyPosts);
+
+// Lấy bài đăng của người dùng khác
+router.get("/user/:id", protect, getUserPosts);
 
 // Tạo post mới (phải login)
 router.post("/", protect, upload.array("images", 5), createPost);

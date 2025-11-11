@@ -1,4 +1,5 @@
 import Conversation from "../models/conversation.model.js";
+import User from "../models/user.model.js";
 
 // 📩 Lấy danh sách cuộc trò chuyện của user hiện tại
 export const getUserConversations = async (req, res) => {

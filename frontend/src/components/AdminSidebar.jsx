@@ -15,6 +15,7 @@ import {
   FaCog,
   FaSignOutAlt,
   FaUserShield,
+  FaComment,
 } from "react-icons/fa";
 
 // Dữ liệu menu Admin
@@ -24,6 +25,7 @@ const adminMenuItems = [
   { name: "Quản lý Bài viết", icon: FaNewspaper, path: "/admin/posts" },
   { name: "Bài viết của tôi", icon: FaNewspaper, path: "/admin/myposts" },
   { name: "Cài đặt Chung", icon: FaCog, path: "/admin/settings" },
+  {name: "Trò chuyện", icon: FaComment, path: "/admin/chat"},
 ];
 
 export default function AdminSidebar() {

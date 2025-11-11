@@ -18,6 +18,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import VerifyOtpPage from "./pages/VerifyOtpPage.jsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 import AdminMyPost from "./pages/AdminPages/AdminMyPost.jsx";
+import AdminChatPage from "./pages/AdminPages/AdminChatPage.jsx";
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -141,6 +142,14 @@ export default function App() {
               </AdminRoute>
             }
           />
+          <Route
+          path="/admin/chat"
+          element={
+            <AdminRoute currentUser={currentUser}>
+              <AdminChatPage />
+            </AdminRoute>
+          }
+        />
         </Routes>
         {/* 💡 HẾT BAO BỌC */}
       </AuthProvider>

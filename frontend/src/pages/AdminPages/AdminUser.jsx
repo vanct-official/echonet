@@ -18,6 +18,7 @@ import {
   Tooltip,
   HStack,
   Text,
+  Avatar,
 } from "@chakra-ui/react";
 import {
   FaEdit,
@@ -132,6 +133,10 @@ export default function AdminUsersPage() {
       });
     }
   };
+  const getAvatarUrl = (avatar) => {
+    if (!avatar) return "https://via.placeholder.com/40";
+    return avatar;
+  };
 
   // 🔍 Tìm kiếm & lọc
   const filteredUsers = users.filter((user) => {
@@ -182,7 +187,7 @@ export default function AdminUsersPage() {
         <Table variant="striped" colorScheme="gray">
           <Thead>
             <Tr>
-              <Th>ID</Th>
+              <Th>Avatar</Th>
               <Th>Username</Th>
               <Th>Giới tính</Th>
               <Th>Email</Th>
@@ -195,7 +200,13 @@ export default function AdminUsersPage() {
           <Tbody>
             {filteredUsers.map((user) => (
               <Tr key={user._id}>
-                <Td fontSize="xs">{user._id}</Td>
+                <Td>
+                  <Avatar
+                    size="sm"
+                    name={user.username}
+                    src={getAvatarUrl(user.avatar)}
+                  />
+                </Td>
                 <Td fontWeight="bold">{user.username}</Td>
                 <Td>
                   {user.gender === true

@@ -74,7 +74,7 @@ export default function AdminUsersPage() {
     const newRole = currentRole === "admin" ? "user" : "admin";
     try {
       await axios.put(
-        `${API_BASE_URL}/${userId}/role`,
+        `${API_BASE_URL}/admin/${userId}/role`,
         { role: newRole },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -258,49 +258,56 @@ export default function AdminUsersPage() {
                 </Td>
 
                 {/* Các hành động */}
-                <Td>
-                  <HStack spacing={2}>
-                    {/* Nút đổi quyền */}
-                    <Tooltip
-                      label={
-                        user.role === "admin"
-                          ? "Hạ cấp xuống User"
-                          : "Nâng cấp lên Admin"
-                      }
-                    >
-                      <IconButton
-                        icon={
-                          user.role === "admin" ? <FaUser /> : <FaUserShield />
-                        }
-                        size="sm"
-                        colorScheme={
-                          user.role === "admin" ? "yellow" : "purple"
-                        }
-                        onClick={() => handleToggleRole(user._id, user.role)}
-                        aria-label="Toggle role"
-                      />
-                    </Tooltip>
+<Td>
+  {user.role !== "admin" ? (
+    <HStack spacing={2}>
+      {/* Nút đổi quyền */}
+      <Tooltip
+        label={
+          user.role === "admin"
+            ? "Hạ cấp xuống User"
+            : "Nâng cấp lên Admin"
+        }
+      >
+        <IconButton
+          icon={
+            user.role === "admin" ? <FaUser /> : <FaUserShield />
+          }
+          size="sm"
+          colorScheme={
+            user.role === "admin" ? "yellow" : "purple"
+          }
+          onClick={() => handleToggleRole(user._id, user.role)}
+          aria-label="Toggle role"
+        />
+      </Tooltip>
 
-                    {/* Nút active / lock */}
-                    <Tooltip
-                      label={
-                        user.isActive
-                          ? "Khóa tài khoản"
-                          : "Kích hoạt lại tài khoản"
-                      }
-                    >
-                      <IconButton
-                        icon={user.isActive ? <FaLock /> : <FaUnlock />}
-                        size="sm"
-                        colorScheme={user.isActive ? "red" : "green"}
-                        onClick={() =>
-                          handleToggleActive(user._id, user.isActive)
-                        }
-                        aria-label="Toggle active"
-                      />
-                    </Tooltip>
-                  </HStack>
-                </Td>
+      {/* Nút active / lock */}
+      <Tooltip
+        label={
+          user.isActive
+            ? "Khóa tài khoản"
+            : "Kích hoạt lại tài khoản"
+        }
+      >
+        <IconButton
+          icon={user.isActive ? <FaLock /> : <FaUnlock />}
+          size="sm"
+          colorScheme={user.isActive ? "red" : "green"}
+          onClick={() =>
+            handleToggleActive(user._id, user.isActive)
+          }
+          aria-label="Toggle active"
+        />
+      </Tooltip>
+    </HStack>
+  ) : (
+    <Text fontSize="sm" color="gray.500">
+      (Admin)
+    </Text>
+  )}
+</Td>
+
               </Tr>
             ))}
           </Tbody>

@@ -5,28 +5,38 @@ import cloudinary from "../config/cloudinary.js";
 // Lấy danh sách tất cả post, mới nhất (tạo hoặc chỉnh sửa) lên đầu
 export const getPosts = async (req, res) => {
   try {
-    const posts = await Post.find({ status: "published" })
+    const currentUserId = req.user._id;
+
+    // Lấy danh sách người bị chặn hoặc đã chặn bạn
+    const currentUser = await User.findById(currentUserId).select("blockedUsers");
+    const blockedByOthers = await User.find({ blockedUsers: currentUserId }).select("_id");
+
+    const blockedIds = [
+      ...currentUser.blockedUsers,
+      ...blockedByOthers.map(u => u._id)
+    ];    
+
+    // Lọc bài post của những người không nằm trong danh sách block
+    const posts = await Post.find({
+      status: "published",
+      author: { $nin: blockedIds }
+    })
       .sort({ createdAt: -1 })
       .populate([
         { path: "author", select: "username avatar" },
-        { path: "comments.user", select: "username avatar" },
-        {
-          path: "repostOf",
-          populate: [
-            { path: "author", select: "username avatar" },
-            { path: "comments.user", select: "username avatar" },
-          ],
-        },
+        { path: "comments.user", select: "username avatar" }
       ])
-      .lean(); 
-
+      .lean();
 
     res.json(posts);
-  } catch (err) {
-    console.error("Lỗi trong getPosts:", err);
-    res.status(500).json({ message: "Server error" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Lỗi khi lấy danh sách bài viết" });
   }
 };
+
+
+
 
 // Export bài đăng của chính người dùng đăng nhập
 export const getMyPosts = async (req, res) => {

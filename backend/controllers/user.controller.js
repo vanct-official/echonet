@@ -161,3 +161,106 @@ export const getFollowedUsers = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// @desc    Block a user
+// @route   PUT /api/users/:id/block
+// @access  Private
+// @desc    Block a user
+// @route   PUT /api/users/:id/block
+// @access  Private
+// @desc    Block a user
+// @route   PUT /api/users/:id/block
+// @access  Private
+export const blockUser = async (req, res) => {
+  try {
+    const targetUserId = req.params.id;
+    const currentUserId = req.user._id.toString();
+
+    if (targetUserId === currentUserId) {
+      return res.status(400).json({ message: "Bạn không thể tự block chính mình" });
+    }
+
+    const currentUser = await User.findById(currentUserId);
+    const targetUser = await User.findById(targetUserId);
+
+    if (!targetUser) {
+      return res.status(404).json({ message: "Người dùng không tồn tại" });
+    }
+
+    if (currentUser.blockedUsers.includes(targetUserId)) {
+      return res.status(400).json({ message: "Bạn đã block người này rồi" });
+    }
+
+    // 🟩 Gỡ follow 2 chiều an toàn
+    currentUser.followed = (currentUser.followed || []).filter(
+      (id) => id.toString() !== targetUserId
+    );
+    currentUser.followers = (currentUser.followers || []).filter(
+      (id) => id.toString() !== targetUserId
+    );
+
+    targetUser.followed = (targetUser.followed || []).filter(
+      (id) => id.toString() !== currentUserId
+    );
+    targetUser.followers = (targetUser.followers || []).filter(
+      (id) => id.toString() !== currentUserId
+    );
+
+    // 🧱 Thêm vào danh sách block
+    currentUser.blockedUsers.push(targetUserId);
+
+    await Promise.all([currentUser.save(), targetUser.save()]);
+
+    res.status(200).json({ message: `Đã chặn ${targetUser.username} và bỏ follow nếu có` });
+  } catch (error) {
+    console.error("❌ Block user error:", error);
+    res.status(500).json({ message: "Lỗi khi chặn người dùng", error: error.message });
+  }
+};
+
+
+// @desc    Unblock a user
+// @route   PUT /api/users/:id/unblock
+// @access  Private
+export const unblockUser = async (req, res) => {
+  try {
+    const targetUserId = req.params.id;
+
+    const currentUser = await User.findById(req.user._id);
+    const targetUser = await User.findById(targetUserId);
+
+    if (!targetUser) {
+      return res.status(404).json({ message: "Người dùng không tồn tại" });
+    }
+
+    if (!currentUser.blockedUsers.includes(targetUserId)) {
+      return res.status(400).json({ message: "Người này không nằm trong danh sách block" });
+    }
+
+    currentUser.blockedUsers = currentUser.blockedUsers.filter(
+      (id) => id.toString() !== targetUserId
+    );
+    await currentUser.save();
+
+    res.status(200).json({ message: `Đã bỏ chặn ${targetUser.username}` });
+  } catch (error) {
+    console.error("Unblock user error:", error);
+    res.status(500).json({ message: "Lỗi server khi unblock người dùng" });
+  }
+};
+
+// @desc    Get blocked users
+// @route   GET /api/users/blocked
+// @access  Private
+export const getBlockedUsers = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate(
+      "blockedUsers",
+      "username firstname lastname _id"
+    );
+    res.status(200).json(user.blockedUsers || []);
+  } catch (error) {
+    console.error("Get blocked users error:", error);
+    res.status(500).json({ message: "Lỗi server khi lấy danh sách block" });
+  }
+};

@@ -9,7 +9,7 @@ import CreatePost from "../components/posts/CreatePost.jsx";
 export default function HomeFeed({ currentUser }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [refreshSidebar, setRefreshSidebar] = useState(0); // 🆕 thêm state để reload sidebar
+  const [refreshSidebar, setRefreshSidebar] = useState(0);
   const [followedUsers, setFollowedUsers] = useState(new Set());
 
   const fetchPosts = async () => {
@@ -51,6 +51,30 @@ export default function HomeFeed({ currentUser }) {
   useEffect(() => {
     fetchPosts();
   }, []);
+
+  useEffect(() => {
+    fetchPosts();
+  
+    // 🟢 Lấy danh sách người đang follow
+    const fetchFollowed = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+  
+      try {
+        const res = await axios.get("http://localhost:5000/api/users/followed", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+  
+        const ids = res.data.map((u) => u._id);
+        setFollowedUsers(new Set(ids));
+      } catch (err) {
+        console.error("Lỗi khi lấy danh sách follow:", err);
+      }
+    };
+  
+    fetchFollowed();
+  }, []);
+  
 
   const handlePostCreated = (newPost) => {
     setPosts((prev) => [newPost, ...prev]);
@@ -94,15 +118,14 @@ export default function HomeFeed({ currentUser }) {
 
   // 🆕 Khi follow/unfollow xong
   const handleFollowChange = (userId, nextState) => {
-    setFollowedUsers(prev => {
+    setFollowedUsers((prev) => {
       const next = new Set(prev);
       if (nextState) next.add(userId);
       else next.delete(userId);
       return next;
     });
-    setRefreshSidebar(prev => prev + 1);
+    setRefreshSidebar((prev) => prev + 1);
   };
-  
 
   return (
     <Flex w="100%" minH="100vh">
@@ -114,7 +137,7 @@ export default function HomeFeed({ currentUser }) {
         />
         {loading ? (
           <Spinner size="lg" display="block" mx="auto" mt={10} />
-        ) : posts.length === 0 ? (
+        ) : posts.filter((p) => p.author).length === 0 ? (
           <Text textAlign="center" color="gray.500" mt={10}>
             Không có bài viết nào để hiển thị.
           </Text>
@@ -122,25 +145,29 @@ export default function HomeFeed({ currentUser }) {
           posts
             .filter(
               (p) =>
-                p.status === "published" ||
-                (p.status === "draft" && p.author?._id === currentUser?._id)
+                p.author && // ✅ tránh lỗi trắng màn khi author null
+                (p.status === "published" ||
+                  (p.status === "draft" &&
+                    p.author?._id === currentUser?._id))
             )
             .map((post) => (
               <Post
-              key={post._id}
-              post={post}
-              currentUser={currentUser}
-              isFollowing={followedUsers.has(post.author._id)} // ✅ truyền trạng thái
-              onFollowChange={handleFollowChange}
-              onPostUpdated={handlePostUpdated}
-              onPostDeleted={handlePostDeleted}
-            />
+                key={post._id}
+                post={post}
+                currentUser={currentUser}
+                isFollowing={
+                  post.author ? followedUsers.has(post.author._id) : false
+                } // ✅ tránh null
+                onFollowChange={handleFollowChange}
+                onPostUpdated={handlePostUpdated}
+                onPostDeleted={handlePostDeleted}
+              />
             ))
         )}
       </Box>
 
       {/* Sidebar phải */}
-      <RightSidebar refreshTrigger={refreshSidebar} /> {/* 🆕 truyền trigger */}
+      <RightSidebar refreshTrigger={refreshSidebar} />
     </Flex>
   );
 }

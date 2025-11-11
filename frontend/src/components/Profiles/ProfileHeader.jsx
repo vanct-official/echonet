@@ -24,11 +24,13 @@ import {
   FormControl,
   FormLabel,
   Select,
+  Flex, // ✅ Thêm Flex để dùng trong modal danh sách chặn
 } from "@chakra-ui/react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import VerifiedBadge from "/verified-badge-svgrepo-com.svg";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
+import { blockUser, unblockUser, getBlockedUsers } from "../../api/user"; // ✅ Thêm getBlockedUsers
 
 const API_URL = "http://localhost:5000";
 
@@ -47,14 +49,18 @@ export default function ProfileHeader({
   // Modal control
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isLockOpen, setIsLockOpen] = useState(false);
+  const [isConfirmBlockOpen, setIsConfirmBlockOpen] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [isBlockedListOpen, setIsBlockedListOpen] = useState(false);
+  const [blockedList, setBlockedList] = useState([]);
 
-  // Form data (lưu ý gender là boolean)
+  // Form data
   const [editData, setEditData] = useState({
     firstname: user.firstname || "",
     lastname: user.lastname || "",
     phone: user.phone || "",
     dob: user.dob || "",
-    gender: user.gender ?? true, // Mặc định true = Nam
+    gender: user.gender ?? true, // true = Nam
     bio: user.bio || "",
     avatar: user.avatar || "",
   });
@@ -110,6 +116,39 @@ export default function ProfileHeader({
     setIsLockOpen(false);
   };
 
+  const handleBlockToggle = async () => {
+    console.log("🔹 Gọi block API cho:", user._id);
+    try {
+      if (isBlocked) {
+        await unblockUser(user._id);
+        toast({ title: `Đã bỏ chặn ${user.username}`, status: "success" });
+        setIsBlocked(false);
+      } else {
+        await blockUser(user._id);
+        toast({ title: `Đã chặn ${user.username}`, status: "warning" });
+        setIsBlocked(true);
+      }
+      setIsConfirmBlockOpen(false);
+    } catch (err) {
+      console.error("❌ Lỗi khi gọi block API:", err);
+      toast({
+        title: "Lỗi khi chặn người dùng",
+        description: err?.response?.data?.message || "Không thể kết nối tới server",
+        status: "error",
+      });
+    }
+  };
+  
+
+  const handleUnblock = async (userId) => {
+    try {
+      await unblockUser(userId);
+      setBlockedList((prev) => prev.filter((u) => u._id !== userId));
+    } catch (err) {
+      console.error("Lỗi khi bỏ chặn:", err);
+    }
+  };
+
   return (
     <Box
       w="full"
@@ -134,8 +173,45 @@ export default function ProfileHeader({
               <MenuItem onClick={() => setIsEditOpen(true)}>
                 Thay đổi thông tin cá nhân
               </MenuItem>
+
+              {/* 🧱 Danh sách chặn */}
+              <MenuItem
+                onClick={async () => {
+                  try {
+                    const data = await getBlockedUsers();
+                    setBlockedList(data);
+                    setIsBlockedListOpen(true);
+                  } catch (err) {
+                    console.error("Lỗi khi tải danh sách chặn:", err);
+                  }
+                }}
+              >
+                Danh sách chặn
+              </MenuItem>
+
               <MenuItem onClick={() => setIsLockOpen(true)} color="red.500">
                 Khóa tài khoản
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        </Box>
+      )}
+
+      {!isCurrentUser && (
+        <Box position="absolute" top="10px" right="10px">
+          <Menu>
+            <MenuButton
+              as={IconButton}
+              icon={<BsThreeDotsVertical />}
+              variant="ghost"
+              aria-label="Options"
+            />
+            <MenuList>
+              <MenuItem
+                onClick={() => setIsConfirmBlockOpen(true)}
+                color={isBlocked ? "green.500" : "red.500"}
+              >
+                {isBlocked ? "Bỏ chặn người dùng" : "Chặn người dùng"}
               </MenuItem>
             </MenuList>
           </Menu>
@@ -282,7 +358,6 @@ export default function ProfileHeader({
                   />
                 </FormControl>
 
-                {/* ✅ Giới tính boolean */}
                 <FormControl>
                   <FormLabel>Giới tính</FormLabel>
                   <Select
@@ -364,6 +439,84 @@ export default function ProfileHeader({
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* 🔒 Modal: Danh sách chặn */}
+      <Modal
+        isOpen={isBlockedListOpen}
+        onClose={() => setIsBlockedListOpen(false)}
+        size="md"
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Danh sách người bị chặn</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {blockedList.length === 0 ? (
+              <Text color="gray.500">Bạn chưa chặn ai.</Text>
+            ) : (
+              <VStack align="stretch" spacing={3}>
+                {blockedList.map((user) => (
+                  <Flex
+                    key={user._id}
+                    align="center"
+                    justify="space-between"
+                    borderWidth="1px"
+                    borderRadius="lg"
+                    p={3}
+                  >
+                    <Flex align="center" gap={3}>
+                      <Avatar size="sm" src={user.avatar} name={user.username} />
+                      <Text fontWeight="500">{user.username}</Text>
+                    </Flex>
+                    <Button
+                      colorScheme="green"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleUnblock(user._id)}
+                    >
+                      Bỏ chặn
+                    </Button>
+                  </Flex>
+                ))}
+              </VStack>
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+      {/* ⚠️ Modal xác nhận chặn / bỏ chặn */}
+<Modal
+  isOpen={isConfirmBlockOpen}
+  onClose={() => setIsConfirmBlockOpen(false)}
+  isCentered
+>
+  <ModalOverlay />
+  <ModalContent>
+    <ModalHeader>
+      {isBlocked ? "Bỏ chặn người dùng" : "Chặn người dùng"}
+    </ModalHeader>
+    <ModalCloseButton />
+    <ModalBody>
+      <Text>
+        {isBlocked
+          ? `Bạn có chắc muốn bỏ chặn ${user.username}?`
+          : `Bạn có chắc muốn chặn ${user.username}? Họ sẽ không thể xem hoặc tương tác với bạn.`}
+      </Text>
+    </ModalBody>
+    <ModalFooter>
+      <Button
+        colorScheme={isBlocked ? "green" : "red"}
+        mr={3}
+        onClick={handleBlockToggle}
+      >
+        {isBlocked ? "Bỏ chặn" : "Chặn"}
+      </Button>
+      <Button variant="ghost" onClick={() => setIsConfirmBlockOpen(false)}>
+        Hủy
+      </Button>
+    </ModalFooter>
+  </ModalContent>
+</Modal>
+
     </Box>
   );
 }

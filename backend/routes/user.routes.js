@@ -8,6 +8,9 @@ import {
   searchUsers,
   getAllUsers,
   getFollowedUsers,
+  blockUser,
+  unblockUser,
+  getBlockedUsers,
 } from "../controllers/user.controller.js";
 
 const router = express.Router();
@@ -23,4 +26,7 @@ router.get("/:idOrUsername", protect, getUserProfile);
 router.post("/:id/follow", protect, followUser);
 router.post("/:id/unfollow", protect, unfollowUser);
 
+router.put("/:id/block", protect, blockUser);
+router.put("/:id/unblock", protect, unblockUser);
+router.get("/blocked/list", protect, getBlockedUsers);
 export default router;

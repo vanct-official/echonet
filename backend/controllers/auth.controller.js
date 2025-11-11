@@ -3,6 +3,8 @@ import OtpTemp from "../models/OtpTemp.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
+import cloudinary from "../config/cloudinary.js";
+import streamifier from "streamifier";
 
 // generate JWT
 const generateToken = (id) =>
@@ -260,25 +262,49 @@ export const updateProfile = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     let { firstname, lastname, phone, dob, gender, bio } = req.body;
+    if (typeof gender === "string") gender = gender === "true";
 
-    // 🧠 Ép kiểu an toàn cho boolean
-    if (typeof gender === "string") {
-      gender = gender === "true"; // "true" -> true, "false" -> false
-    }
-
-    // Cập nhật các trường nếu được cung cấp
-    if (firstname !== undefined) user.firstname = firstname;
-    if (lastname !== undefined) user.lastname = lastname;
-    if (phone !== undefined) user.phone = phone;
-    if (dob !== undefined) user.dob = dob;
+    // 🧩 Cập nhật thông tin cơ bản
+    if (firstname) user.firstname = firstname;
+    if (lastname) user.lastname = lastname;
+    if (phone) user.phone = phone;
+    if (dob) user.dob = dob;
+    if (bio) user.bio = bio;
     if (gender !== undefined) user.gender = gender;
-    if (bio !== undefined) user.bio = bio;
+
+    // 🖼️ Nếu có upload file (memoryStorage)
+    if (req.file) {
+      console.log("REQ FILE:", req.file);
+
+      // Upload lên Cloudinary qua stream (giống createPost)
+      const uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: "avatars",
+            width: 400,
+            height: 400,
+            crop: "fill",
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        streamifier.createReadStream(req.file.buffer).pipe(stream);
+      });
+
+      user.avatar = uploadResult.secure_url;
+      console.log("✅ Uploaded avatar:", uploadResult.secure_url);
+    }
 
     await user.save();
 
-    res.json(user);
+    res.json({
+      message: "Cập nhật hồ sơ thành công",
+      user,
+    });
   } catch (error) {
-    console.error(error);
+    console.error("❌ updateProfile error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

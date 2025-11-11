@@ -100,7 +100,7 @@ export default function RightSidebar({ refreshTrigger }) {
                 <Avatar
                   size="sm"
                   name={`${f.firstname || ""} ${f.lastname || ""}`}
-                  src={f.avatar || ""}
+                  src={`${f.avatar || undefined}`} // ✅ thêm dòng này
                 />
                 <Box>
                   <Text fontWeight="bold" fontSize="sm">

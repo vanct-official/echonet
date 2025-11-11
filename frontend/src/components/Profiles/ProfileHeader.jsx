@@ -28,6 +28,7 @@ import {
 import { BsThreeDotsVertical } from "react-icons/bs";
 import VerifiedBadge from "/verified-badge-svgrepo-com.svg";
 import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
 
 const API_URL = "http://localhost:5000";
 
@@ -40,6 +41,7 @@ export default function ProfileHeader({
   onFollowToggle,
   onProfileUpdate,
 }) {
+  const { setUser } = useAuth();
   const toast = useToast();
 
   // Modal control
@@ -61,9 +63,18 @@ export default function ProfileHeader({
   const handleEditSubmit = async () => {
     try {
       const token = localStorage.getItem("token");
+      const formData = new FormData();
+
+      // Duyệt các field
+      for (const key in editData) {
+        if (editData[key] !== undefined && editData[key] !== null) {
+          formData.append(key, editData[key]);
+        }
+      }
+
       const res = await axios.put(
         `${API_URL}/api/auth/edit-profile`,
-        editData,
+        formData,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -71,14 +82,13 @@ export default function ProfileHeader({
 
       toast({
         title: "Cập nhật thông tin thành công",
-        description: `${res.data.firstname} ${res.data.lastname}`,
         status: "success",
         duration: 2000,
       });
       setIsEditOpen(false);
+      setUser(res.data.user); // Cập nhật user trong AuthContext
 
-      // 🔁 Gọi callback để reload lại dữ liệu user ngoài
-      if (onProfileUpdate) onProfileUpdate(res.data);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
     } catch (error) {
       console.error(error);
       toast({
@@ -211,7 +221,11 @@ export default function ProfileHeader({
       </HStack>
 
       {/* --- Modal: Edit Profile --- */}
-      <Modal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} isCentered>
+      <Modal
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        isCentered
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Thay đổi thông tin cá nhân</ModalHeader>
@@ -286,12 +300,17 @@ export default function ProfileHeader({
                 </FormControl>
 
                 <FormControl>
-                  <FormLabel>Ảnh đại diện (URL)</FormLabel>
+                  <FormLabel>Ảnh đại diện</FormLabel>
                   <Input
-                    value={editData.avatar}
-                    onChange={(e) =>
-                      setEditData({ ...editData, avatar: e.target.value })
-                    }
+                    type="file"
+                    accept=".jpg,.jpeg,.png"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setEditData({ ...editData, avatar: file }); // lưu file thật
+                      }
+                      console.log("Ảnh đã chọn:", file);
+                    }}
                   />
                 </FormControl>
               </Box>
@@ -320,7 +339,11 @@ export default function ProfileHeader({
       </Modal>
 
       {/* --- Modal: Lock Account --- */}
-      <Modal isOpen={isLockOpen} onClose={() => setIsLockOpen(false)} isCentered>
+      <Modal
+        isOpen={isLockOpen}
+        onClose={() => setIsLockOpen(false)}
+        isCentered
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Khóa tài khoản</ModalHeader>

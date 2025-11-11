@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema(
     followed: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     bio: { type: String, default: "" },
+    avatar: { type: String },
   },
   { timestamps: true }
 );

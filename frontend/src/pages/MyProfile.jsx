@@ -5,15 +5,21 @@ import ProfileHeader from "../components/Profiles/ProfileHeader";
 import Sidebar from "../components/Sidebar";
 import Post from "../components/posts/Post";
 import CreatePost from "../components/posts/CreatePost";
+import { useAuth } from "../context/AuthContext";
 
 const USER_API_URL = "http://localhost:5000/api/users/me";
 const POSTS_API_URL = "http://localhost:5000/api/posts/me";
 
 export default function MyProfile() {
-  const [user, setUser] = useState(null);
+  const {user} = useAuth();
+  const [profile, setProfile] = useState(user);
   const [posts, setPosts] = useState([]);
   const [loadingUser, setLoadingUser] = useState(true);
   const [loadingPosts, setLoadingPosts] = useState(true);
+
+  useEffect(() => {
+    if (user) setProfile(user);
+  }, [user]);
 
   // --- Lấy thông tin user ---
   useEffect(() => {

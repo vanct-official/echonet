@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getConversations } from "../../services/chatService";
 import { getFollowedUsers } from "../../services/userService";
 import { useSocket } from "../../context/SocketContext";
+import { Avatar } from "@chakra-ui/react";
 
 const primaryBlue = "#0084ff";
 const hoverGray = "#f2f2f2";
@@ -92,22 +93,8 @@ export default function ConversationList({ onSelectConversation, selectedId }) {
                   e.currentTarget.style.backgroundColor = "white";
               }}
             >
-              <div
-                style={{
-                  width: "40px",
-                  height: "40px",
-                  borderRadius: "50%",
-                  backgroundColor: "#ccc",
-                  marginRight: "10px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "white",
-                  fontWeight: "bold",
-                }}
-              >
-                {user.username.charAt(0).toUpperCase()}
-              </div>
+              <Avatar size="sm" name={user.username} src={user.avatar} />
+              &nbsp;&nbsp;
               <strong>{user.username}</strong>
             </div>
           ))

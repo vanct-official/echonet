@@ -112,7 +112,7 @@ export default function Sidebar() {
           height="auto"
         >
           <HStack spacing={3} p={1}>
-            <Avatar size="sm" name={user.username} />
+            <Avatar size="sm" name={user.username} src={user.avatar || undefined} />
             <VStack align="start" spacing={0} flex="1" overflow="hidden">
               <Text fontWeight="bold" isTruncated>
                 {user.firstname} {user.lastname}

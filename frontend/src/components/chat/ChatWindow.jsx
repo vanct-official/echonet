@@ -8,6 +8,7 @@ import {
 } from "../../services/chatService";
 import MessageInput from "./MessageInput";
 import { useSocket } from "../../context/SocketContext";
+import { Avatar } from "@chakra-ui/react";
 
 // Định nghĩa màu sắc cơ bản
 const primaryBlue = "#0b84ff"; // màu xanh cho bong bóng người gửi
@@ -262,23 +263,7 @@ export default function ChatWindow({ conversation, setConversation }) {
               >
                 {/* Avatar người gửi (nếu là người nhận) */}
                 {!isSender && (
-                  <div
-                    style={{
-                      width: "32px",
-                      height: "32px",
-                      borderRadius: "50%",
-                      background: "#ccc",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginRight: "10px",
-                      fontSize: "14px",
-                      fontWeight: "bold",
-                      visibility: showNameOrAvatar ? "visible" : "hidden",
-                    }}
-                  >
-                    {m.sender.username.charAt(0).toUpperCase() || "A"}
-                  </div>
+                  <Avatar size="sm" name={m.sender.username} src={m.sender.avatar} />
                 )}
 
                 <div

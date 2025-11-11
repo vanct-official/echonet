@@ -6,7 +6,8 @@ import {
   getMessages,
   getConversations,
   markMessagesAsRead, // ✅ IMPORT HÀM MỚI
-  getMyMessages,  // 🆕 IMPORT HÀM MỚI
+  getMyMessages,
+deleteMessage,  // 🆕 IMPORT HÀM MỚI
 } from "../controllers/chat.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
 import upload from "../middleware/upload.middleware.js";
@@ -15,6 +16,9 @@ const router = express.Router();
 router.use(protect);
 
 router.post("/message", upload.single("file"), sendMessage);
+
+// 🆕 Route xóa tin nhắn
+router.delete("/message/:messageId",protect, deleteMessage);
 
 // 🆕 Route mới để lấy tin nhắn của chính người dùng
 router.get("/messages/mine", getMyMessages);

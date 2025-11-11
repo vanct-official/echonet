@@ -1,3 +1,5 @@
+// services/chatService.js
+
 import axios from "axios";
 
 const API_URL = "http://localhost:5000/api";
@@ -44,29 +46,27 @@ export const getConversations = async () => {
   }
 };
 
-// 🟢 Lấy tin nhắn trong conversation cụ thể
+// 🟢 Lấy tin nhắn theo conversation ID
 export const getMessages = async (conversationId) => {
   try {
     const res = await axios.get(
       `${API_URL}/chat/messages/${conversationId}`,
       getAuthHeaders()
     );
-    return Array.isArray(res.data) ? res.data : [];
+    return res.data;
   } catch (error) {
-    console.error("❌ Lỗi khi lấy tin nhắn:", error);
+    console.error("❌ Lỗi lấy tin nhắn theo conversation:", error);
     return [];
   }
 };
 
+// 🟢 Lấy tin nhắn của chính người dùng (theo sender ID)
 export const getMyMessages = async () => {
   try {
-    const token = localStorage.getItem("token");
-    const res = await axios.get(`${API_URL}/chat/messages/mine`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return Array.isArray(res.data) ? res.data : [];
+    const res = await axios.get(`${API_URL}/chat/messages/mine`, getAuthHeaders());
+    return res.data;
   } catch (error) {
-    console.error("❌ Lỗi khi lấy tin nhắn của chính người dùng:", {
+    console.error("❌ Lỗi lấy tin nhắn của người dùng:", {
       message: error.message,
       status: error.response?.status,
       data: error.response?.data,
@@ -84,11 +84,12 @@ export const sendMessage = async (data, isFormData = false) => {
 
     const headers = {
       Authorization: `Bearer ${token}`,
-      ...(!isFormData ? { "Content-Type": "application/json" } : {}), // Nếu không phải form data, set Content-Type
+      // 💡 SỬA LỖI: Chỉ set Content-Type: application/json nếu KHÔNG phải FormData
+      ...(!isFormData ? { "Content-Type": "application/json" } : {}), 
     };
 
     const res = await axios.post(`${API_URL}/chat/message`, data, { headers });
-    return res.data;
+    return res.data; // Server trả về trực tiếp message object đã populated
   } catch (error) {
     console.error("❌ Lỗi khi gửi tin nhắn:", error);
     throw error;
@@ -98,6 +99,7 @@ export const sendMessage = async (data, isFormData = false) => {
 // 🟢 Đánh dấu tin nhắn đã đọc
 export const markMessagesAsRead = async (conversationId) => {
   try {
+    // 💡 SỬA LỖI: Đảm bảo gửi body rỗng cho request POST (Khắc phục AxiosError dòng 108)
     const res = await axios.post(
       `${API_URL}/chat/messages/${conversationId}/read`,
       {},
@@ -105,22 +107,21 @@ export const markMessagesAsRead = async (conversationId) => {
     );
     return res.data;
   } catch (error) {
-    console.error("❌ Lỗi khi đánh dấu tin nhắn đã đọc:", error);
+    console.error("❌ Lỗi khi đánh dấu tin nhắn đã đọc:", error); 
     throw error;
   }
 };
 
-// 🟢 Tạo cuộc trò chuyện mới (nếu chưa tồn tại)
-export const createConversation = async ({ receiverId }) => {
+
+export const deleteMessage = async (messageId) => {
   try {
-    const res = await axios.post(
-      `${API_URL}/conversations`,
-      { receiverId },
+    const res = await axios.delete(
+      `${API_URL}/chat/message/${messageId}`, // API endpoint mới
       getAuthHeaders()
     );
     return res.data;
   } catch (error) {
-    console.error("❌ Lỗi khi tạo conversation:", error);
+    console.error("❌ Lỗi khi xóa tin nhắn:", error);
     throw error;
   }
 };

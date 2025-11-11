@@ -23,8 +23,14 @@ export const getPosts = async (req, res) => {
     })
       .sort({ createdAt: -1 })
       .populate([
-        { path: "author", select: "username avatar" },
-        { path: "comments.user", select: "username avatar" }
+        { path: "author", select: "username avatar isVerified" },
+        { path: "comments.user", select: "username avatar isVerified" },
+        { path: "repostOf",
+          populate: [
+            { path: "author", select: "username avatar isVerified" },
+            { path: "comments.user", select: "username avatar isVerified" },
+          ],
+        },
       ])
       .lean();
 
@@ -34,9 +40,6 @@ export const getPosts = async (req, res) => {
     res.status(500).json({ message: "Lỗi khi lấy danh sách bài viết" });
   }
 };
-
-
-
 
 // Export bài đăng của chính người dùng đăng nhập
 export const getMyPosts = async (req, res) => {
@@ -436,7 +439,9 @@ export const repostPost = async (req, res) => {
     const { content = "" } = req.body;
     const { id } = req.params;
 
-    const originalPost = await Post.findById(id);
+    const originalPost = await Post.findById(id).populate(
+      "author", "username avatar isVerified"
+    );
     if (!originalPost)
       return res.status(404).json({ message: "Post not found" });
 
@@ -457,10 +462,10 @@ export const repostPost = async (req, res) => {
 
     // 🟢 Populate bài repost vừa tạo
     const populatedRepost = await Post.findById(repost._id)
-      .populate("author", "username avatar")
+      .populate("author", "username avatar isVerified")
       .populate({
         path: "repostOf",
-        populate: { path: "author", select: "username avatar" },
+        populate: { path: "author", select: "username avatar isVerified" },
       });
 
     res.status(201).json(populatedRepost);

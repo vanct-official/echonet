@@ -79,7 +79,7 @@ function RepostBlock({ actorName, repostOf }) {
       w="full"
     >
       <Text fontSize="sm" color={secondaryTextColor} mb={1}>
-        {actorName} đã repost bài viết của <b>{repostOf.author?.username}</b>
+        {actorName} đã repost bài viết của <b>{repostOf.author?.username} {repostOf.author?.isVerified && <VerifiedBadgeIcon />}</b>
       </Text>
       {repostOf.content && <Text color={textColor}>{repostOf.content}</Text>}
       {Array.isArray(repostOf.images) && repostOf.images.length > 0 && (

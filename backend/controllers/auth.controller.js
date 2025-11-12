@@ -168,7 +168,7 @@ export const loginUser = async (req, res) => {
         });
     } else {
       // Invalid credentials
-      res.status(401).json({ message: "Invalid email or password" });
+      res.status(401).json({ message: "Nhập sai tên đăng nhập và mật khẩu. Vui lòng nhập lại!" });
     }
   } catch (error) {
     console.error(error);

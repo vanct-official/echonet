@@ -1,31 +1,33 @@
-// src/context/NotificationProvider.jsx
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import { useToast } from "@chakra-ui/react";
-import { useNotifications } from "../hooks/useNotification";
+import { useNotifications } from "../hooks/useNotification";  // ✅ sửa import
 import { useSocket } from "./SocketContext";
 
-// 🎯 Tạo context chia sẻ badge cho toàn app
 const NotificationContext = createContext();
 
 export const NotificationProvider = ({ currentUser, children }) => {
   const socket = useSocket();
   const toast = useToast();
-  const { notifications, unreadCount, setUnreadCount, setNotifications } = useNotifications(currentUser);
+  const { notifications, unreadCount, setUnreadCount, setNotifications } =
+    useNotifications(currentUser);
 
-  // 🧠 Khi có socket event "notification_new" → hiển thị popup ngay
   useEffect(() => {
-    if (!socket || !currentUser) return;
+    if (!socket) return;
 
-    socket.emit("register", currentUser._id);
+    if (currentUser?._id) {
+      console.log("📡 Registering socket for user:", currentUser._id);
+      socket.emit("register", currentUser._id);
+    } else {
+      console.log("⚠️ currentUser not ready yet");
+    }
 
     socket.on("notification_new", (newNoti) => {
       console.log("🔔 Notification received:", newNoti.message);
 
-      // Cập nhật danh sách và số lượng
+      // cập nhật UI ngay
       setNotifications((prev) => [newNoti, ...prev]);
       setUnreadCount((prev) => prev + 1);
 
-      // Hiện popup tức thì
       toast({
         title: "🔔 Thông báo mới",
         description: newNoti.message,
@@ -35,7 +37,6 @@ export const NotificationProvider = ({ currentUser, children }) => {
         position: "top-right",
       });
 
-      // 💡 Hiệu ứng rung chuông sidebar (id="bell-icon")
       const bell = document.getElementById("bell-icon");
       if (bell) {
         bell.classList.add("shake");
@@ -47,11 +48,10 @@ export const NotificationProvider = ({ currentUser, children }) => {
   }, [socket, currentUser, toast, setNotifications, setUnreadCount]);
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, setUnreadCount }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount }}>
       {children}
     </NotificationContext.Provider>
   );
 };
 
-// Hook dùng trong Sidebar hoặc NotificationPage để lấy badge
 export const useNotificationContext = () => useContext(NotificationContext);

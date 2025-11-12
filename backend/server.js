@@ -69,6 +69,15 @@ app.use("/api/notifications", notificationRoutes);
 io.on("connection", (socket) => {
   console.log("⚡ User connected:", socket.id);
 
+  // 🧠 Khi client đăng ký userId sau khi login
+  socket.on("register", (userId) => {
+    if (userId) {
+      userSocketMap.set(userId.toString(), socket.id);
+      socket.userId = userId.toString();
+      console.log(`✅ Registered user ${userId} ↔ socket ${socket.id}`);
+    }
+  });
+
   // Join conversation room
   socket.on("joinConversation", (conversationId) => {
   socket.join(conversationId);

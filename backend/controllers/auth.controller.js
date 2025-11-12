@@ -37,6 +37,20 @@ export const registerRequest = async (req, res) => {
     const existingPhone = await User.findOne({ phone });
     if (existingPhone) return res.status(400).json({ message: "Số điện thoại này đã tồn tại" });
 
+    if(password.length < 8 || password.length > 20) {
+      return res.status(400).json({ message: "Mật khẩu phải từ 8 đến 20 ký tự" });
+    } else if(!/[A-Z]/.test(password)) {
+      return res.status(400).json({ message: "Mật khẩu phải chứa ít nhất một chữ cái viết hoa" });
+    } else if(!/[a-z]/.test(password)) {
+      return res.status(400).json({ message: "Mật khẩu phải chứa ít nhất một chữ cái viết thường" });
+    } else if(!/[0-9]/.test(password)) {
+      return res.status(400).json({ message: "Mật khẩu phải chứa ít nhất một chữ số" });
+    } else if(!/[!@#$%^&*]/.test(password)) {
+      return res.status(400).json({ message: "Mật khẩu phải chứa ít nhất một ký tự đặc biệt (!@#$%^&*)" });
+    } else {
+      console.log("Mật khẩu hợp lệ");
+    }
+
     // Tạo OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 chữ số
     const passwordHash = await bcrypt.hash(password, 10);

@@ -38,6 +38,12 @@ export const registerRequest = async (req, res) => {
     if (existingPhone)
       return res.status(400).json({ message: "Số điện thoại này đã tồn tại" });
 
+    // nếu người dùng nhỏ hơn 13 tuổi thì không hợp lệ
+    const today = new Date();
+    if( today.getFullYear() - new Date(dob).getFullYear() < 13 ) {
+      return res.status(400).json({ message: "Chưa đủ 13 tuổi" });
+    }
+
     if (password.length < 8 || password.length > 20) {
       return res
         .status(400)

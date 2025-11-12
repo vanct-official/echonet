@@ -62,7 +62,10 @@ export default function ChatWindow({ conversation, setConversation }) {
   /* ----------------------------- SOCKET & FETCH MESSAGES ---------------------------- */
   useEffect(() => {
     if (!conversation || !socket) return;
-    const convId = conversation._id.toString();
+    const convId =
+      typeof conversation._id === "object"
+        ? conversation._id.toString()
+        : conversation._id;
 
     const handleJoinAndFetch = async () => {
       if (socket.connected) socket.emit("joinConversation", convId);

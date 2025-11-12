@@ -12,6 +12,7 @@ import {
   MenuList,
   MenuItem,
   MenuDivider,
+  Badge,
   useColorMode,
 } from "@chakra-ui/react";
 import {
@@ -23,20 +24,22 @@ import {
   FaMoon,
   FaSun,
   FaSearch,
+  FaBell,
 } from "react-icons/fa";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"; // ✅ Import useAuth
+import { useAuth } from "../context/AuthContext";
+import { useNotifications } from "../hooks/useNotification"; // ✅ Import hook
 import EchoNetLight from "/images/EchoNetLight.png";
 import EchoNetDark from "/images/Echonet.png";
 
 export default function Sidebar() {
-  const { user, logout, loading } = useAuth(); // ✅ Lấy từ context
+  const { user, logout, loading } = useAuth();
   const { colorMode, toggleColorMode } = useColorMode();
   const navigate = useNavigate();
+  const { unreadCount } = useNotifications(user); // ✅ Dữ liệu từ socket + API
 
-  if (loading) return null;
-  if (!user) return null;
+  if (loading || !user) return null;
 
   return (
     <Box
@@ -51,6 +54,7 @@ export default function Sidebar() {
       left={0}
       bg={colorMode === "light" ? "white" : "gray.800"}
     >
+      {/* Logo */}
       <Box mb={6} textAlign="center">
         <img
           src={colorMode === "light" ? EchoNetLight : EchoNetDark}
@@ -61,56 +65,52 @@ export default function Sidebar() {
 
       <Box h="1px" bg="gray.200" my={6} />
 
+      {/* Menu chính */}
       <VStack align="start" spacing={4}>
-        <Button
-          leftIcon={<FaHome />}
-          variant="ghost"
-          w="full"
-          justifyContent="flex-start"
-          onClick={() => navigate("/")}
-        >
+        <Button leftIcon={<FaHome />} variant="ghost" w="full" justifyContent="flex-start" onClick={() => navigate("/")}>
           Home
         </Button>
-        <Button
-          leftIcon={<FaSearch />}
-          variant="ghost"
-          w="full"
-          justifyContent="flex-start"
-          onClick={() => navigate("/search")}
-        >
+        <Button leftIcon={<FaSearch />} variant="ghost" w="full" justifyContent="flex-start" onClick={() => navigate("/search")}>
           Search
         </Button>
-        <Button
-          leftIcon={<FaUser />}
-          variant="ghost"
-          w="full"
-          justifyContent="flex-start"
-          onClick={() => navigate("/profile")}
-        >
+        <Button leftIcon={<FaUser />} variant="ghost" w="full" justifyContent="flex-start" onClick={() => navigate("/profile")}>
           Profile
         </Button>
-        <Button
-          leftIcon={<FaComment />}
-          variant="ghost"
-          w="full"
-          justifyContent="flex-start"
-          onClick={() => navigate("/chat")}
-        >
+        <Button leftIcon={<FaComment />} variant="ghost" w="full" justifyContent="flex-start" onClick={() => navigate("/chat")}>
           Messages
         </Button>
+
+        {/* ✅ Notifications */}
+        <Button
+  leftIcon={<FaBell id="bell-icon" />} // gán id để rung
+  variant="ghost"
+  w="full"
+  justifyContent="flex-start"
+  onClick={() => navigate("/notifications")}
+  position="relative"
+>
+  Notifications
+  {unreadCount > 0 && (
+    <Badge
+      colorScheme="red"
+      borderRadius="full"
+      position="absolute"
+      top="5px"
+      right="10px"
+      fontSize="0.8em"
+    >
+      {unreadCount}
+    </Badge>
+  )}
+</Button>
+
       </VStack>
 
       <Box h="1px" bg="gray.200" my={6} />
 
+      {/* Menu người dùng */}
       <Menu>
-        <MenuButton
-          as={Button}
-          rightIcon={<ChevronDownIcon />}
-          w="full"
-          variant="ghost"
-          p={0}
-          height="auto"
-        >
+        <MenuButton as={Button} rightIcon={<ChevronDownIcon />} w="full" variant="ghost" p={0} height="auto">
           <HStack spacing={3} p={1}>
             <Avatar size="sm" name={user.username} src={user.avatar || undefined} />
             <VStack align="start" spacing={0} flex="1" overflow="hidden">
@@ -132,10 +132,7 @@ export default function Sidebar() {
                 {colorMode === "light" ? <FaSun /> : <FaMoon />}
                 <Text>Chế độ {colorMode === "light" ? "Sáng" : "Tối"}</Text>
               </HStack>
-              <Switch
-                isChecked={colorMode === "dark"}
-                onChange={toggleColorMode}
-              />
+              <Switch isChecked={colorMode === "dark"} onChange={toggleColorMode} />
             </HStack>
           </MenuItem>
           <MenuDivider />

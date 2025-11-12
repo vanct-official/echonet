@@ -1,5 +1,6 @@
 import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
+import Notification from "../models/notification.model.js";
 import cloudinary from "../config/cloudinary.js";
 
 // Lấy danh sách tất cả post, mới nhất (tạo hoặc chỉnh sửa) lên đầu
@@ -174,22 +175,41 @@ export const createPost = async (req, res) => {
 // Like / Unlike post
 export const toggleLike = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params.id).populate("author", "username _id");
     if (!post) return res.status(404).json({ message: "Post not found" });
 
     const userId = req.user._id.toString();
-    const isLiked = post.likes.some(id => id.toString() === userId);
+    const isLiked = post.likes.some((id) => id.toString() === userId);
 
     if (isLiked) {
-      // Unlike
-      post.likes = post.likes.filter(id => id.toString() !== userId);
+      // 🧊 Unlike
+      post.likes = post.likes.filter((id) => id.toString() !== userId);
     } else {
-      // Like
+      // ❤️ Like
       post.likes.push(userId);
+      await post.save();
+
+      // 🧩 Tạo thông báo (nếu người like ≠ chủ bài viết)
+      if (post.author._id.toString() !== userId) {
+        const message = `${req.user.username} đã thích bài viết của bạn.`;
+
+        const notification = await Notification.create({
+          senderId: userId,
+          receiverId: post.author._id,
+          type: "like",
+          message,
+          targetId: post._id,
+        });
+
+        // 🚀 Gửi real-time qua socket (nếu user đang online)
+        const receiverSocketId = global.findSocketByUser(post.author._id);
+        if (receiverSocketId) {
+          global.io.to(receiverSocketId).emit("notification_new", notification);
+        }
+      }
     }
 
     await post.save();
-
     res.status(200).json({ likes: post.likes });
   } catch (err) {
     console.error("toggleLike error:", err);
@@ -200,29 +220,42 @@ export const toggleLike = async (req, res) => {
 // Comment vào post
 export const addComment = async (req, res) => {
   try {
-
-    // Lấy bài viết
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params.id).populate("author", "username _id");
     if (!post) return res.status(404).json({ message: "Post not found" });
 
-    // Thêm comment
     const { text } = req.body;
     post.comments.push({ user: req.user._id, text });
     await post.save();
 
-    // 🆕 Populate user info trong comment
+    // 🆕 Populate thông tin user
     const populated = await Post.findById(post._id).populate(
       "comments.user",
       "username avatar isVerified"
     );
-
-    // ✅ Trả về comment vừa thêm
     const newComment = populated.comments[populated.comments.length - 1];
 
-    // Trả về comment mới tạo
+    // 🧩 Tạo thông báo (nếu người comment ≠ chủ bài viết)
+    if (post.author._id.toString() !== req.user._id.toString()) {
+      const message = `${req.user.username} đã bình luận: "${text}"`;
+
+      const notification = await Notification.create({
+        senderId: req.user._id,
+        receiverId: post.author._id,
+        type: "comment",
+        message,
+        targetId: post._id,
+      });
+
+      // 🚀 Gửi real-time notification
+      const receiverSocketId = global.findSocketByUser(post.author._id);
+      if (receiverSocketId) {
+        global.io.to(receiverSocketId).emit("notification_new", notification);
+      }
+    }
+
     res.status(201).json(newComment);
   } catch (err) {
-    console.error(err);
+    console.error("addComment error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

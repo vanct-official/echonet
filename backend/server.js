@@ -5,18 +5,23 @@ import cors from "cors";
 import { createServer } from "http";
 import { Server } from "socket.io";
 
+// routes
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import postRoutes from "./routes/post.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
 import conversationRoutes from "./routes/conversation.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
 
 dotenv.config();
 const app = express();
 
 // middleware
 app.use(express.json());
+
+// Socket.IO events
+const userSocketMap = new Map(); // 🧠 Map lưu userId ↔ socketId
 
 // CORS config
 const allowedOrigins = [process.env.FRONTEND_ROUTE];
@@ -58,8 +63,9 @@ app.use("/api/posts", postRoutes);
 app.use("/api/conversations", conversationRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/notifications", notificationRoutes);
 
-
+// Socket.IO events
 io.on("connection", (socket) => {
   console.log("⚡ User connected:", socket.id);
 
@@ -78,6 +84,12 @@ io.on("connection", (socket) => {
     io.to(conversationId).emit("receiveMessage", message);
   });
 });
+
+// Gắn vào global để controller có thể sử dụng ở bất kỳ đâu
+global.io = io;
+global.findSocketByUser = (userId) => {
+  return userSocketMap.get(userId.toString());
+};
 
 // connect MongoDB and start server
 mongoose

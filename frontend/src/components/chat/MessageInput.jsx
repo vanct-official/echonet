@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 
 const primaryBlue = "#0084ff"; 
 
-export default function MessageInput({ onSend }) {
+export default function MessageInput({ onSend, currentConversationId, receiverId }) {
   const [text, setText] = useState("");
   const fileInputRef = useRef(null); 
 
@@ -17,14 +17,16 @@ export default function MessageInput({ onSend }) {
   };
 
   // Xử lý khi chọn file
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      onSend(text.trim() || null, file); 
-      setText("");
-    }
-    e.target.value = null; 
-  };
+// Gửi file (ảnh, video, pdf, docx,...)
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // ✅ Gửi file + text (nếu có)
+      onSend(text.trim() || null, file);
+      setText("");
+    }
+    e.target.value = null; // reset input file
+  };
 
   const handleButtonClick = () => {
     fileInputRef.current.click();

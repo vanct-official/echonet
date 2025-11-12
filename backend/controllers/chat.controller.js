@@ -4,26 +4,27 @@ import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
 import cloudinary from "../config/cloudinary.js"; // Giả định file này export default cloudinary.v2
 import fs from "fs/promises"; // Bắt buộc để xóa file tạm
+import streamifier from "streamifier";
 
 /* -------------------------------------------------------------------------- */
 /* 🟢 GỬI TIN NHẮN (MESSAGE) */
 /* -------------------------------------------------------------------------- */
 
 export const sendMessage = async (req, res) => {
-  let fileCleanupPath = null; // Biến lưu đường dẫn file tạm để xóa
-
   try {
     const sender = req.user._id;
     let { conversation, receiverId, text } = req.body;
     let mediaURL = null;
     let messageType = "text";
 
-    // 1. Validation
+    // 1️⃣ Kiểm tra hợp lệ
     if (!text?.trim() && !req.file) {
-      return res.status(400).json({ message: "Không có nội dung tin nhắn hoặc file đính kèm." });
+      return res
+        .status(400)
+        .json({ message: "Không có nội dung tin nhắn hoặc file đính kèm." });
     }
 
-    // 2. Xử lý tạo conversation mới nếu chưa có
+    // 2️⃣ Nếu chưa có conversation → tạo mới
     if (!conversation && receiverId) {
       let existingConv = await Conversation.findOne({
         participants: { $all: [sender, receiverId] },
@@ -39,26 +40,40 @@ export const sendMessage = async (req, res) => {
     }
 
     if (!conversation && !receiverId) {
-      return res.status(400).json({ message: "Thiếu conversation hoặc receiverId" });
+      return res
+        .status(400)
+        .json({ message: "Thiếu conversation hoặc receiverId." });
     }
 
-    // 3. Upload media nếu có
+    // 3️⃣ Upload file lên Cloudinary nếu có
     if (req.file) {
-      fileCleanupPath = req.file.path; // Lưu đường dẫn file tạm
+      console.log("📤 Uploading file:", req.file.originalname);
 
-      const result = await cloudinary.uploader.upload(req.file.path, { 
-        folder: "chat_media",
-        resource_type: "auto",
+      const uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: "chat_media",
+            resource_type: "auto",
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        streamifier.createReadStream(req.file.buffer).pipe(stream);
       });
-      mediaURL = result.secure_url;
+
+      mediaURL = uploadResult.secure_url;
 
       const mime = req.file.mimetype;
       if (mime.startsWith("image/")) messageType = "image";
       else if (mime.startsWith("video/")) messageType = "video";
       else messageType = "file";
+
+      console.log("✅ Uploaded:", mediaURL);
     }
 
-    // 4. Tạo message
+    // 4️⃣ Lưu message vào DB
     const newMessage = await Message.create({
       conversation,
       sender,
@@ -68,39 +83,27 @@ export const sendMessage = async (req, res) => {
       readBy: [sender],
     });
 
-    // 5. Cập nhật latestMessage
+    // 5️⃣ Cập nhật latestMessage
     await Conversation.findByIdAndUpdate(conversation, {
       latestMessage: newMessage._id,
     });
 
-    // 6. Populate và Emit (Emit tin nhắn đến các người nhận khác)
-    const populated = await Message.findById(newMessage._id)
-      .populate("sender", "username avatar");
+    // 6️⃣ Populate và gửi realtime
+    const populated = await Message.findById(newMessage._id).populate(
+      "sender",
+      "username avatar"
+    );
 
-    // Emit message để người nhận hiển thị realtime
+    // Gửi đến các client trong cùng conversation (ngoại trừ sender)
     req.io?.to(conversation.toString()).emit("receiveMessage", populated);
 
-    // 7. Xóa file tạm thời sau khi upload lên Cloudinary thành công
-    if (fileCleanupPath) {
-        await fs.unlink(fileCleanupPath);
-        console.log(`✅ Đã xóa file tạm: ${fileCleanupPath}`);
-    }
-
-    // 8. Trả về response cho người gửi (Dùng cho Local Update)
-    const finalResponse = populated.toObject({ virtuals: true });
-    res.status(201).json(finalResponse);
+    // 7️⃣ Trả về kết quả cho client
+    res.status(201).json(populated);
   } catch (error) {
-    // 9. Xử lý lỗi và Xóa file nếu có lỗi xảy ra
-    if (fileCleanupPath) {
-        try {
-            await fs.unlink(fileCleanupPath);
-            console.log(`✅ Đã xóa file tạm lỗi: ${fileCleanupPath}`);
-        } catch (unlinkError) {
-            console.error("❌ Không thể xóa file tạm:", unlinkError);
-        }
-    }
     console.error("❌ Lỗi gửi tin nhắn:", error);
-    res.status(500).json({ message: error.message || "Lỗi máy chủ nội bộ" });
+    res
+      .status(500)
+      .json({ message: error.message || "Lỗi máy chủ nội bộ khi gửi tin nhắn" });
   }
 };
 

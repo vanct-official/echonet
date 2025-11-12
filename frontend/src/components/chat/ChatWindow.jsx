@@ -1,5 +1,3 @@
-// src/components/chat/ChatWindow.jsx (Phiên bản Hoàn chỉnh)
-
 import { useEffect, useState, useRef } from "react";
 import {
   createOrGetConversation,
@@ -9,66 +7,66 @@ import {
 } from "../../services/chatService";
 import MessageInput from "./MessageInput";
 import { useSocket } from "../../context/SocketContext";
-import { Avatar } from "@chakra-ui/react"; 
+import { Avatar } from "@chakra-ui/react";
 
-const primaryBlue = "#0b84ff"; 
+const primaryBlue = "#0b84ff";
 const chatBackground = "#f0f2f5";
 
-// 🆕 Component Modal đơn giản để xem ảnh (Lightbox)
+// 🖼️ Modal xem ảnh (Lightbox)
 const ImageModal = ({ src, onClose }) => {
   if (!src) return null;
-
   return (
     <div
       onClick={onClose}
       style={{
-        position: 'fixed',
+        position: "fixed",
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         zIndex: 1000,
-        cursor: 'zoom-out',
+        cursor: "zoom-out",
       }}
     >
-      <img 
-        src={src} 
-        alt="Full size" 
-        style={{ 
-          maxWidth: '90%', 
-          maxHeight: '90%', 
-          borderRadius: '8px',
-          boxShadow: '0 0 20px rgba(0, 0, 0, 0.5)',
-        }} 
-        onClick={(e) => e.stopPropagation()} // Ngăn chặn đóng modal khi click vào ảnh
+      <img
+        src={src}
+        alt="Full size"
+        style={{
+          maxWidth: "90%",
+          maxHeight: "90%",
+          borderRadius: "8px",
+          boxShadow: "0 0 20px rgba(0, 0, 0, 0.5)",
+        }}
+        onClick={(e) => e.stopPropagation()}
       />
     </div>
   );
 };
 
-
 export default function ChatWindow({ conversation, setConversation }) {
   const [messages, setMessages] = useState([]);
-  const [selectedImage, setSelectedImage] = useState(null); // 🆕 State cho Modal ảnh
+  const [selectedImage, setSelectedImage] = useState(null);
   const socket = useSocket();
   const messagesEndRef = useRef();
   const currentUserId = localStorage.getItem("userId") ?? "";
 
-  /* ------------------------------ LOGIC SOCKET & FETCH MESSAGES ----------------------------- */
+  // 🧩 Tìm người nhận
+  const receiverId = conversation?.participants?.find(
+    (p) => p._id !== currentUserId
+  )?._id;
 
+  /* ----------------------------- SOCKET & FETCH MESSAGES ---------------------------- */
   useEffect(() => {
     if (!conversation || !socket) return;
-    const convId = typeof conversation._id === "object" ? conversation._id.toString() : conversation._id;
+    const convId = conversation._id.toString();
 
     const handleJoinAndFetch = async () => {
-      if (socket.connected) {
-        socket.emit("joinConversation", convId);
-      }
-      
+      if (socket.connected) socket.emit("joinConversation", convId);
+
       try {
         const fetchedMessages = await getMessages(convId);
         setMessages(fetchedMessages || []);
@@ -76,91 +74,83 @@ export default function ChatWindow({ conversation, setConversation }) {
         console.error("Lỗi khi tải tin nhắn:", error);
         setMessages([]);
       }
-      
+
       markMessagesAsRead(convId).catch(console.error);
     };
 
     handleJoinAndFetch();
     socket.on("connect", handleJoinAndFetch);
-    
-    // Lắng nghe tin nhắn mới
+
+    // ✅ Nhận tin nhắn realtime, chống trùng
     const handleReceiveMessage = (newMessage) => {
-      const senderId = newMessage.sender?._id || newMessage.sender; 
-      
-      // ✅ KHẮC PHỤC TRÙNG LẶP: Bỏ qua tin nhắn từ chính mình (đã được cập nhật Local)
-      if (senderId === currentUserId) {
-          return; 
-      }
-      
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
+      const senderId = newMessage.sender?._id || newMessage.sender;
+      if (senderId === currentUserId) return; // bỏ qua chính mình
+
+      setMessages((prev) => {
+        const exists = prev.some((m) => m._id === newMessage._id);
+        return exists ? prev : [...prev, newMessage];
+      });
     };
+
     socket.on("receiveMessage", handleReceiveMessage);
 
-    // Cleanup
     return () => {
-      const convId = typeof conversation._id === "object" ? conversation._id.toString() : conversation._id;
       socket.off("connect", handleJoinAndFetch);
       socket.off("receiveMessage", handleReceiveMessage);
-      socket.emit("leaveConversation", convId); 
+      socket.emit("leaveConversation", convId);
     };
-  }, [conversation, socket, currentUserId]); 
+  }, [conversation, socket, currentUserId]);
 
-  // Tự động cuộn xuống cuối
+  // ✅ Tự động cuộn xuống cuối
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  /* ------------------------------ LOGIC GỬI TIN NHẮN ----------------------------- */
-
-  const handleSend = async (text, file) => { 
+  /* ----------------------------- GỬI TIN NHẮN ---------------------------- */
+  const handleSend = async (text, file) => {
     if (!text && !file) return;
     let conversationId = conversation?._id;
 
-    // 1. Xử lý tạo conversation mới nếu chưa có (Giữ nguyên)
+    // Nếu chưa có conversation → tạo mới
     if (!conversationId && conversation?.receiverId) {
       try {
         const newConv = await createOrGetConversation(conversation.receiverId);
         conversationId = newConv._id;
-        setConversation(newConv); 
+        setConversation(newConv);
         socket?.emit("joinConversation", newConv._id);
       } catch (err) {
-        return console.error("Lỗi tạo conversation:", err);
+        console.error("Lỗi tạo conversation:", err);
+        return;
       }
     }
-    
-    if (!conversationId) return console.error("Không thể xác định Conversation ID");
 
-    let newMessage;
+    if (!conversationId)
+      return console.error("Không thể xác định Conversation ID");
 
-    // 2. Gửi file/text
     try {
-        if (file) {
-            const formData = new FormData();
-            formData.append("conversation", conversationId);
-            if (text) formData.append("text", text);
-            formData.append("file", file); 
-            
-            newMessage = await sendMessage(formData, true); 
-        } else {
-            const payload = { conversation: conversationId, text };
-            newMessage = await sendMessage(payload);
-        }
+      let newMessage;
+      if (file) {
+        const formData = new FormData();
+        formData.append("conversation", conversationId);
+        if (text) formData.append("text", text);
+        formData.append("file", file);
+        newMessage = await sendMessage(formData, true);
+      } else {
+        newMessage = await sendMessage({ conversation: conversationId, text });
+      }
 
-        // 3. Cập nhật UI TỨC THÌ (Local Update)
-        if (newMessage && newMessage._id) {
-            setMessages((prev) => [...prev, newMessage]);
-            // ❌ Đã xóa dòng socket?.emit("sendMessage", newMessage); 
-            // Tin nhắn sẽ hiển thị 1 lần duy nhất (Local Update)
-        } else {
-            console.error("Lỗi: Server không trả về tin nhắn hợp lệ.");
-        }
+      if (newMessage && newMessage._id) {
+        setMessages((prev) => {
+          const exists = prev.some((m) => m._id === newMessage._id);
+          return exists ? prev : [...prev, newMessage];
+        });
+      }
     } catch (error) {
-        console.log("Error object:", error);
-        console.error("Lỗi khi gửi tin nhắn:", error.message || error.code || "Lỗi không xác định"); 
+      console.error("❌ Lỗi khi gửi tin nhắn:", error.message || error);
     }
   };
 
-
+  /* ----------------------------- UI HIỂN THỊ ---------------------------- */
   if (!conversation) {
     return (
       <div
@@ -179,16 +169,14 @@ export default function ChatWindow({ conversation, setConversation }) {
     );
   }
 
-  const receiver = conversation.participants.find((p) => p._id !== currentUserId);
+  const receiver = conversation.participants.find(
+    (p) => p._id !== currentUserId
+  );
 
   return (
     <>
-      {/* 🆕 MODAL XEM ẢNH */}
-      <ImageModal 
-        src={selectedImage} 
-        onClose={() => setSelectedImage(null)} 
-      />
-      
+      <ImageModal src={selectedImage} onClose={() => setSelectedImage(null)} />
+
       <div
         style={{
           flexGrow: 1,
@@ -199,7 +187,7 @@ export default function ChatWindow({ conversation, setConversation }) {
           borderLeft: "1px solid #e4e6eb",
         }}
       >
-        {/* Header (Giữ nguyên) */}
+        {/* Header */}
         <div
           style={{
             padding: "10px 20px",
@@ -234,7 +222,7 @@ export default function ChatWindow({ conversation, setConversation }) {
 
             return (
               <div
-                key={m._id || index}
+                key={m._id || `${index}-${m.createdAt}`}
                 style={{
                   display: "flex",
                   justifyContent: isSender ? "flex-end" : "flex-start",
@@ -249,13 +237,16 @@ export default function ChatWindow({ conversation, setConversation }) {
                     maxWidth: "70%",
                   }}
                 >
-                  {/* Avatar và khoảng trống giả (Giữ nguyên) */}
                   {!isSender && (
                     <Avatar
                       size="xs"
-                      name={m.sender?.username || 'User'}
+                      name={m.sender?.username || "User"}
                       src={m.sender?.avatar}
-                      style={{ marginRight: "10px", width: "32px", height: "32px" }}
+                      style={{
+                        marginRight: "10px",
+                        width: "32px",
+                        height: "32px",
+                      }}
                     />
                   )}
                   {isSender && (
@@ -268,6 +259,7 @@ export default function ChatWindow({ conversation, setConversation }) {
                       }}
                     />
                   )}
+
                   {/* Bong bóng tin nhắn */}
                   <div
                     style={{
@@ -281,25 +273,23 @@ export default function ChatWindow({ conversation, setConversation }) {
                       boxShadow: "0 1px 0.5px rgba(0, 0, 0, 0.13)",
                     }}
                   >
-                    {/* Hiển thị Media (Image/Video/File) */}
+                    {/* Hiển thị media */}
                     {m.mediaURL && (
                       <div style={{ marginBottom: m.content ? "8px" : "0" }}>
-                        {/* 🆕 IMAGE VIEW: Thêm onClick để mở Modal */}
                         {m.type === "image" && (
                           <img
                             src={m.mediaURL}
                             alt="media"
-                            onClick={() => setSelectedImage(m.mediaURL)} // 💡 Mở Modal khi click
+                            onClick={() => setSelectedImage(m.mediaURL)}
                             style={{
                               maxWidth: "100%",
                               maxHeight: "250px",
                               borderRadius: "8px",
                               display: "block",
-                              cursor: 'zoom-in', // Hiệu ứng cho người dùng biết có thể click
+                              cursor: "zoom-in",
                             }}
                           />
                         )}
-                        {/* Hiển thị Video/File (Giữ nguyên) */}
                         {m.type === "video" && (
                           <video
                             controls
@@ -317,15 +307,18 @@ export default function ChatWindow({ conversation, setConversation }) {
                             href={m.mediaURL}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{ color: isSender ? "white" : primaryBlue, textDecoration: 'underline' }}
+                            style={{
+                              color: isSender ? "white" : primaryBlue,
+                              textDecoration: "underline",
+                            }}
                           >
-                            📎 Tải xuống Tệp đính kèm ({m.type === "file" ? "Tài liệu" : "File"})
+                            📎 Tải xuống tệp đính kèm
                           </a>
                         )}
                       </div>
                     )}
 
-                    {/* Hiển thị nội dung text */}
+                    {/* Nội dung text */}
                     {m.content}
                     <div
                       style={{
@@ -348,9 +341,13 @@ export default function ChatWindow({ conversation, setConversation }) {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input area (Giữ nguyên) */}
+        {/* Input */}
         <div style={{ padding: "10px 20px", borderTop: "1px solid #e4e6eb" }}>
-          <MessageInput onSend={handleSend} />
+          <MessageInput
+            onSend={handleSend}
+            currentConversationId={conversation?._id}
+            receiverId={receiverId}
+          />
         </div>
       </div>
     </>

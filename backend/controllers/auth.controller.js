@@ -35,18 +35,33 @@ export const registerRequest = async (req, res) => {
     if (existing) return res.status(400).json({ message: "Email đã tồn tại" });
 
     const existingPhone = await User.findOne({ phone });
-    if (existingPhone) return res.status(400).json({ message: "Số điện thoại này đã tồn tại" });
+    if (existingPhone)
+      return res.status(400).json({ message: "Số điện thoại này đã tồn tại" });
 
-    if(password.length < 8 || password.length > 20) {
-      return res.status(400).json({ message: "Mật khẩu phải từ 8 đến 20 ký tự" });
-    } else if(!/[A-Z]/.test(password)) {
-      return res.status(400).json({ message: "Mật khẩu phải chứa ít nhất một chữ cái viết hoa" });
-    } else if(!/[a-z]/.test(password)) {
-      return res.status(400).json({ message: "Mật khẩu phải chứa ít nhất một chữ cái viết thường" });
-    } else if(!/[0-9]/.test(password)) {
-      return res.status(400).json({ message: "Mật khẩu phải chứa ít nhất một chữ số" });
-    } else if(!/[!@#$%^&*]/.test(password)) {
-      return res.status(400).json({ message: "Mật khẩu phải chứa ít nhất một ký tự đặc biệt (!@#$%^&*)" });
+    if (password.length < 8 || password.length > 20) {
+      return res
+        .status(400)
+        .json({ message: "Mật khẩu phải từ 8 đến 20 ký tự" });
+    } else if (!/[A-Z]/.test(password)) {
+      return res
+        .status(400)
+        .json({ message: "Mật khẩu phải chứa ít nhất một chữ cái viết hoa" });
+    } else if (!/[a-z]/.test(password)) {
+      return res
+        .status(400)
+        .json({
+          message: "Mật khẩu phải chứa ít nhất một chữ cái viết thường",
+        });
+    } else if (!/[0-9]/.test(password)) {
+      return res
+        .status(400)
+        .json({ message: "Mật khẩu phải chứa ít nhất một chữ số" });
+    } else if (!/[!@#$%^&*]/.test(password)) {
+      return res
+        .status(400)
+        .json({
+          message: "Mật khẩu phải chứa ít nhất một ký tự đặc biệt (!@#$%^&*)",
+        });
     } else {
       console.log("Mật khẩu hợp lệ");
     }
@@ -143,12 +158,18 @@ export const loginUser = async (req, res) => {
         },
         token: generateToken(user._id),
       });
-    } else if(user.isActive == false) { // Check if account is disabled
-      res.status(401).json({ message: "Tài khoản của bạn đã bị đình chỉ, hãy liên hệ admin qua email: vanctquantrivien@gmail.com. Trân trọng!" });
-    } else { // Invalid credentials
+    } else if (user.isActive == false) {
+      // Check if account is disabled
+      res
+        .status(401)
+        .json({
+          message:
+            "Tài khoản của bạn đã bị đình chỉ, hãy liên hệ admin qua email: vanctquantrivien@gmail.com. Trân trọng!",
+        });
+    } else {
+      // Invalid credentials
       res.status(401).json({ message: "Invalid email or password" });
     }
-    
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -163,7 +184,9 @@ export const forgotPassword = async (req, res) => {
     const { email } = req.body;
     const user = await User.findOne({ email });
     if (!user)
-      return res.status(404).json({ message: "Không tìm thấy tài khoản với email này" });
+      return res
+        .status(404)
+        .json({ message: "Không tìm thấy tài khoản với email này" });
 
     // Tạo OTP 6 số
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -206,10 +229,13 @@ export const forgotPassword = async (req, res) => {
 export const verifyResetOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
-    const record = await OtpTemp.findOne({ email, otp, purpose: "forgot-password" });
+    const record = await OtpTemp.findOne({
+      email,
+      otp,
+      purpose: "forgot-password",
+    });
 
-    if (!record)
-      return res.status(400).json({ message: "OTP không hợp lệ" });
+    if (!record) return res.status(400).json({ message: "OTP không hợp lệ" });
 
     if (record.expiresAt < new Date()) {
       await record.deleteOne();
@@ -257,6 +283,20 @@ export const resetPassword = async (req, res) => {
 
     // 3️⃣ Cập nhật mật khẩu mới (middleware sẽ tự hash)
     user.passwordHash = newPassword;
+    if( newPassword.length < 8 || newPassword.length > 20) {
+      return  res.status(400).json({ message: "Mật khẩu phải từ 8 đến 20 ký tự" });
+    } else if (!/[A-Z]/.test(newPassword)) {
+      return res.status(400).json({ message: "Mật khẩu phải chứa ít nhất một chữ cái viết hoa" });
+    } else if (!/[a-z]/.test(newPassword)) {
+      return res.status(400).json({ message: "Mật khẩu phải chứa ít nhất một chữ cái viết thường" });
+    } else if (!/[0-9]/.test(newPassword)) {
+      return res.status(400).json({ message: "Mật khẩu phải chứa ít nhất một chữ số" });
+    } else if (!/[!@#$%^&*]/.test(newPassword)) {
+      return res.status(400).json({ message: "Mật khẩu phải chứa ít nhất một ký tự đặc biệt (!@#$%^&*)" });
+    } else {
+      console.log("Mật khẩu hợp lệ");
+    }
+
     await user.save();
 
     // 4️⃣ Xóa OTP tạm
@@ -319,6 +359,37 @@ export const updateProfile = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ updateProfile error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Thay đổi mật khẩu
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!(await user.matchPassword(currentPassword))) {
+      return res.status(400).json({ message: "Mật khẩu hiện tại không đúng" });
+    }
+    user.passwordHash = newPassword;
+    if( newPassword.length < 8 || newPassword.length > 20) {
+      return  res.status(400).json({ message: "Mật khẩu phải từ 8 đến 20 ký tự" });
+    } else if (!/[A-Z]/.test(newPassword)) {
+      return res.status(400).json({ message: "Mật khẩu phải chứa ít nhất một chữ cái viết hoa" });
+    } else if (!/[a-z]/.test(newPassword)) {
+      return res.status(400).json({ message: "Mật khẩu phải chứa ít nhất một chữ cái viết thường" });
+    } else if (!/[0-9]/.test(newPassword)) {
+      return res.status(400).json({ message: "Mật khẩu phải chứa ít nhất một chữ số" });
+    } else if (!/[!@#$%^&*]/.test(newPassword)) {
+      return res.status(400).json({ message: "Mật khẩu phải chứa ít nhất một ký tự đặc biệt (!@#$%^&*)" });
+    } else {
+      console.log("Mật khẩu hợp lệ");
+    }
+    await user.save();
+    res.json({ message: "Đặt lại mật khẩu thành công" });
+  } catch (error) {
+    console.error("❌ changePassword error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

@@ -48,6 +48,7 @@ export default function ProfileHeader({
 
   // Modal control
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [isLockOpen, setIsLockOpen] = useState(false);
   const [isConfirmBlockOpen, setIsConfirmBlockOpen] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
@@ -63,6 +64,12 @@ export default function ProfileHeader({
     gender: user.gender ?? true, // true = Nam
     bio: user.bio || "",
     avatar: user.avatar || "",
+  });
+
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
   // 🟩 Gửi yêu cầu cập nhật hồ sơ
@@ -133,12 +140,70 @@ export default function ProfileHeader({
       console.error("❌ Lỗi khi gọi block API:", err);
       toast({
         title: "Lỗi khi chặn người dùng",
-        description: err?.response?.data?.message || "Không thể kết nối tới server",
+        description:
+          err?.response?.data?.message || "Không thể kết nối tới server",
         status: "error",
       });
     }
   };
-  
+
+  // 🧩 Xử lý đổi mật khẩu
+  const handleChangePasswordSubmit = async () => {
+    if (
+      !passwordData.currentPassword ||
+      !passwordData.newPassword ||
+      !passwordData.confirmPassword
+    ) {
+      return toast({
+        title: "Vui lòng nhập đầy đủ thông tin",
+        status: "warning",
+        duration: 3000,
+      });
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      return toast({
+        title: "Mật khẩu xác nhận không khớp",
+        status: "error",
+        duration: 3000,
+      });
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `${API_URL}/api/auth/change-password`,
+        {
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      toast({
+        title: "Đổi mật khẩu thành công",
+        status: "success",
+        duration: 3000,
+      });
+      setIsChangePasswordOpen(false);
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Lỗi đổi mật khẩu",
+        description:
+          error.response?.data?.message || "Không thể kết nối tới server",
+        status: "error",
+        duration: 3000,
+      });
+    }
+  };
 
   const handleUnblock = async (userId) => {
     try {
@@ -187,6 +252,10 @@ export default function ProfileHeader({
                 }}
               >
                 Danh sách chặn
+              </MenuItem>
+
+              <MenuItem onClick={() => setIsChangePasswordOpen(true)}>
+                Đổi mật khẩu
               </MenuItem>
 
               <MenuItem onClick={() => setIsLockOpen(true)} color="red.500">
@@ -413,6 +482,80 @@ export default function ProfileHeader({
         </ModalContent>
       </Modal>
 
+      {/* 🔑 Modal: Đổi mật khẩu */}
+      <Modal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+        isCentered
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Đổi mật khẩu</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack spacing={4} align="stretch">
+              <FormControl isRequired>
+                <FormLabel>Mật khẩu hiện tại</FormLabel>
+                <Input
+                  type="password"
+                  value={passwordData.currentPassword}
+                  onChange={(e) =>
+                    setPasswordData({
+                      ...passwordData,
+                      currentPassword: e.target.value,
+                    })
+                  }
+                />
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormLabel>Mật khẩu mới</FormLabel>
+                <Input
+                  type="password"
+                  value={passwordData.newPassword}
+                  onChange={(e) =>
+                    setPasswordData({
+                      ...passwordData,
+                      newPassword: e.target.value,
+                    })
+                  }
+                />
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormLabel>Xác nhận mật khẩu mới</FormLabel>
+                <Input
+                  type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={(e) =>
+                    setPasswordData({
+                      ...passwordData,
+                      confirmPassword: e.target.value,
+                    })
+                  }
+                />
+              </FormControl>
+            </VStack>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button
+              colorScheme="blue"
+              mr={3}
+              onClick={handleChangePasswordSubmit}
+            >
+              Lưu thay đổi
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => setIsChangePasswordOpen(false)}
+            >
+              Hủy
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
       {/* --- Modal: Lock Account --- */}
       <Modal
         isOpen={isLockOpen}
@@ -465,7 +608,11 @@ export default function ProfileHeader({
                     p={3}
                   >
                     <Flex align="center" gap={3}>
-                      <Avatar size="sm" src={user.avatar} name={user.username} />
+                      <Avatar
+                        size="sm"
+                        src={user.avatar}
+                        name={user.username}
+                      />
                       <Text fontWeight="500">{user.username}</Text>
                     </Flex>
                     <Button
@@ -484,39 +631,41 @@ export default function ProfileHeader({
         </ModalContent>
       </Modal>
       {/* ⚠️ Modal xác nhận chặn / bỏ chặn */}
-<Modal
-  isOpen={isConfirmBlockOpen}
-  onClose={() => setIsConfirmBlockOpen(false)}
-  isCentered
->
-  <ModalOverlay />
-  <ModalContent>
-    <ModalHeader>
-      {isBlocked ? "Bỏ chặn người dùng" : "Chặn người dùng"}
-    </ModalHeader>
-    <ModalCloseButton />
-    <ModalBody>
-      <Text>
-        {isBlocked
-          ? `Bạn có chắc muốn bỏ chặn ${user.username}?`
-          : `Bạn có chắc muốn chặn ${user.username}? Họ sẽ không thể xem hoặc tương tác với bạn.`}
-      </Text>
-    </ModalBody>
-    <ModalFooter>
-      <Button
-        colorScheme={isBlocked ? "green" : "red"}
-        mr={3}
-        onClick={handleBlockToggle}
+      <Modal
+        isOpen={isConfirmBlockOpen}
+        onClose={() => setIsConfirmBlockOpen(false)}
+        isCentered
       >
-        {isBlocked ? "Bỏ chặn" : "Chặn"}
-      </Button>
-      <Button variant="ghost" onClick={() => setIsConfirmBlockOpen(false)}>
-        Hủy
-      </Button>
-    </ModalFooter>
-  </ModalContent>
-</Modal>
-
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>
+            {isBlocked ? "Bỏ chặn người dùng" : "Chặn người dùng"}
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text>
+              {isBlocked
+                ? `Bạn có chắc muốn bỏ chặn ${user.username}?`
+                : `Bạn có chắc muốn chặn ${user.username}? Họ sẽ không thể xem hoặc tương tác với bạn.`}
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              colorScheme={isBlocked ? "green" : "red"}
+              mr={3}
+              onClick={handleBlockToggle}
+            >
+              {isBlocked ? "Bỏ chặn" : "Chặn"}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => setIsConfirmBlockOpen(false)}
+            >
+              Hủy
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

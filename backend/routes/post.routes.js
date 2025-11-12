@@ -4,6 +4,7 @@ import {
   getMyPosts,
   createPost,
   toggleLike,
+  getLikes,
   addComment,
   updatePost,
   deletePost, 
@@ -28,6 +29,7 @@ router.get("/user/:id", protect, getUserPosts);
 
 router.post("/", protect, upload.array("images", 5), createPost);
 router.put("/:id/like", protect, toggleLike);
+router.get("/:id/likes", getLikes);
 router.post("/:id/comment", protect, addComment);
 router.put("/:id", protect, upload.array("media", 10), updatePost);
 router.put("/:id/publish", protect, publishPost);

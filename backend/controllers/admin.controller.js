@@ -1,4 +1,44 @@
 import User from "../models/user.model.js";
+import Post from "../models/post.model.js";
+
+// count user statistics
+export const getUserStatistics = async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const admins = await User.countDocuments({ role: "admin" });
+    const normalUsers = totalUsers - admins;
+    const activeUsers = await User.countDocuments({ isActive: true });
+    const verifiedUsers = await User.countDocuments({ isVerified: true });
+
+    res.json({
+      totalUsers,
+      normalUsers,
+      admins,
+      activeUsers,
+      verifiedUsers,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// const post statistics
+export const getPostStatistics = async (req, res) => {
+  try {
+    const totalPosts = await Post.countDocuments();
+    const publishedPosts = await Post.countDocuments({ status: "published" });
+    const draftPosts = totalPosts - publishedPosts;
+    res.json({
+      totalPosts,
+      publishedPosts,
+      draftPosts,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // PUT /api/admin/:id/active
 export const toggleActiveStatus = async (req, res) => {

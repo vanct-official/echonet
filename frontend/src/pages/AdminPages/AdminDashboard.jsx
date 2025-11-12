@@ -13,7 +13,6 @@ import {
   Flex,
   Text,
   Button,
-  VStack,
 } from "@chakra-ui/react";
 import {
   FaUsers,
@@ -21,15 +20,19 @@ import {
   FaEnvelopeOpenText,
   FaNewspaper,
   FaUserShield,
+  FaFileAlt,
+  FaCheckCircle,
+  FaRegFileAlt,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminSidebar from "../../components/AdminSidebar";
 
-// Giả định API endpoint để lấy các chỉ số thống kê
-const STATS_API_URL = "http://localhost:5000/api/admin/stats";
+// API endpoint
+const STATS_API_URL = "http://localhost:5000/api/admin/statistics";
+const POSTS_STATS_API_URL = "http://localhost:5000/api/admin/post-statistics";
 
-// Component Card để hiển thị chỉ số
+// Stat Card component
 const StatCard = ({ icon, label, number, helpText, color }) => (
   <Stat
     p={5}
@@ -56,14 +59,24 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({
     totalUsers: 0,
     newUsersToday: 0,
+    normalUsers: 0,
+    admins: 0,
     totalPosts: 0,
     unverifiedUsers: 0,
   });
+
+  const [postStats, setPostStats] = useState({
+    totalPosts: 0,
+    publishedPosts: 0,
+    draftPosts: 0,
+  });
+
   const [loading, setLoading] = useState(true);
   const toast = useToast();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
+  // Fetch USER statistics
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -75,7 +88,30 @@ export default function AdminDashboard() {
         console.error("Error fetching admin stats:", err);
         toast({
           title: "Lỗi tải Dashboard",
-          description: "Không thể lấy dữ liệu thống kê.",
+          description: "Không thể lấy dữ liệu thống kê người dùng.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    };
+
+    fetchStats();
+  }, [token]);
+
+  // Fetch POST statistics
+  useEffect(() => {
+    const fetchPostStats = async () => {
+      try {
+        const res = await axios.get(POSTS_STATS_API_URL, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setPostStats(res.data);
+      } catch (err) {
+        console.error("Error fetching post stats:", err);
+        toast({
+          title: "Lỗi tải thống kê bài viết",
+          description: "Không thể lấy dữ liệu bài viết.",
           status: "error",
           duration: 3000,
           isClosable: true,
@@ -85,14 +121,14 @@ export default function AdminDashboard() {
       }
     };
 
-    fetchStats();
+    fetchPostStats();
   }, [token]);
 
   if (loading) {
     return <Spinner size="xl" display="block" mx="auto" mt={20} />;
   }
 
-  // Danh sách các liên kết nhanh (Quick Links)
+  // Quick links
   const quickLinks = [
     {
       label: "Quản lý Người dùng",
@@ -115,49 +151,79 @@ export default function AdminDashboard() {
   ];
 
   return (
-    // 💡 SỬ DỤNG FLEX LAYOUT ĐỂ HIỂN THỊ SIDEBAR VÀ NỘI DUNG CẠNH NHAU
     <Flex w="100%" minH="100vh">
-      {/* 1. ADMIN SIDEBAR */}
+      {/* Sidebar */}
       <AdminSidebar />
+
+      {/* Main content */}
       <Box ml="250px" flex="1" p={6}>
         <Heading mb={8} display="flex" alignItems="center">
           <Icon as={FaChartLine} mr={3} color="blue.500" />
           Bảng Điều Khiển Quản Trị
         </Heading>
 
-        {/* 1. Các Chỉ số Tổng quan */}
+        {/* USER STATS */}
         <SimpleGrid columns={{ base: 1, md: 4 }} spacing={6} mb={10}>
           <StatCard
             icon={FaUsers}
             label="Tổng số Người dùng"
-            number={stats.totalUsers.toLocaleString()}
-            helpText={`+${stats.newUsersToday} hôm nay`}
+            number={(stats.totalUsers || 0).toLocaleString()}
+            helpText={`+${stats.newUsersToday || 0} hôm nay`}
             color="teal.500"
           />
           <StatCard
-            icon={FaNewspaper}
-            label="Tổng số Bài viết"
-            number={stats.totalPosts.toLocaleString()}
-            helpText="Tăng trưởng ổn định"
-            color="red.500"
-          />
-          <StatCard
-            icon={FaEnvelopeOpenText}
-            label="Chưa xác minh Email"
-            number={stats.unverifiedUsers.toLocaleString()}
-            helpText="Cần gửi email nhắc nhở"
-            color="orange.500"
+            icon={FaUsers}
+            label="Người dùng thường"
+            number={(stats.normalUsers || 0).toLocaleString()}
+            helpText="User có role = user"
+            color="green.600"
           />
           <StatCard
             icon={FaUserShield}
             label="Quản trị viên"
-            number="4" // Giả định
-            helpText="Đảm bảo an toàn hệ thống"
-            color="blue.500"
+            number={(stats.admins || 0).toLocaleString()}
+            helpText="User có role = admin"
+            color="blue.700"
+          />
+          <StatCard
+            icon={FaEnvelopeOpenText}
+            label="Chưa xác minh Email"
+            number={(stats.unverifiedUsers || 0).toLocaleString()}
+            helpText="Cần gửi email nhắc nhở"
+            color="orange.500"
           />
         </SimpleGrid>
 
-        {/* 2. Liên kết Nhanh */}
+        {/* POST STATS */}
+        <Heading size="md" mb={4}>
+          Thống kê Bài viết
+        </Heading>
+
+        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} mb={10}>
+          <StatCard
+            icon={FaFileAlt}
+            label="Tổng số bài viết"
+            number={(postStats.totalPosts || 0).toLocaleString()}
+            helpText="Tổng tất cả bài"
+            color="purple.600"
+          />
+          <StatCard
+            icon={FaCheckCircle}
+            label="Bài đã đăng"
+            number={(postStats.publishedPosts || 0).toLocaleString()}
+            helpText="Public"
+            color="green.600"
+          />
+          <StatCard
+            icon={FaRegFileAlt}
+            label="Bài nháp"
+            number={(postStats.draftPosts || 0).toLocaleString()}
+            helpText="Chưa đăng"
+            color="yellow.500"
+          />
+        </SimpleGrid>
+
+        {/* Quick Links */}
         <Box mb={10}>
           <Heading size="md" mb={4}>
             Liên kết Nhanh
@@ -179,14 +245,13 @@ export default function AdminDashboard() {
           </SimpleGrid>
         </Box>
 
-        {/* 3. Lịch sử hoạt động (Tùy chọn - Giữ chỗ) */}
+        {/* Recent Activity */}
         <Box p={5} shadow="md" borderWidth="1px" borderRadius="lg">
           <Heading size="md" mb={3}>
             Hoạt động Gần đây
           </Heading>
           <Text color="gray.500">
-            [Khu vực này có thể hiển thị các hành động quản trị viên mới nhất
-            hoặc các báo cáo lỗi.]
+            [Khu vực này sẽ hiển thị các hoạt động quản trị hoặc lỗi hệ thống gần đây.]
           </Text>
         </Box>
       </Box>

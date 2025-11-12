@@ -217,6 +217,18 @@ export const toggleLike = async (req, res) => {
   }
 };
 
+// Get Users who liked a post
+export const getLikes = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id).populate("likes", "username avatar isVerified");
+    if (!post) return res.status(404).json({ message: "Post not found" });
+    res.status(200).json(post.likes);
+  } catch (err) {
+    console.error("getLikes error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // Comment vào post
 export const addComment = async (req, res) => {
   try {

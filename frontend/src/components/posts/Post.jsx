@@ -23,17 +23,23 @@ import {
   Badge,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { FaHeart, FaRegHeart, FaComment, FaShare, FaRetweet } from "react-icons/fa";
+import {
+  FaHeart,
+  FaRegHeart,
+  FaComment,
+  FaShare,
+  FaRetweet,
+} from "react-icons/fa";
 import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import EditPostModal from "./EditPostModal.jsx";
+import LikesModal from "./LikesModal.jsx";
 import VerifiedBadgeSVG from "/verified-badge-svgrepo-com.svg";
 import { deletePost as deletePostAPI } from "../../api/post";
 
 const API_URL = "http://localhost:5000";
-
 
 const formatTimeAgo = (isoDate) => {
   if (!isoDate) return "";
@@ -53,33 +59,45 @@ const formatTimeAgo = (isoDate) => {
   const sameYear = now.getFullYear() === date.getFullYear();
   return sameYear
     ? `ngày ${date.getDate()} tháng ${date.getMonth() + 1}`
-    : `ngày ${date.getDate()} tháng ${date.getMonth() + 1} năm ${date.getFullYear()}`;
+    : `ngày ${date.getDate()} tháng ${
+        date.getMonth() + 1
+      } năm ${date.getFullYear()}`;
 };
 
 const VerifiedBadgeIcon = () => (
-  <Image src={VerifiedBadgeSVG} alt="Verified Badge" w="16px" h="16px" ml={1} display="inline-block" />
+  <Image
+    src={VerifiedBadgeSVG}
+    alt="Verified Badge"
+    w="16px"
+    h="16px"
+    ml={1}
+    display="inline-block"
+  />
 );
 
 function RepostBlock({ actorName, repostOf }) {
-
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const commentBg = useColorModeValue("gray.50", "gray.700");
   const secondaryTextColor = useColorModeValue("gray.600", "gray.400");
   const textColor = useColorModeValue("gray.800", "white");
-  
+
   if (!repostOf?.author) return null;
   return (
-    <Box 
-      border="1px" 
-      borderColor={borderColor} 
-      borderRadius="md" 
-      bg={commentBg} 
-      p={3} 
-      mt={2} 
+    <Box
+      border="1px"
+      borderColor={borderColor}
+      borderRadius="md"
+      bg={commentBg}
+      p={3}
+      mt={2}
       w="full"
     >
       <Text fontSize="sm" color={secondaryTextColor} mb={1}>
-        {actorName} đã repost bài viết của <b>{repostOf.author?.username} {repostOf.author?.isVerified && <VerifiedBadgeIcon />}</b>
+        {actorName} đã repost bài viết của{" "}
+        <b>
+          {repostOf.author?.username}{" "}
+          {repostOf.author?.isVerified && <VerifiedBadgeIcon />}
+        </b>
       </Text>
       {repostOf.content && <Text color={textColor}>{repostOf.content}</Text>}
       {Array.isArray(repostOf.images) && repostOf.images.length > 0 && (
@@ -104,24 +122,28 @@ export default function Post({
   onPostDeleted,
   onFollowChange,
 }) {
-    const boxBg = useColorModeValue("white", "gray.700");
+  const boxBg = useColorModeValue("white", "gray.700");
   const focusBorderColor = useColorModeValue("blue.400", "blue.300");
   const inputBg = useColorModeValue("white", "gray.800");
 
-// Thêm các biến màu sắc cho theme
-const bgColor = useColorModeValue("white", "gray.800");
-const hoverBg = useColorModeValue("gray.100", "gray.700");
-const borderColor = useColorModeValue("gray.200", "gray.600");
-const textColor = useColorModeValue("gray.800", "white");
-const secondaryTextColor = useColorModeValue("gray.600", "gray.400");
-const commentBg = useColorModeValue("gray.50", "gray.700");
-const commentHoverBg = useColorModeValue("gray.100", "gray.600");
-const draftBg = useColorModeValue("yellow.50", "yellow.900");
-const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
+  // Thêm các biến màu sắc cho theme
+  const bgColor = useColorModeValue("white", "gray.800");
+  const hoverBg = useColorModeValue("gray.100", "gray.700");
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const textColor = useColorModeValue("gray.800", "white");
+  const secondaryTextColor = useColorModeValue("gray.600", "gray.400");
+  const commentBg = useColorModeValue("gray.50", "gray.700");
+  const commentHoverBg = useColorModeValue("gray.100", "gray.600");
+  const draftBg = useColorModeValue("yellow.50", "yellow.900");
+  const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
 
   const [postData, setPostData] = useState(post || {});
   const [newComment, setNewComment] = useState("");
   const [isLiking, setIsLiking] = useState(false);
+
+  const [likeUsers, setLikeUsers] = useState([]);
+  const [isLikesModalOpen, setIsLikesModalOpen] = useState(false);
+
   const [isCommentLoading, setIsCommentLoading] = useState(false);
   const [isRepostModalOpen, setIsRepostModalOpen] = useState(false);
   const [repostText, setRepostText] = useState("");
@@ -131,7 +153,11 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
   const viewDisclosure = useDisclosure();
   const editDisclosure = useDisclosure();
   const { isOpen, onOpen, onClose } = viewDisclosure;
-  const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = editDisclosure;
+  const {
+    isOpen: isEditOpen,
+    onOpen: onEditOpen,
+    onClose: onEditClose,
+  } = editDisclosure;
 
   const toast = useToast();
 
@@ -156,7 +182,11 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
     (currentUser._id === postData.author._id || currentUser.role === "admin")
   );
 
-  const canRepost = !!(currentUser && postData?.author?._id && currentUser._id !== postData.author._id);
+  const canRepost = !!(
+    currentUser &&
+    postData?.author?._id &&
+    currentUser._id !== postData.author._id
+  );
 
   useEffect(() => {
     if (post) setPostData(post);
@@ -191,7 +221,9 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
     const userId = currentUser?._id;
     const prevLikes = likes;
     const isLiked = prevLikes.includes(userId);
-    const nextLikes = isLiked ? prevLikes.filter((id) => id !== userId) : [...prevLikes, userId];
+    const nextLikes = isLiked
+      ? prevLikes.filter((id) => id !== userId)
+      : [...prevLikes, userId];
 
     setPostData((p) => ({ ...p, likes: nextLikes }));
 
@@ -212,7 +244,30 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
     } finally {
       setIsLiking(false);
     }
-  }, [token, toast, currentUser?._id, likes, api, postData, safeUpdateUpstream]);
+  }, [
+    token,
+    toast,
+    currentUser?._id,
+    likes,
+    api,
+    postData,
+    safeUpdateUpstream,
+  ]);
+
+  const fetchLikes = async () => {
+    try {
+      const { data } = await api.get(`/api/posts/${postData._id}/likes`);
+      setLikeUsers(data || []);
+      setIsLikesModalOpen(true);
+    } catch (err) {
+      toast({
+        title: "Không thể tải danh sách thích",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+      });
+    }
+  };
 
   const handleFollowToggle = async (e, currentFollowState) => {
     e.stopPropagation();
@@ -248,7 +303,8 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
     } catch (err) {
       toast({
         title: "Lỗi khi cập nhật theo dõi",
-        description: err?.response?.data?.message || "Không thể thực hiện hành động này.",
+        description:
+          err?.response?.data?.message || "Không thể thực hiện hành động này.",
         status: "error",
         duration: 2000,
         isClosable: true,
@@ -281,7 +337,9 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
 
     setIsCommentLoading(true);
     try {
-      const { data } = await api.post(`/api/posts/${postData._id}/comment`, { text });
+      const { data } = await api.post(`/api/posts/${postData._id}/comment`, {
+        text,
+      });
       const incoming = data || {};
       const normalized = {
         ...incoming,
@@ -310,7 +368,16 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
     } finally {
       setIsCommentLoading(false);
     }
-  }, [newComment, api, postData, currentUser, comments, toast, safeUpdateUpstream, token]);
+  }, [
+    newComment,
+    api,
+    postData,
+    currentUser,
+    comments,
+    toast,
+    safeUpdateUpstream,
+    token,
+  ]);
 
   const handleDelete = useCallback(async () => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa bài viết này?")) return;
@@ -355,7 +422,12 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
     try {
       const { data } = await api.put(`/api/posts/${postData._id}/publish`, {});
       const updatedPost = data?.post || data || {};
-      toast({ title: "Đăng công khai thành công!", status: "success", duration: 2000, isClosable: true });
+      toast({
+        title: "Đăng công khai thành công!",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
       const merged = { ...postData, ...updatedPost, status: "published" };
       setPostData(merged);
       safeUpdateUpstream(merged);
@@ -383,11 +455,21 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
       return;
     }
     try {
-      const { data } = await api.post(`/api/posts/${postData._id}/repost`, { content: repostText });
-      toast({ title: "Đã chia sẻ lại bài viết!", status: "success", duration: 2000, isClosable: true });
+      const { data } = await api.post(`/api/posts/${postData._id}/repost`, {
+        content: repostText,
+      });
+      toast({
+        title: "Đã chia sẻ lại bài viết!",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
       if (typeof onPostUpdated === "function") {
         onPostUpdated(data);
-        onPostUpdated({ ...postData, repostCount: (postData.repostCount || 0) + 1 });
+        onPostUpdated({
+          ...postData,
+          repostCount: (postData.repostCount || 0) + 1,
+        });
       }
       setIsRepostModalOpen(false);
       onClose();
@@ -395,7 +477,8 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
     } catch (err) {
       toast({
         title: "Lỗi khi repost",
-        description: err?.response?.data?.message || "Không thể repost bài viết này.",
+        description:
+          err?.response?.data?.message || "Không thể repost bài viết này.",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -431,7 +514,11 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
       >
         <Flex align="center" justify="space-between" mb={2}>
           <Flex align="center">
-            <Avatar src={postData.author?.avatar} mr={2} name={postData.author?.username || "Người dùng"} />
+            <Avatar
+              src={postData.author?.avatar}
+              mr={2}
+              name={postData.author?.username || "Người dùng"}
+            />
             <Flex align="center">
               <Link
                 to={`/user/${postData.author?._id}`}
@@ -442,7 +529,11 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
                   as="span"
                   fontWeight="bold"
                   color="blue.600"
-                  _hover={{ textDecoration: "underline", color: "blue.700", cursor: "pointer" }}
+                  _hover={{
+                    textDecoration: "underline",
+                    color: "blue.700",
+                    cursor: "pointer",
+                  }}
                 >
                   {postData.author?.username || "Người dùng"}
                 </Text>
@@ -483,10 +574,20 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
         {postData.repostOf && postData.repostOf.author ? (
           <>
             {postData?.content && <Text mb={2}>{postData.content}</Text>}
-            <RepostBlock actorName={postData.author?.username} repostOf={postData.repostOf} />
+            <RepostBlock
+              actorName={postData.author?.username}
+              repostOf={postData.repostOf}
+            />
           </>
         ) : postData.wasRepost ? (
-          <Box border="1px" borderColor="gray.200" borderRadius="md" bg="gray.100" p={3} mt={2}>
+          <Box
+            border="1px"
+            borderColor="gray.200"
+            borderRadius="md"
+            bg="gray.100"
+            p={3}
+            mt={2}
+          >
             <Text color="gray.600" fontStyle="italic">
               Bài viết gốc đã bị xoá.
             </Text>
@@ -514,9 +615,20 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
           <ModalHeader>
             <Flex align="center" justify="space-between">
               <Flex align="center">
-                <Text fontWeight="bold" color={textColor}>
-                  {postData.author?.username || "Người dùng"}
-                </Text>
+                <Avatar
+                  src={postData.author?.avatar}
+                  mr={2}
+                  name={postData.author?.username || "Người dùng"}
+                />
+                <Link
+                  to={`/user/${postData.author?._id}`}
+                  style={{ textDecoration: "none" }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Text fontWeight="bold" color={textColor}>
+                    {postData.author?.username || "Người dùng"}
+                  </Text>
+                </Link>
                 {postData.author?.isVerified && <VerifiedBadgeIcon />}
                 {postData.status === "draft" && (
                   <Badge ml={2} colorScheme="yellow" variant="subtle">
@@ -564,7 +676,11 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
               <Text color={textColor}>{postData.content}</Text>
 
               {Array.isArray(postData.images) && postData.images.length > 0 && (
-                <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={3} mt={2}>
+                <SimpleGrid
+                  columns={{ base: 1, sm: 2, md: 3 }}
+                  spacing={3}
+                  mt={2}
+                >
                   {postData.images.map((img, i) => (
                     <Image
                       key={i}
@@ -597,9 +713,20 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
               )}
 
               {postData.repostOf && postData.repostOf.author ? (
-                <RepostBlock actorName={postData.author?.username} repostOf={postData.repostOf} />
+                <RepostBlock
+                  actorName={postData.author?.username}
+                  repostOf={postData.repostOf}
+                />
               ) : postData.wasRepost ? (
-                <Box border="1px" borderColor="gray.200" borderRadius="md" bg="gray.100" p={3} mt={2} w="full">
+                <Box
+                  border="1px"
+                  borderColor="gray.200"
+                  borderRadius="md"
+                  bg="gray.100"
+                  p={3}
+                  mt={2}
+                  w="full"
+                >
                   <Text color="gray.600" fontStyle="italic">
                     Bài viết gốc đã bị xoá.
                   </Text>
@@ -617,7 +744,12 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
                   }}
                   isLoading={isLiking}
                 />
-                <IconButton icon={<FaComment />} aria-label="Comment" variant="ghost" onClick={(e) => e.stopPropagation()} />
+                <IconButton
+                  icon={<FaComment />}
+                  aria-label="Comment"
+                  variant="ghost"
+                  onClick={(e) => e.stopPropagation()}
+                />
                 <IconButton
                   icon={<FaRetweet color={canRepost ? "teal" : "gray"} />}
                   aria-label="Repost"
@@ -637,30 +769,63 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
                   }}
                   isDisabled={!canRepost}
                 />
-                <IconButton icon={<FaShare />} aria-label="Share" variant="ghost" onClick={(e) => e.stopPropagation()} />
+                <IconButton
+                  icon={<FaShare />}
+                  aria-label="Share"
+                  variant="ghost"
+                  onClick={(e) => e.stopPropagation()}
+                />
               </HStack>
 
               <Text fontSize="sm" color="gray.500">
-                {likesCount} lượt thích • {comments.length} bình luận • {postData.repostCount || 0} lượt chia sẻ lại
+                <Text
+                  as="span"
+                  _hover={{ textDecoration: "underline", cursor: "pointer" }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fetchLikes();
+                  }}
+                >
+                  {likesCount} lượt thích
+                </Text>
+                {"•"} {comments.length} bình luận • {postData.repostCount || 0}{" "}
+                lượt chia sẻ lại
               </Text>
 
-              <VStack align="start" spacing={3} maxH="300px" overflowY="auto" w="full" pl={0}>
+              <VStack
+                align="start"
+                spacing={3}
+                maxH="300px"
+                overflowY="auto"
+                w="full"
+                pl={0}
+              >
                 {comments.length > 0 ? (
                   comments.map((c) => (
                     <Flex key={c._id} align="flex-start" w="full">
-                      <Avatar size="sm" src={c.user?.avatar} name={c.user?.username} mr={3} mt={1} />
-                      <Box 
-                        flex="1" 
-                        bg={commentBg} 
-                        p={2} 
-                        borderRadius="md" 
-                        boxShadow="sm" 
+                      <Avatar
+                        size="sm"
+                        src={c.user?.avatar}
+                        name={c.user?.username}
+                        mr={3}
+                        mt={1}
+                      />
+                      <Box
+                        flex="1"
+                        bg={commentBg}
+                        p={2}
+                        borderRadius="md"
+                        boxShadow="sm"
                         _hover={{ bg: commentHoverBg }}
                         borderColor={borderColor}
                         borderWidth="1px"
                       >
                         <HStack spacing={1}>
-                          <Text fontWeight="bold" fontSize="sm" color={textColor}>
+                          <Text
+                            fontWeight="bold"
+                            fontSize="sm"
+                            color={textColor}
+                          >
                             {c.user?.username || "Người dùng"}
                           </Text>
                           {c.user?.isVerified && <VerifiedBadgeIcon />}
@@ -715,9 +880,17 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
         </ModalContent>
       </Modal>
 
-      <EditPostModal isOpen={isEditOpen} onClose={onEditClose} post={postData} onUpdated={handleUpdatedFromChild} />
+      <EditPostModal
+        isOpen={isEditOpen}
+        onClose={onEditClose}
+        post={postData}
+        onUpdated={handleUpdatedFromChild}
+      />
 
-      <Modal isOpen={isRepostModalOpen} onClose={() => setIsRepostModalOpen(false)}>
+      <Modal
+        isOpen={isRepostModalOpen}
+        onClose={() => setIsRepostModalOpen(false)}
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Chia sẻ lại bài viết</ModalHeader>
@@ -736,17 +909,39 @@ const draftHoverBg = useColorModeValue("yellow.100", "yellow.800");
         </ModalContent>
       </Modal>
 
-      <Modal isOpen={isImageModalOpen} onClose={() => setIsImageModalOpen(false)} size="4xl" isCentered>
+      <Modal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        size="4xl"
+        isCentered
+      >
         <ModalOverlay />
         <ModalContent bg="transparent" boxShadow="none" maxW="90vw">
           <ModalCloseButton color="white" zIndex={10} />
           <ModalBody p={0}>
-            <Flex align="center" justify="center" bg="blackAlpha.800" borderRadius="md">
-              <Image src={selectedImage} alt="Preview" maxH="90vh" maxW="100%" objectFit="contain" borderRadius="md" />
+            <Flex
+              align="center"
+              justify="center"
+              bg="blackAlpha.800"
+              borderRadius="md"
+            >
+              <Image
+                src={selectedImage}
+                alt="Preview"
+                maxH="90vh"
+                maxW="100%"
+                objectFit="contain"
+                borderRadius="md"
+              />
             </Flex>
           </ModalBody>
         </ModalContent>
       </Modal>
+      <LikesModal
+        isOpen={isLikesModalOpen}
+        onClose={() => setIsLikesModalOpen(false)}
+        users={likeUsers}
+      />
     </>
   );
 }

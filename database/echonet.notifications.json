@@ -1,0 +1,375 @@
+[{
+  "_id": {
+    "$oid": "6914c01790b0234ce4ad6a60"
+  },
+  "senderId": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "receiverId": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "type": "like",
+  "message": "anhntv đã thích bài viết của bạn.",
+  "targetId": {
+    "$oid": "6912cb7efc6eac482f2a2ef6"
+  },
+  "isRead": true,
+  "isDelivered": false,
+  "createdAt": {
+    "$date": "2025-11-12T17:12:55.171Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-12T17:24:24.985Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6914c03290b0234ce4ad6ac4"
+  },
+  "senderId": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "receiverId": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "type": "comment",
+  "message": "anhntv đã bình luận: \"được\"",
+  "targetId": {
+    "$oid": "6912cb7efc6eac482f2a2ef6"
+  },
+  "isRead": true,
+  "isDelivered": false,
+  "createdAt": {
+    "$date": "2025-11-12T17:13:22.928Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-12T17:17:37.385Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6914c0f27684979f8ff4d965"
+  },
+  "senderId": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "receiverId": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "type": "comment",
+  "message": "anhntv đã bình luận: \"được\"",
+  "targetId": {
+    "$oid": "6912cb7efc6eac482f2a2ef6"
+  },
+  "isRead": true,
+  "isDelivered": false,
+  "createdAt": {
+    "$date": "2025-11-12T17:16:34.622Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-12T17:24:24.981Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6914c1ac7684979f8ff4da74"
+  },
+  "senderId": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "receiverId": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "type": "like",
+  "message": "anhntv đã thích bài viết của bạn.",
+  "targetId": {
+    "$oid": "6910ae7bb8bbddaac1f0388f"
+  },
+  "isRead": true,
+  "isDelivered": false,
+  "createdAt": {
+    "$date": "2025-11-12T17:19:40.458Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-12T17:20:10.708Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6914c3387684979f8ff4dd52"
+  },
+  "senderId": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "receiverId": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "type": "comment",
+  "message": "anhntv đã bình luận: \"vậy khi nào Kane có World Cup??\"",
+  "targetId": {
+    "$oid": "6908281ca5ac71a242f4731c"
+  },
+  "isRead": true,
+  "isDelivered": false,
+  "createdAt": {
+    "$date": "2025-11-12T17:26:16.172Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-12T23:17:43.815Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6914c56b7684979f8ff4dfa0"
+  },
+  "senderId": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "receiverId": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "type": "comment",
+  "message": "anhntv đã bình luận: \"cái hộp này đựng gì vậy\"",
+  "targetId": {
+    "$oid": "690b0e66e2e8bdf76340c088"
+  },
+  "isRead": true,
+  "isDelivered": false,
+  "createdAt": {
+    "$date": "2025-11-12T17:35:39.407Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-12T23:17:43.814Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6914c6387684979f8ff4e225"
+  },
+  "senderId": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "receiverId": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "type": "comment",
+  "message": "anhntv đã bình luận: \"tinh dầu ah a\"",
+  "targetId": {
+    "$oid": "690b0e66e2e8bdf76340c088"
+  },
+  "isRead": true,
+  "isDelivered": false,
+  "createdAt": {
+    "$date": "2025-11-12T17:39:04.046Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-12T23:17:43.812Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6914c7837684979f8ff4e46d"
+  },
+  "senderId": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "receiverId": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "type": "comment",
+  "message": "anhntv đã bình luận: \"đúng ko\"",
+  "targetId": {
+    "$oid": "690b0e66e2e8bdf76340c088"
+  },
+  "isRead": true,
+  "isDelivered": false,
+  "createdAt": {
+    "$date": "2025-11-12T17:44:35.091Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-12T23:17:43.802Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6914c95e7684979f8ff4e660"
+  },
+  "senderId": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "receiverId": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "type": "like",
+  "message": "anhntv đã thích bài viết của bạn.",
+  "targetId": {
+    "$oid": "6914c9507684979f8ff4e60a"
+  },
+  "isRead": true,
+  "isDelivered": false,
+  "createdAt": {
+    "$date": "2025-11-12T17:52:30.788Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-12T23:17:43.801Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6914c9757684979f8ff4e714"
+  },
+  "senderId": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "receiverId": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "type": "comment",
+  "message": "anhntv đã bình luận: \"môn gì thế\"",
+  "targetId": {
+    "$oid": "6914c9507684979f8ff4e60a"
+  },
+  "isRead": true,
+  "isDelivered": false,
+  "createdAt": {
+    "$date": "2025-11-12T17:52:53.451Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-12T23:17:43.800Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6914cbca75ef1c257128b56c"
+  },
+  "senderId": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "receiverId": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "type": "comment",
+  "message": "anhntv đã bình luận: \"vg a\"",
+  "targetId": {
+    "$oid": "6914c9507684979f8ff4e60a"
+  },
+  "isRead": true,
+  "isDelivered": false,
+  "createdAt": {
+    "$date": "2025-11-12T18:02:50.570Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-12T23:17:43.798Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6914cca275ef1c257128b6eb"
+  },
+  "senderId": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "receiverId": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "type": "comment",
+  "message": "anhntv đã bình luận: \"nghe khổ thế\"",
+  "targetId": {
+    "$oid": "6914c9507684979f8ff4e60a"
+  },
+  "isRead": true,
+  "isDelivered": false,
+  "createdAt": {
+    "$date": "2025-11-12T18:06:26.835Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-12T23:17:43.797Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6914ccbf75ef1c257128b745"
+  },
+  "senderId": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "receiverId": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "type": "comment",
+  "message": "tuantv đã bình luận: \"đẹp\"",
+  "targetId": {
+    "$oid": "690ff35ef2e707d70c3e2992"
+  },
+  "isRead": true,
+  "isDelivered": false,
+  "createdAt": {
+    "$date": "2025-11-12T18:06:55.094Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-12T18:09:03.321Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69151088b3427f5c24c4c6c2"
+  },
+  "senderId": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "receiverId": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "type": "comment",
+  "message": "anhntv đã bình luận: \"a thi lại vui vẻ nha\"",
+  "targetId": {
+    "$oid": "6914c9507684979f8ff4e60a"
+  },
+  "isRead": true,
+  "isDelivered": false,
+  "createdAt": {
+    "$date": "2025-11-12T22:56:08.696Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-12T23:17:43.793Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "691510ccb3427f5c24c4c740"
+  },
+  "senderId": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "receiverId": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "type": "comment",
+  "message": "tuantv đã bình luận: \"mua ko e\"",
+  "targetId": {
+    "$oid": "690ff35ef2e707d70c3e2992"
+  },
+  "isRead": true,
+  "isDelivered": false,
+  "createdAt": {
+    "$date": "2025-11-12T22:57:16.603Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-12T23:17:48.545Z"
+  },
+  "__v": 0
+}]

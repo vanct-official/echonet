@@ -42,6 +42,52 @@ export const getPosts = async (req, res) => {
   }
 };
 
+export const getAllPostsForAdmin = async (req, res) => {
+  try {
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .populate("author", "username avatar role")
+      .populate("comments.user", "username avatar role")
+      .populate("reports.user", "username avatar role avatar email")
+      .populate({
+        path: "repostOf",
+        populate: [
+          { path: "author", select: "username avatar role" },
+          { path: "comments.user", select: "username avatar role" },
+        ],
+      })
+      .lean();
+
+    res.json(posts);
+  } catch (err) {
+    console.error("getAllPostsForAdmin error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// New: lấy danh sách report của 1 post (chỉ admin hoặc chủ bài)
+export const getPostReports = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const post = await Post.findById(postId).populate("reports.user", "username avatar role");
+
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    // Chỉ admin hoặc chủ bài được xem reports
+    const isOwner = post.author?.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === "admin";
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ message: "Không có quyền xem báo cáo" });
+    }
+
+    return res.status(200).json({ reports: post.reports || [] });
+  } catch (err) {
+    console.error("getPostReports error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // Export bài đăng của chính người dùng đăng nhập
 export const getMyPosts = async (req, res) => {
   try {
@@ -520,11 +566,23 @@ export const repostPost = async (req, res) => {
   }
 };
 
+export const reportPost = async (req, res) => {
+  try {
+    const { reason, details } = req.body;
 
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: "Post not found" });
 
+    post.reports.push({
+      user: req.user.id,
+      reason,
+      details,
+    });
 
+    await post.save();
 
-
-
-
-
+    res.json({ message: "Report submitted" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

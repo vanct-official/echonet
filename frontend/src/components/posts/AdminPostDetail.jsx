@@ -19,11 +19,9 @@ import {
   Badge,
   Input,
   useColorModeValue,
-
 } from "@chakra-ui/react";
-import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
-
-import { FaHeart, FaRegHeart, FaComment, FaRetweet, FaShare } from "react-icons/fa";
+import { DeleteIcon } from "@chakra-ui/icons";
+import { FaComment } from "react-icons/fa";
 import VerifiedBadgeSVG from "/verified-badge-svgrepo-com.svg";
 
 const VerifiedBadgeIcon = () => (
@@ -32,30 +30,18 @@ const VerifiedBadgeIcon = () => (
 
 /**
  * Props:
- * isOpen, onClose, postData, currentUser, canEdit,
- * onEditOpen, handleDelete, handlePublish, onReportOpen,
- * setIsRepostModalOpen, handleRepost,
- * liked, handleLike, isLiking, fetchLikes, likesCount,
- * comments, isCommentLoading, newComment, setNewComment, handleAddComment,
+ * isOpen, onClose, postData,
+ * handleDelete,
+ * likesCount, comments,
+ * isCommentLoading, newComment, setNewComment, handleAddComment,
  * setSelectedImage, setIsImageModalOpen
  */
-export default function PostDetail(props) {
+export default function AdminPostDetail(props) {
   const {
     isOpen,
     onClose,
     postData,
-    currentUser,
-    canEdit,
-    onEditOpen,
     handleDelete,
-    handlePublish,
-    onReportOpen,
-    setIsRepostModalOpen,
-    handleRepost,
-    liked,
-    handleLike,
-    isLiking,
-    fetchLikes,
     likesCount,
     comments,
     isCommentLoading,
@@ -96,45 +82,27 @@ export default function PostDetail(props) {
             </Text>
           </Flex>
 
-          {canEdit ? (
-            <HStack spacing={2} mt={2}>
-              <IconButton
-                icon={<EditIcon />}
-                aria-label="Chỉnh sửa bài viết"
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  onClose();
-                  setTimeout(onEditOpen, 200);
-                }}
-              />
-              <IconButton
-                icon={<DeleteIcon />}
-                aria-label="Xóa bài viết"
-                size="sm"
-                variant="ghost"
-                color="gray.600"
-                _hover={{ color: "red.500" }}
-                onClick={handleDelete}
-              />
-               {postData.status === "draft" && <Button colorScheme="green" size="sm" onClick={handlePublish}>Đăng công khai</Button>}
-            </HStack>
-          ) : (
-            currentUser && currentUser._id !== postData.author?._id && (
-              <HStack spacing={2} mt={2}>
-                <Button colorScheme="red" variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); onReportOpen?.(); }}>
-                  Báo cáo
-                </Button>
-              </HStack>
-            )
-          )}
+          {/* Chỉ hiển thị nút xóa */}
+          <HStack spacing={2} mt={2}>
+            <IconButton
+              icon={<DeleteIcon />}
+              aria-label="Xóa bài viết"
+              size="sm"
+              variant="ghost"
+              color="gray.600"
+              _hover={{ color: "red.500" }}
+              onClick={handleDelete}
+            />
+          </HStack>
         </ModalHeader>
 
         <ModalCloseButton />
         <ModalBody>
           <VStack align="start" spacing={4}>
+            {/* Nội dung */}
             <Text color={textColor}>{postData.content}</Text>
 
+            {/* Hình ảnh */}
             {Array.isArray(postData.images) && postData.images.length > 0 && (
               <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={3} mt={2} w="full">
                 {postData.images.map((img, i) => (
@@ -159,48 +127,44 @@ export default function PostDetail(props) {
               </SimpleGrid>
             )}
 
+            {/* Video */}
             {postData.video && (
               <video src={postData.video} controls style={{ width: "100%", borderRadius: 8 }} onClick={(e) => e.stopPropagation()} />
             )}
 
-            <HStack spacing={4}>
-              <IconButton
-                icon={liked ? <FaHeart color="red" /> : <FaRegHeart />}
-                aria-label="Like"
-                variant="ghost"
-                onClick={(e) => { e.stopPropagation(); handleLike?.(); }}
-                isLoading={isLiking}
-              />
-              <IconButton icon={<FaComment />} aria-label="Comment" variant="ghost" onClick={(e) => e.stopPropagation()} />
-              <IconButton icon={<FaRetweet color={postData.author && postData.author._id !== (currentUser?._id) ? "teal" : "gray"} />} aria-label="Repost" variant="ghost" onClick={(e) => { e.stopPropagation(); setIsRepostModalOpen?.(true); }} isDisabled={!(currentUser && postData.author && currentUser._id !== postData.author._id)} />
-              <IconButton icon={<FaShare />} aria-label="Share" variant="ghost" onClick={(e) => e.stopPropagation()} />
-            </HStack>
-
+            {/* Thống kê */}
             <Text fontSize="sm" color="gray.500">
-              <Text as="span" _hover={{ textDecoration: "underline", cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); fetchLikes?.(); }}>
+              <Text as="span" fontWeight="600">
                 {likesCount} lượt thích
               </Text>
-              {" • "} {comments.length} bình luận • {postData.repostCount || 0} lượt chia sẻ lại
+              {" • "}
+              <Text as="span" fontWeight="600">
+                {comments.length} bình luận
+              </Text>
             </Text>
 
+            {/* Danh sách bình luận */}
             <VStack align="start" spacing={3} maxH="300px" overflowY="auto" w="full" pl={0}>
-              {comments.length > 0 ? comments.map((c) => (
-                <Flex key={c._id} align="flex-start" w="full">
-                  <Avatar size="sm" src={c.user?.avatar} name={c.user?.username} mr={3} mt={1} />
-                  <Box flex="1" bg={commentBg} p={2} borderRadius="md" boxShadow="sm" _hover={{ bg: commentHoverBg }} borderColor={borderColor} borderWidth="1px">
-                    <HStack spacing={1}>
-                      <Text fontWeight="bold" fontSize="sm" color={textColor}>{c.user?.username || "Người dùng"}</Text>
-                      {c.user?.isVerified && <VerifiedBadgeIcon />}
-                    </HStack>
-                    <Text fontSize="xs" color={secondaryTextColor}>{c.createdAt ? new Date(c.createdAt).toLocaleString("vi-VN") : ""}</Text>
-                    <Text fontSize="sm" color={textColor}>{c.text}</Text>
-                  </Box>
-                </Flex>
-              )) : (
+              {comments.length > 0 ? (
+                comments.map((c) => (
+                  <Flex key={c._id} align="flex-start" w="full">
+                    <Avatar size="sm" src={c.user?.avatar} name={c.user?.username} mr={3} mt={1} />
+                    <Box flex="1" bg={commentBg} p={2} borderRadius="md" boxShadow="sm" _hover={{ bg: commentHoverBg }} borderColor={borderColor} borderWidth="1px">
+                      <HStack spacing={1}>
+                        <Text fontWeight="bold" fontSize="sm" color={textColor}>{c.user?.username || "Người dùng"}</Text>
+                        {c.user?.isVerified && <VerifiedBadgeIcon />}
+                      </HStack>
+                      <Text fontSize="xs" color={secondaryTextColor}>{c.createdAt ? new Date(c.createdAt).toLocaleString("vi-VN") : ""}</Text>
+                      <Text fontSize="sm" color={textColor}>{c.text}</Text>
+                    </Box>
+                  </Flex>
+                ))
+              ) : (
                 <Text color={secondaryTextColor} fontSize="sm">Chưa có bình luận nào</Text>
               )}
             </VStack>
 
+            {/* Input bình luận */}
             <HStack mt={2} w="full">
               <Input
                 placeholder="Viết bình luận..."

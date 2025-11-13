@@ -23,7 +23,7 @@ export const getUserStatistics = async (req, res) => {
   }
 };
 
-// const post statistics
+// count post statistics
 export const getPostStatistics = async (req, res) => {
   try {
     const totalPosts = await Post.countDocuments();

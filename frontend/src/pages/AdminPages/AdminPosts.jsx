@@ -21,11 +21,19 @@ import {
   ModalBody,
   ModalCloseButton,
   useDisclosure,
+  ModalHeader,
+  ModalFooter,
+  VStack,
+  HStack,
+  Badge,
+  Toast,
 } from "@chakra-ui/react";
-import { DeleteIcon, ArrowBackIcon } from "@chakra-ui/icons";
-import { deletePost, fetchAllPosts } from "../../api/post";
+import { DeleteIcon, ViewIcon } from "@chakra-ui/icons";
+import { deletePost, fetchAllPosts, fetchPostReports } from "../../api/post";
 import { useNavigate } from "react-router-dom";
 import AdminSidebar from "../../components/AdminSidebar";
+import PostDetail from "../../components/posts/PostDetail.jsx"; // <-- added
+import AdminPostDetail from "../../components/posts/AdminPostDetail.jsx";
 
 export default function AdminPosts() {
   const [posts, setPosts] = useState([]);
@@ -36,6 +44,23 @@ export default function AdminPosts() {
   const navigate = useNavigate();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  // Reports modal state
+  const {
+    isOpen: isReportsOpen,
+    onOpen: onReportsOpen,
+    onClose: onReportsClose,
+  } = useDisclosure();
+  const [reportsForModal, setReportsForModal] = useState([]);
+  const [reportsPost, setReportsPost] = useState(null);
+
+  // Detail modal state (for PostDetail)
+  const {
+    isOpen: isDetailOpen,
+    onOpen: onDetailOpen,
+    onClose: onDetailClose,
+  } = useDisclosure();
+  const [selectedPostDetail, setSelectedPostDetail] = useState(null);
 
   // 🟢 Load tất cả bài viết
   useEffect(() => {
@@ -57,6 +82,30 @@ export default function AdminPosts() {
     };
     loadPosts();
   }, []);
+
+  // Mở modal danh sách báo cáo (fetch on demand)
+  const openReports = async (post) => {
+    try {
+      setReportsPost(post);
+
+      const data = await fetchPostReports(post._id); // luôn dùng GET
+      setReportsForModal(data.reports);
+
+      onReportsOpen();
+    } catch (err) {
+      toast({
+        title: "Lỗi khi lấy báo cáo",
+        description: err?.message || "Không thể tải danh sách báo cáo.",
+        status: "error",
+      });
+    }
+  };
+
+  // Mở modal chi tiết bài viết (PostDetail)
+  const openDetail = (post) => {
+    setSelectedPostDetail(post);
+    onDetailOpen();
+  };
 
   // 🗑️ Xử lý xóa bài viết
   const handleDelete = async (id) => {
@@ -97,130 +146,257 @@ export default function AdminPosts() {
   }
 
   return (
-<Flex w="100%" minH="100vh">            
-          {/* 1. ADMIN SIDEBAR */}
-          <AdminSidebar/>
+    <Flex w="100%" minH="100vh">
+      {/* 1. ADMIN SIDEBAR */}
+      <AdminSidebar />
       <Box ml="250px" flex="1" p={6}>
-      <Heading size="lg" mb={6}>
-        🛠️ Quản lý bài viết (Admin)
-      </Heading>
+        <Heading size="lg" mb={6}>
+          🛠️ Quản lý bài viết (Admin)
+        </Heading>
 
-      {posts.length === 0 ? (
-        <Text color="gray.500">Không có bài viết nào.</Text>
-      ) : (
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>Người đăng</Th>
-              <Th>Nội dung</Th>
-              <Th>Phương tiện</Th>
-              <Th>Ngày tạo</Th>
-              <Th>Hành động</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {posts.map((post) => (
-              <Tr key={post._id}>
-                {/* 🧍 Người đăng */}
-                <Td>
-                  <Flex align="center">
-                    <Avatar size="sm" src={post.author?.avatar} mr={2} />
-                    <Text fontWeight="medium">{post.author?.username}</Text>
-                  </Flex>
-                </Td>
-
-                {/* 📝 Nội dung */}
-                <Td maxW="300px">
-                  <Text noOfLines={2}>
-                    {post.content || "(Không có nội dung)"}
-                  </Text>
-                </Td>
-
-                {/* 🖼️ Phương tiện */}
-                <Td>
-                  {/* Ảnh */}
-                  {Array.isArray(post.images) && post.images.length > 0 && (
-                    <Flex gap={2} wrap="wrap">
-                      {post.images.slice(0, 3).map((img, i) => (
-                        <Box
-                          key={i}
-                          boxSize="70px"
-                          cursor="pointer"
-                          onClick={() => openPreview(img)}
-                        >
-                          <Image
-                            src={img}
-                            alt={`image-${i}`}
-                            w="100%"
-                            h="100%"
-                            objectFit="cover"
-                            borderRadius="6px"
-                          />
-                        </Box>
-                      ))}
-                    </Flex>
-                  )}
-
-                  {/* Video */}
-                  {post.video && (
-                    <Box mt={2} cursor="pointer" onClick={() => openPreview(post.video)}>
-                      <video
-                        src={post.video}
-                        style={{
-                          width: "120px",
-                          borderRadius: "6px",
-                          objectFit: "cover",
-                        }}
-                      />
-                    </Box>
-                  )}
-                </Td>
-
-                {/* 📅 Ngày tạo */}
-                <Td>{new Date(post.createdAt).toLocaleString("vi-VN")}</Td>
-
-                {/* ❌ Hành động */}
-                <Td>
-                  <Button
-                    leftIcon={<DeleteIcon />}
-                    color="gray.600"
-                    variant="ghost"
-                    _hover={{ color: "red.500" }}
-                    onClick={() => handleDelete(post._id)}
-                  >
-                    Xóa
-                  </Button>
-                </Td>
+        {posts.length === 0 ? (
+          <Text color="gray.500">Không có bài viết nào.</Text>
+        ) : (
+          <Table variant="simple">
+            <Thead>
+              <Tr>
+                <Th>Người đăng</Th>
+                <Th>Nội dung</Th>
+                <Th>Phương tiện</Th>
+                <Th>Báo cáo</Th>
+                <Th>Ngày tạo</Th>
+                <Th>Hành động</Th>
               </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      )}
+            </Thead>
+            <Tbody>
+              {posts.map((post) => (
+                <Tr key={post._id}>
+                  {/* 🧍 Người đăng */}
+                  <Td>
+                    <Flex align="center">
+                      <Avatar size="sm" src={post.author?.avatar} mr={2} />
+                      <Text fontWeight="medium">{post.author?.username}</Text>
+                    </Flex>
+                  </Td>
 
-      {/* 🔍 Modal xem preview */}
-      <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalCloseButton />
-          <ModalBody p={4}>
-            {previewMedia?.match(/\.(mp4|webm|ogg)$/i) ? (
-              <video
-                src={previewMedia}
-                controls
-                style={{ width: "100%", borderRadius: "8px" }}
-              />
-            ) : (
-              <Image
-                src={previewMedia}
-                alt="Preview"
-                w="100%"
-                borderRadius="8px"
-              />
-            )}
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-    </Box>
+                  {/* 📝 Nội dung */}
+                  <Td maxW="300px">
+                    <Text noOfLines={2}>{post.content || "(Không có nội dung)"}</Text>
+                  </Td>
+
+                  {/* 🖼️ Phương tiện */}
+                  <Td>
+                    {/* Ảnh */}
+                    {Array.isArray(post.images) && post.images.length > 0 && (
+                      <Flex gap={2} wrap="wrap">
+                        {post.images.slice(0, 5).map((img, i) => (
+                          <Box key={i} boxSize="70px" cursor="pointer" onClick={() => openPreview(img)}>
+                            <Image src={img} alt={`image-${i}`} w="100%" h="100%" objectFit="cover" borderRadius="6px" />
+                          </Box>
+                        ))}
+                      </Flex>
+                    )}
+
+                    {/* Video */}
+                    {post.video && (
+                      <Box mt={2} cursor="pointer" onClick={() => openPreview(post.video)}>
+                        <video src={post.video} style={{ width: "120px", borderRadius: "6px", objectFit: "cover" }} />
+                      </Box>
+                    )}
+                  </Td>
+
+                  {/* 🔎 Báo cáo */}
+                  <Td>
+                    {post.reports && post.reports.length > 0 ? (
+                      <HStack spacing={3}>
+                        <Badge colorScheme="red">{post.reports.length}</Badge>
+                        <Button size="sm" leftIcon={<ViewIcon />} onClick={() => openReports(post)}>
+                          Xem
+                        </Button>
+                      </HStack>
+                    ) : (
+                      <Text color="gray.500">Không có báo cáo</Text>
+                    )}
+                  </Td>
+
+                  {/* 📅 Ngày tạo */}
+                  <Td>{new Date(post.createdAt).toLocaleString("vi-VN")}</Td>
+
+                  {/* ❌ Hành động */}
+                  <Td>
+                    <HStack>
+                      <Button size="sm" leftIcon={<ViewIcon />} onClick={() => openDetail(post)}>
+                        Xem
+                      </Button>
+                      <Button
+                        leftIcon={<DeleteIcon />}
+                        color="gray.600"
+                        variant="ghost"
+                        _hover={{ color: "red.500" }}
+                        onClick={() => handleDelete(post._id)}
+                      >
+                        Xóa
+                      </Button>
+                    </HStack>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        )}
+
+        {/* 🔍 Modal xem preview */}
+        <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalCloseButton />
+            <ModalBody p={4}>
+              {previewMedia?.match(/\.(mp4|webm|ogg)$/i) ? (
+                <video src={previewMedia} controls style={{ width: "100%", borderRadius: "8px" }} />
+              ) : (
+                <Image src={previewMedia} alt="Preview" w="100%" borderRadius="8px" />
+              )}
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+
+        {/* Modal danh sách báo cáo */}
+        <Modal isOpen={isReportsOpen} onClose={onReportsClose} size="lg" isCentered>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Danh sách báo cáo</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              {/* helper nhỏ để format thời gian và map reason */}
+              {(() => {
+                const formatTime = (iso) => (iso ? new Date(iso).toLocaleString("vi-VN") : "");
+                const reasonLabel = (r) => {
+                  const map = {
+                    spam: "Spam / Quảng cáo",
+                    harassment: "Quấy rối / Lăng mạ",
+                    nudity: "Nội dung nhạy cảm",
+                    hate: "Ngôn từ thù hận",
+                    other: "Khác",
+                  };
+                  return map[r] || r || "Không xác định";
+                };
+                return null;
+              })()}
+
+              {!reportsForModal || reportsForModal.length === 0 ? (
+                <Text>Không có báo cáo</Text>
+              ) : (
+                <VStack align="stretch" spacing={4}>
+                  {reportsForModal.map((r, idx) => {
+                    const user = r.user || {};
+                    const status = r.status || "pending";
+                    const statusColor = status === "pending" ? "yellow" : status === "resolved" ? "green" : "red";
+                    return (
+                      <Box key={r._id || idx} p={3} borderRadius="md" borderWidth="1px" _hover={{ boxShadow: "sm" }}>
+                        <HStack spacing={3} align="start">
+                          <Avatar size="sm" src={r.user.avatar || undefined} name={r.user.username || r.user._id || "Người dùng"} />
+                          <Box flex="1">
+                            <HStack justify="space-between" align="start">
+                              <Box>
+                                <Text fontWeight="600">{user.username || "Người dùng ẩn"}</Text>
+                                <Text fontSize="xs" color="gray.500">
+                                  {user.role ? user.role : "role: -"}
+                                </Text>
+                              </Box>
+
+                              <VStack spacing={1} align="end">
+                                <Badge colorScheme={statusColor} variant="subtle" px={2}>
+                                  {status === "pending" ? "Đang chờ" : status === "resolved" ? "Đã xử lý" : status}
+                                </Badge>
+                                <Badge colorScheme="red" variant="outline" px={2}>
+                                  {r.reason}
+                                </Badge>
+                              </VStack>
+                            </HStack>
+
+                            {r.details && (
+                              <Text mt={2} whiteSpace="pre-wrap">
+                                {r.details}
+                              </Text>
+                            )}
+
+                            <HStack mt={3} justify="space-between">
+                              <Text fontSize="sm" color="gray.500">
+                                {r.createdAt ? new Date(r.createdAt).toLocaleString("vi-VN") : ""}
+                              </Text>
+
+                              <HStack>
+                                {/* nút xem profile (nếu muốn) */}
+                                {user._id && (
+                                  <Button size="sm" variant="ghost" onClick={() => navigate(`/admin/users/${user._id}`)}>
+                                    Xem người dùng
+                                  </Button>
+                                )}
+                                {/* ví dụ action: mark resolved (phía frontend chỉ gửi request nếu bạn cài API) */}
+                                <Button
+                                  size="sm"
+                                  colorScheme="green"
+                                  variant="outline"
+                                  onClick={async () => {
+                                    // optional: thực hiện API mark-resolved nếu backend có
+                                    try {
+                                      // await resolveReport(r._id, token)
+                                      toast({ title: "Đánh dấu đã xử lý (chưa gọi API)", status: "info" });
+                                    } catch (err) {
+                                      toast({ title: "Lỗi", description: err?.message, status: "error" });
+                                    }
+                                  }}
+                                >
+                                  Đánh dấu đã xử lý
+                                </Button>
+                              </HStack>
+                            </HStack>
+                          </Box>
+                        </HStack>
+                      </Box>
+                    );
+                  })}
+                </VStack>
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button onClick={onReportsClose}>Đóng</Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+
+        {/* Post detail modal (opened from action "Xem") */}
+        <AdminPostDetail
+          isOpen={isDetailOpen}
+          onClose={() => {
+            setSelectedPostDetail(null);
+            onDetailClose();
+          }}
+          postData={selectedPostDetail}
+          currentUser={null}
+          canEdit={true}
+          onEditOpen={() => {
+            Toast({ title: "Chức năng chỉnh sửa chưa được cài đặt", status: "info" });
+          }}
+          handleDelete={() => selectedPostDetail && handleDelete(selectedPostDetail._id)}
+          handlePublish={() => {}}
+          onReportOpen={() => selectedPostDetail && openReports(selectedPostDetail)}
+          setIsRepostModalOpen={() => {}}
+          handleRepost={() => {}}
+          liked={false}
+          handleLike={() => {}}
+          isLiking={false}
+          fetchLikes={() => {}}
+          likesCount={selectedPostDetail ? (selectedPostDetail.likes?.length || 0) : 0}
+          comments={selectedPostDetail ? (selectedPostDetail.comments || []) : []}
+          isCommentLoading={false}
+          newComment={""}
+          setNewComment={() => {}}
+          handleAddComment={() => {}}
+          setSelectedImage={() => {}}
+          setIsImageModalOpen={() => {}}
+        />
+      </Box>
     </Flex>
   );
 }

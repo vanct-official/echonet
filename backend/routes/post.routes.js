@@ -12,6 +12,9 @@ import {
   publishPost,
   repostPost,
   getUserPosts,
+  reportPost,
+  getPostReports,
+  getAllPostsForAdmin
 } from "../controllers/post.controller.js";
 import { protect, adminOnly } from "../middleware/auth.middleware.js"; // middleware JWT
 import upload from "../middleware/upload.middleware.js";
@@ -35,6 +38,10 @@ router.put("/:id", protect, upload.array("media", 10), updatePost);
 router.put("/:id/publish", protect, publishPost);
 router.delete("/:id", protect, deletePost);
 router.post("/:id/repost", protect, repostPost);
+router.post("/:id/report", protect, reportPost);
+router.get("/:id/reports", protect, getPostReports);
+router.get("/admin/all", protect, adminOnly, getAllPostsForAdmin);
+
 
 export default router;
 

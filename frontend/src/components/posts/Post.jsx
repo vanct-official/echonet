@@ -22,6 +22,7 @@ import {
   SimpleGrid,
   Badge,
   useColorModeValue,
+  Select,
 } from "@chakra-ui/react";
 import {
   FaHeart,
@@ -36,6 +37,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import EditPostModal from "./EditPostModal.jsx";
 import LikesModal from "./LikesModal.jsx";
+import PostDetail from "./PostDetail.jsx";
 import VerifiedBadgeSVG from "/verified-badge-svgrepo-com.svg";
 import { deletePost as deletePostAPI } from "../../api/post";
 
@@ -149,6 +151,12 @@ export default function Post({
   const [repostText, setRepostText] = useState("");
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
+  // Report modal state
+  const reportDisclosure = useDisclosure();
+  const { isOpen: isReportOpen, onOpen: onReportOpen, onClose: onReportClose } = reportDisclosure;
+  const [reportReason, setReportReason] = useState("");
+  const [reportDetails, setReportDetails] = useState("");
+  const [isReporting, setIsReporting] = useState(false);
 
   const viewDisclosure = useDisclosure();
   const editDisclosure = useDisclosure();
@@ -486,6 +494,58 @@ export default function Post({
     }
   }, [api, postData, repostText, onPostUpdated, onClose, toast, token]);
 
+  const handleReportSubmit = useCallback(async () => {
+    if (!token) {
+      toast({
+        title: "Cần đăng nhập",
+        description: "Vui lòng đăng nhập để báo cáo bài viết.",
+        status: "info",
+        duration: 2000,
+        isClosable: true,
+      });
+      return;
+    }
+    const reason = (reportReason || "").trim();
+    if (!reason) {
+      toast({
+        title: "Vui lòng chọn lý do báo cáo",
+        status: "warning",
+        duration: 2000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setIsReporting(true);
+    try {
+      await api.post(`/api/posts/${postData._id}/report`, {
+        reason,
+        details: reportDetails?.trim() || "",
+      });
+      toast({
+        title: "Đã gửi báo cáo",
+        description: "Cảm ơn bạn đã báo cáo. Chúng tôi sẽ xem xét.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      // reset & close
+      setReportReason("");
+      setReportDetails("");
+      onReportClose();
+    } catch (err) {
+      toast({
+        title: "Lỗi khi gửi báo cáo",
+        description: err?.response?.data?.message || "Không thể gửi báo cáo.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setIsReporting(false);
+    }
+  }, [token, api, postData._id, reportReason, reportDetails, onReportClose, toast]);
+
   const handleUpdatedFromChild = useCallback(
     (updatedPost) => {
       if (postData?.repostOf && !updatedPost?.repostOf) {
@@ -609,276 +669,32 @@ export default function Post({
         )}
       </Box>
 
-      <Modal isOpen={isOpen} onClose={onClose} size="xl">
-        <ModalOverlay />
-        <ModalContent bg={bgColor}>
-          <ModalHeader>
-            <Flex align="center" justify="space-between">
-              <Flex align="center">
-                <Avatar
-                  src={postData.author?.avatar}
-                  mr={2}
-                  name={postData.author?.username || "Người dùng"}
-                />
-                <Link
-                  to={`/user/${postData.author?._id}`}
-                  style={{ textDecoration: "none" }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Text fontWeight="bold" color={textColor}>
-                    {postData.author?.username || "Người dùng"}
-                  </Text>
-                </Link>
-                {postData.author?.isVerified && <VerifiedBadgeIcon />}
-                {postData.status === "draft" && (
-                  <Badge ml={2} colorScheme="yellow" variant="subtle">
-                    Draft
-                  </Badge>
-                )}
-              </Flex>
-              <Text fontSize="sm" color={secondaryTextColor}>
-                {formatTimeAgo(postData.createdAt)}
-              </Text>
-            </Flex>
-
-            {canEdit && (
-              <HStack spacing={2} mt={2}>
-                <IconButton
-                  icon={<EditIcon />}
-                  aria-label="Chỉnh sửa bài viết"
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    onClose();
-                    setTimeout(onEditOpen, 200);
-                  }}
-                />
-                <IconButton
-                  icon={<DeleteIcon />}
-                  aria-label="Xóa bài viết"
-                  size="sm"
-                  variant="ghost"
-                  color="gray.600"
-                  _hover={{ color: "red.500" }}
-                  onClick={handleDelete}
-                />
-                {postData.status === "draft" && (
-                  <Button colorScheme="green" size="sm" onClick={handlePublish}>
-                    Đăng công khai
-                  </Button>
-                )}
-              </HStack>
-            )}
-          </ModalHeader>
-
-          <ModalBody>
-            <VStack align="start" spacing={4}>
-              <Text color={textColor}>{postData.content}</Text>
-
-              {Array.isArray(postData.images) && postData.images.length > 0 && (
-                <SimpleGrid
-                  columns={{ base: 1, sm: 2, md: 3 }}
-                  spacing={3}
-                  mt={2}
-                >
-                  {postData.images.map((img, i) => (
-                    <Image
-                      key={i}
-                      src={img || "/placeholder.svg"}
-                      borderRadius="md"
-                      alt={`Post image ${i + 1}`}
-                      objectFit="cover"
-                      w="100%"
-                      h="200px"
-                      fallbackSrc="/placeholder.svg"
-                      cursor="pointer"
-                      _hover={{ transform: "scale(1.03)", transition: "0.2s" }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedImage(img);
-                        setIsImageModalOpen(true);
-                      }}
-                    />
-                  ))}
-                </SimpleGrid>
-              )}
-
-              {postData?.video && (
-                <video
-                  src={postData.video}
-                  controls
-                  style={{ width: "100%", borderRadius: 8 }}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              )}
-
-              {postData.repostOf && postData.repostOf.author ? (
-                <RepostBlock
-                  actorName={postData.author?.username}
-                  repostOf={postData.repostOf}
-                />
-              ) : postData.wasRepost ? (
-                <Box
-                  border="1px"
-                  borderColor="gray.200"
-                  borderRadius="md"
-                  bg="gray.100"
-                  p={3}
-                  mt={2}
-                  w="full"
-                >
-                  <Text color="gray.600" fontStyle="italic">
-                    Bài viết gốc đã bị xoá.
-                  </Text>
-                </Box>
-              ) : null}
-
-              <HStack spacing={4}>
-                <IconButton
-                  icon={liked ? <FaHeart color="red" /> : <FaRegHeart />}
-                  aria-label="Like"
-                  variant="ghost"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleLike();
-                  }}
-                  isLoading={isLiking}
-                />
-                <IconButton
-                  icon={<FaComment />}
-                  aria-label="Comment"
-                  variant="ghost"
-                  onClick={(e) => e.stopPropagation()}
-                />
-                <IconButton
-                  icon={<FaRetweet color={canRepost ? "teal" : "gray"} />}
-                  aria-label="Repost"
-                  variant="ghost"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!canRepost) {
-                      toast({
-                        title: "Không thể chia sẻ bài viết của chính bạn",
-                        status: "info",
-                        duration: 2000,
-                        isClosable: true,
-                      });
-                      return;
-                    }
-                    setIsRepostModalOpen(true);
-                  }}
-                  isDisabled={!canRepost}
-                />
-                <IconButton
-                  icon={<FaShare />}
-                  aria-label="Share"
-                  variant="ghost"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </HStack>
-
-              <Text fontSize="sm" color="gray.500">
-                <Text
-                  as="span"
-                  _hover={{ textDecoration: "underline", cursor: "pointer" }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    fetchLikes();
-                  }}
-                >
-                  {likesCount} lượt thích
-                </Text>
-                {"•"} {comments.length} bình luận • {postData.repostCount || 0}{" "}
-                lượt chia sẻ lại
-              </Text>
-
-              <VStack
-                align="start"
-                spacing={3}
-                maxH="300px"
-                overflowY="auto"
-                w="full"
-                pl={0}
-              >
-                {comments.length > 0 ? (
-                  comments.map((c) => (
-                    <Flex key={c._id} align="flex-start" w="full">
-                      <Avatar
-                        size="sm"
-                        src={c.user?.avatar}
-                        name={c.user?.username}
-                        mr={3}
-                        mt={1}
-                      />
-                      <Box
-                        flex="1"
-                        bg={commentBg}
-                        p={2}
-                        borderRadius="md"
-                        boxShadow="sm"
-                        _hover={{ bg: commentHoverBg }}
-                        borderColor={borderColor}
-                        borderWidth="1px"
-                      >
-                        <HStack spacing={1}>
-                          <Text
-                            fontWeight="bold"
-                            fontSize="sm"
-                            color={textColor}
-                          >
-                            {c.user?.username || "Người dùng"}
-                          </Text>
-                          {c.user?.isVerified && <VerifiedBadgeIcon />}
-                        </HStack>
-                        <Text fontSize="xs" color={secondaryTextColor}>
-                          {formatTimeAgo(c.createdAt)}
-                        </Text>
-                        <Text fontSize="sm" color={textColor}>
-                          {c.text}
-                        </Text>
-                      </Box>
-                    </Flex>
-                  ))
-                ) : (
-                  <Text color={secondaryTextColor} fontSize="sm">
-                    Chưa có bình luận nào
-                  </Text>
-                )}
-              </VStack>
-
-              <HStack mt={2} w="full">
-                <Input
-                  placeholder="Viết bình luận..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  bg={commentBg}
-                  color={textColor}
-                  borderColor={borderColor}
-                  _hover={{ borderColor: "blue.500" }}
-                  _focus={{ borderColor: "blue.500" }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleAddComment();
-                    }
-                  }}
-                  isDisabled={isCommentLoading}
-                />
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAddComment();
-                  }}
-                  colorScheme="blue"
-                  isLoading={isCommentLoading}
-                >
-                  Gửi
-                </Button>
-              </HStack>
-            </VStack>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+      {/* use PostDetail component for the detailed modal */}
+      <PostDetail
+        isOpen={isOpen}
+        onClose={onClose}
+        postData={postData}
+        currentUser={currentUser}
+        canEdit={canEdit}
+        onEditOpen={onEditOpen}
+        handleDelete={handleDelete}
+        handlePublish={handlePublish}
+        onReportOpen={onReportOpen}
+        setIsRepostModalOpen={setIsRepostModalOpen}
+        handleRepost={handleRepost}
+        liked={liked}
+        handleLike={handleLike}
+        isLiking={isLiking}
+        fetchLikes={fetchLikes}
+        likesCount={likesCount}
+        comments={comments}
+        isCommentLoading={isCommentLoading}
+        newComment={newComment}
+        setNewComment={setNewComment}
+        handleAddComment={handleAddComment}
+        setSelectedImage={setSelectedImage}
+        setIsImageModalOpen={setIsImageModalOpen}
+      />
 
       <EditPostModal
         isOpen={isEditOpen}
@@ -909,6 +725,66 @@ export default function Post({
         </ModalContent>
       </Modal>
 
+      {/* Report Modal (remain in Post.jsx) */}
+      <Modal isOpen={isReportOpen} onClose={onReportClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Báo cáo bài viết</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text fontSize="sm" mb={3}>
+              Vui lòng chọn lý do và mô tả thêm (nếu cần). Chúng tôi sẽ xem xét báo cáo.
+            </Text>
+            <Box mb={3}>
+              <Text fontSize="sm" mb={1}>
+                Lý do
+              </Text>
+              <Select
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                placeholder="Chọn lý do"
+              >
+                <option value="spam">Spam / Quảng cáo</option>
+                <option value="harassment">Quấy rối / Lăng mạ</option>
+                <option value="nudity">Nội dung nhạy cảm</option>
+                <option value="hate">Ngôn từ thù hận</option>
+                <option value="other">Khác</option>
+              </Select>
+            </Box>
+
+            <Box>
+              <Text fontSize="sm" mb={1}>
+                Chi tiết (tùy chọn)
+              </Text>
+              <Textarea
+                placeholder="Miêu tả thêm (nơi, thời điểm, nội dung vi phạm...)"
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                rows={4}
+              />
+            </Box>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onReportClose}>
+              Huỷ
+            </Button>
+            <Button
+              colorScheme="red"
+              onClick={handleReportSubmit}
+              isLoading={isReporting}
+            >
+              Gửi báo cáo
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <LikesModal
+        isOpen={isLikesModalOpen}
+        onClose={() => setIsLikesModalOpen(false)}
+        users={likeUsers}
+      />
+
       <Modal
         isOpen={isImageModalOpen}
         onClose={() => setIsImageModalOpen(false)}
@@ -937,11 +813,6 @@ export default function Post({
           </ModalBody>
         </ModalContent>
       </Modal>
-      <LikesModal
-        isOpen={isLikesModalOpen}
-        onClose={() => setIsLikesModalOpen(false)}
-        users={likeUsers}
-      />
     </>
   );
 }

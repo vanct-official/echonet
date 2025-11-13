@@ -36,10 +36,25 @@ const postSchema = new mongoose.Schema(
     },
     wasRepost: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
-    
+    reports: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        reason: { type: String, required: true }, // Lý do báo cáo
+        details: { type: String, default: "" }, // Mô tả thêm
+        status: {
+          type: String,
+          enum: ["pending", "reviewed", "dismissed"],
+          default: "pending",
+        },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -1,10 +1,11 @@
 import API from "../api"; // ✅ dùng instance có interceptor token
 
 // 🟢 Lấy tất cả bài viết
-export const fetchAllPosts = async () => {
-  const res = await API.get("/posts");
+export const fetchAllPosts = async (url = "/posts") => {
+  const res = await API.get(url);
   return res.data;
 };
+
 
 // 🟢 Lấy bài viết của chính mình
 export const fetchMyPosts = async () => {
@@ -39,6 +40,11 @@ export const fetchPostById = async (id) => {
 // 🔁 Repost bài viết
 export const repostPost = async (id) => {
   const res = await API.post(`/posts/${id}/repost`);
+  return res.data;
+};
+
+export const fetchPostReports = async (id) => {
+  const res = await API.get(`/posts/${id}/reports`);
   return res.data;
 };
 

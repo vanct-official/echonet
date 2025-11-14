@@ -48,6 +48,7 @@ export const AuthProvider = ({ children }) => {
 
       // ✅ Lưu token + role vào localStorage
       localStorage.setItem("token", token);
+      localStorage.setItem("userId", userData._id);
       if (userData.role) localStorage.setItem("userRole", userData.role);
 
       // ✅ Cập nhật state user
@@ -70,6 +71,7 @@ export const AuthProvider = ({ children }) => {
   // 🔴 Đăng xuất
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("userId");
     localStorage.removeItem("userRole");
     setUser(null);
     navigate("/login");

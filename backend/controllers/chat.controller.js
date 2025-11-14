@@ -103,10 +103,11 @@ export const sendMessage = async (req, res) => {
     console.error("❌ Lỗi gửi tin nhắn:", error);
     res
       .status(500)
-      .json({ message: error.message || "Lỗi máy chủ nội bộ khi gửi tin nhắn" });
+      .json({
+        message: error.message || "Lỗi máy chủ nội bộ khi gửi tin nhắn",
+      });
   }
 };
-
 
 /* -------------------------------------------------------------------------- */
 /* 🟢 LẤY TIN NHẮN (GET MESSAGES) */
@@ -129,7 +130,6 @@ export const getMessages = async (req, res) => {
   }
 };
 
-
 /* -------------------------------------------------------------------------- */
 /* 🆕 XÓA TIN NHẮN (DELETE MESSAGE) */
 /* -------------------------------------------------------------------------- */
@@ -148,26 +148,38 @@ export const deleteMessage = async (req, res) => {
 
     // 2. Kiểm tra quyền: Chỉ người gửi mới được xóa
     if (message.sender.toString() !== userId.toString()) {
-      return res.status(403).json({ message: "Bạn không có quyền xóa tin nhắn này." });
+      return res
+        .status(403)
+        .json({ message: "Bạn không có quyền xóa tin nhắn này." });
     }
 
     // 3. Xóa tin nhắn
     await Message.deleteOne({ _id: messageId });
-    
+
     // 4. Cập nhật latestMessage của Conversation (nếu tin nhắn bị xóa là tin nhắn mới nhất)
     const conversation = await Conversation.findById(message.conversation);
-    if (conversation && conversation.latestMessage && conversation.latestMessage.toString() === messageId) {
-        // Tìm tin nhắn mới nhất còn lại trong conversation
-        const newLatestMessage = await Message.findOne({ conversation: message.conversation })
-                                             .sort({ createdAt: -1 })
-                                             .limit(1);
+    if (
+      conversation &&
+      conversation.latestMessage &&
+      conversation.latestMessage.toString() === messageId
+    ) {
+      // Tìm tin nhắn mới nhất còn lại trong conversation
+      const newLatestMessage = await Message.findOne({
+        conversation: message.conversation,
+      })
+        .sort({ createdAt: -1 })
+        .limit(1);
 
-        conversation.latestMessage = newLatestMessage ? newLatestMessage._id : null;
-        await conversation.save();
+      conversation.latestMessage = newLatestMessage
+        ? newLatestMessage._id
+        : null;
+      await conversation.save();
     }
-    
+
     // 5. Emit sự kiện Socket thông báo tin nhắn đã bị xóa
-    req.io?.to(message.conversation.toString()).emit("deleteMessage", messageId);
+    req.io
+      ?.to(message.conversation.toString())
+      .emit("deleteMessage", messageId);
 
     res.status(200).json({ message: "Tin nhắn đã được xóa thành công." });
   } catch (error) {
@@ -187,13 +199,13 @@ export const markMessagesAsRead = async (req, res) => {
 
     // Chỉ cập nhật trạng thái đọc cho các tin nhắn đã gửi đi không phải bởi người dùng hiện tại
     const updateResult = await Message.updateMany(
-      { 
+      {
         conversation: conversationId,
         sender: { $ne: userId }, // Tin nhắn không phải của mình
-        readBy: { $ne: userId } // Chưa có trong danh sách đã đọc
+        readBy: { $ne: userId }, // Chưa có trong danh sách đã đọc
       },
-      { 
-        $addToSet: { readBy: userId } // Thêm userId vào mảng readBy
+      {
+        $addToSet: { readBy: userId }, // Thêm userId vào mảng readBy
       }
     );
 
@@ -247,4 +259,57 @@ export const getMyMessages = async (req, res) => {
   }
 };
 
+/* -------------------------------------------------------------------------- */
+/* 🟡 CẬP NHẬT NỘI DUNG TIN NHẮN (UPDATE MESSAGE) */
+/* -------------------------------------------------------------------------- */
 
+export const updateMessage = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { messageId } = req.params;
+    const { newContent } = req.body;
+
+    if (typeof newContent !== "string") {
+      return res
+        .status(400)
+        .json({ message: "Nội dung phải là chuỗi văn bản." });
+    }
+
+    const text = newContent.trim();
+
+    if (!text) {
+      return res.status(400).json({ message: "Nội dung mới không hợp lệ." });
+    }
+
+    if (!text) {
+      return res.status(400).json({ message: "Nội dung mới không hợp lệ." });
+    }
+
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      return res.status(404).json({ message: "Không tìm thấy tin nhắn." });
+    }
+
+    if (message.sender.toString() !== userId.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Bạn không thể sửa tin nhắn của người khác." });
+    }
+
+    message.content = text;
+    await message.save();
+
+    req.io?.to(message.conversation.toString()).emit("updateMessage", {
+      _id: messageId,
+      content: message.content,
+    });
+
+    res
+      .status(200)
+      .json({ message: "Đã cập nhật tin nhắn.", updatedMessage: message });
+  } catch (error) {
+    console.error("❌ Lỗi update tin nhắn:", error);
+    res.status(500).json({ message: error.message || "Lỗi máy chủ nội bộ" });
+  }
+};

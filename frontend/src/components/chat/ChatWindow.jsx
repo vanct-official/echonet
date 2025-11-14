@@ -4,10 +4,21 @@ import {
   getMessages,
   sendMessage,
   markMessagesAsRead,
+  updateMessage,
+  deleteMessage,
 } from "../../services/chatService";
 import MessageInput from "./MessageInput";
 import { useSocket } from "../../context/SocketContext";
-import { Avatar } from "@chakra-ui/react";
+import {
+  Avatar,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  IconButton,
+  useToast,
+} from "@chakra-ui/react";
+import { FiMoreVertical } from "react-icons/fi";
 
 const primaryBlue = "#0b84ff";
 const chatBackground = "#f0f2f5";
@@ -51,60 +62,66 @@ export default function ChatWindow({ conversation, setConversation }) {
   const [messages, setMessages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const socket = useSocket();
-  const messagesEndRef = useRef();
+  const messagesEndRef = useRef(null);
   const currentUserId = localStorage.getItem("userId") ?? "";
+  const toast = useToast();
 
   // 🧩 Tìm người nhận
   const receiverId = conversation?.participants?.find(
     (p) => p._id !== currentUserId
   )?._id;
 
-  /* ----------------------------- SOCKET & FETCH MESSAGES ---------------------------- */
+  // Fetch messages when conversation changes + join socket room
   useEffect(() => {
     if (!conversation || !socket) return;
-    const convId =
-      typeof conversation._id === "object"
-        ? conversation._id.toString()
-        : conversation._id;
+    const convId = conversation._id;
 
     const handleJoinAndFetch = async () => {
-      if (socket.connected) socket.emit("joinConversation", convId);
-
       try {
-        const fetchedMessages = await getMessages(convId);
-        setMessages(fetchedMessages || []);
-      } catch (error) {
-        console.error("Lỗi khi tải tin nhắn:", error);
+        if (socket?.connected) socket.emit("joinConversation", convId);
+
+        const fetched = await getMessages(convId);
+        setMessages(fetched || []);
+
+        // mark as read (fire and forget)
+        markMessagesAsRead(convId).catch(console.error);
+      } catch (err) {
+        console.error("Lỗi khi tải tin nhắn:", err);
         setMessages([]);
       }
-
-      markMessagesAsRead(convId).catch(console.error);
     };
 
     handleJoinAndFetch();
-    socket.on("connect", handleJoinAndFetch);
 
-    // ✅ Nhận tin nhắn realtime, chống trùng
     const handleReceiveMessage = (newMessage) => {
-      const senderId = newMessage.sender?._id || newMessage.sender;
-      if (senderId === currentUserId) return; // bỏ qua chính mình
-
+      // add only if not exists
       setMessages((prev) => {
         const exists = prev.some((m) => m._id === newMessage._id);
         return exists ? prev : [...prev, newMessage];
       });
     };
 
+    const handleUpdateMessage = ({ _id, content }) => {
+      setMessages((prev) => prev.map((m) => (m._id === _id ? { ...m, content } : m)));
+    };
+
+    const handleDeleteMessageEvent = (messageId) => {
+      setMessages((prev) => prev.filter((m) => m._id !== messageId));
+    };
+
     socket.on("receiveMessage", handleReceiveMessage);
+    socket.on("updateMessage", handleUpdateMessage);
+    socket.on("deleteMessage", handleDeleteMessageEvent);
 
     return () => {
-      socket.off("connect", handleJoinAndFetch);
       socket.off("receiveMessage", handleReceiveMessage);
+      socket.off("updateMessage", handleUpdateMessage);
+      socket.off("deleteMessage", handleDeleteMessageEvent);
       socket.emit("leaveConversation", convId);
     };
-  }, [conversation, socket, currentUserId]);
+  }, [conversation, socket]);
 
-  // ✅ Tự động cuộn xuống cuối
+  // scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -127,8 +144,7 @@ export default function ChatWindow({ conversation, setConversation }) {
       }
     }
 
-    if (!conversationId)
-      return console.error("Không thể xác định Conversation ID");
+    if (!conversationId) return console.error("Không thể xác định Conversation ID");
 
     try {
       let newMessage;
@@ -147,9 +163,44 @@ export default function ChatWindow({ conversation, setConversation }) {
           const exists = prev.some((m) => m._id === newMessage._id);
           return exists ? prev : [...prev, newMessage];
         });
+        // emit so other clients in room receive it (backend may already broadcast)
+        socket?.emit("sentMessage", newMessage);
       }
     } catch (error) {
       console.error("❌ Lỗi khi gửi tin nhắn:", error.message || error);
+      toast({ title: "Lỗi gửi tin nhắn", status: "error", duration: 2000 });
+    }
+  };
+
+  /* ----------------------------- EDIT / DELETE ---------------------------- */
+  const handleEditMessage = async (msg) => {
+  const oldText =
+    typeof msg.content === "string" ? msg.content : "";
+
+  const newText = prompt("Nhập nội dung mới:", oldText);
+  if (!newText || newText.trim() === oldText) return;
+
+  try {
+    const updated = await updateMessage(msg._id, newText.trim());
+    setMessages((prev) =>
+      prev.map((m) => (m._id === msg._id ? updated : m))
+    );
+  } catch (error) {
+    console.error("❌ Lỗi update tin nhắn:", error);
+  }
+};
+
+
+  const handleDeleteMessage = async (messageId) => {
+    if (!window.confirm("Bạn muốn xóa tin nhắn này?")) return;
+    try {
+      await deleteMessage(messageId);
+      setMessages((prev) => prev.filter((m) => m._id !== messageId));
+      socket?.emit("deleteMessage", { messageId, conversationId: conversation?._id });
+      toast({ title: "Đã xóa tin nhắn", status: "info", duration: 1500 });
+    } catch (err) {
+      console.error("❌ Lỗi xóa tin nhắn:", err);
+      toast({ title: "Lỗi khi xóa", status: "error", duration: 2000 });
     }
   };
 
@@ -172,9 +223,7 @@ export default function ChatWindow({ conversation, setConversation }) {
     );
   }
 
-  const receiver = conversation.participants.find(
-    (p) => p._id !== currentUserId
-  );
+  const receiver = conversation.participants.find((p) => p._id !== currentUserId);
 
   return (
     <>
@@ -274,6 +323,7 @@ export default function ChatWindow({ conversation, setConversation }) {
                       borderBottomRightRadius: isSender ? "2px" : "18px",
                       wordBreak: "break-word",
                       boxShadow: "0 1px 0.5px rgba(0, 0, 0, 0.13)",
+                      position: "relative",
                     }}
                   >
                     {/* Hiển thị media */}
@@ -322,21 +372,47 @@ export default function ChatWindow({ conversation, setConversation }) {
                     )}
 
                     {/* Nội dung text */}
-                    {m.content}
+                    <div style={{ whiteSpace: "pre-wrap" }}>{m.content}</div>
+
                     <div
                       style={{
                         fontSize: "11px",
                         color: isSender ? "#d0e4ff" : "#666",
                         marginTop: "6px",
                         textAlign: isSender ? "right" : "left",
+                        display: "flex",
+                        justifyContent: isSender ? "flex-end" : "flex-start",
+                        gap: "8px",
+                        alignItems: "center",
                       }}
                     >
-                      {new Date(m.createdAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {isSender && <span style={{ fontWeight: 600, opacity: 0.9 }}>Bạn</span>}
+                      <span>
+                        {new Date(m.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
                     </div>
                   </div>
+
+                  {isSender && (
+                    <div style={{ marginRight: "6px", display: "flex", alignItems: "center" }}>
+                      <Menu>
+                        <MenuButton
+                          as={IconButton}
+                          aria-label="Message actions"
+                          icon={<FiMoreVertical />}
+                          size="sm"
+                          variant="ghost"
+                        />
+                        <MenuList>
+                          <MenuItem onClick={() => handleEditMessage(m)}>Chỉnh sửa</MenuItem>
+                          <MenuItem onClick={() => handleDeleteMessage(m._id)}>Xóa</MenuItem>
+                        </MenuList>
+                      </Menu>
+                    </div>
+                  )}
                 </div>
               </div>
             );

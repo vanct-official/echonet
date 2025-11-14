@@ -63,7 +63,10 @@ export const getMessages = async (conversationId) => {
 // 🟢 Lấy tin nhắn của chính người dùng (theo sender ID)
 export const getMyMessages = async () => {
   try {
-    const res = await axios.get(`${API_URL}/chat/messages/mine`, getAuthHeaders());
+    const res = await axios.get(
+      `${API_URL}/chat/messages/mine`,
+      getAuthHeaders()
+    );
     return res.data;
   } catch (error) {
     console.error("❌ Lỗi lấy tin nhắn của người dùng:", {
@@ -76,7 +79,6 @@ export const getMyMessages = async () => {
   }
 };
 
-
 // 🟢 Gửi tin nhắn (text hoặc file)
 export const sendMessage = async (data, isFormData = false) => {
   try {
@@ -85,7 +87,7 @@ export const sendMessage = async (data, isFormData = false) => {
     const headers = {
       Authorization: `Bearer ${token}`,
       // 💡 SỬA LỖI: Chỉ set Content-Type: application/json nếu KHÔNG phải FormData
-      ...(!isFormData ? { "Content-Type": "application/json" } : {}), 
+      ...(!isFormData ? { "Content-Type": "application/json" } : {}),
     };
 
     const res = await axios.post(`${API_URL}/chat/message`, data, { headers });
@@ -107,16 +109,15 @@ export const markMessagesAsRead = async (conversationId) => {
     );
     return res.data;
   } catch (error) {
-    console.error("❌ Lỗi khi đánh dấu tin nhắn đã đọc:", error); 
+    console.error("❌ Lỗi khi đánh dấu tin nhắn đã đọc:", error);
     throw error;
   }
 };
 
-
 export const deleteMessage = async (messageId) => {
   try {
     const res = await axios.delete(
-      `${API_URL}/chat/message/${messageId}`, // API endpoint mới
+      `${API_URL}/chat/messages/${messageId}`, // API endpoint mới
       getAuthHeaders()
     );
     return res.data;
@@ -124,4 +125,17 @@ export const deleteMessage = async (messageId) => {
     console.error("❌ Lỗi khi xóa tin nhắn:", error);
     throw error;
   }
+};
+
+export const updateMessage = async (messageId, newContent) => {
+  const token = localStorage.getItem("token");
+  const res = await axios.put(
+    `http://localhost:5000/api/chat/messages/${messageId}`,   // ✔ CHÍNH XÁC
+    { newContent },
+    {
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+
+  return res.data.updatedMessage;
 };

@@ -18,12 +18,9 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
     isActive: { type: Boolean, required: true, default: true },
-    isVerified: { type: Boolean, required: true, default: false },
-
+    isVerified: { type: Boolean, default: false },
     followed: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-
-   
     blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 
     bio: { type: String, default: "" },

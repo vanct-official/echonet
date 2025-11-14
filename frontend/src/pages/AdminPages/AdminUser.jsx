@@ -19,6 +19,13 @@ import {
   HStack,
   Text,
   Avatar,
+  AlertDialog,
+  AlertDialogOverlay,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogBody,
+  AlertDialogFooter,
+  useDisclosure,
 } from "@chakra-ui/react";
 import {
   FaEdit,
@@ -42,6 +49,11 @@ export default function AdminUsersPage() {
   const [filterRole, setFilterRole] = useState("");
   const toast = useToast();
   const token = localStorage.getItem("token");
+
+  // Confirmation dialog state
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = React.useRef();
+  const [pendingRoleChange, setPendingRoleChange] = useState(null); // { userId, currentRole, newRole }
 
   // 🟩 Fetch danh sách người dùng
   const fetchUsers = async () => {
@@ -69,9 +81,54 @@ export default function AdminUsersPage() {
     if (token) fetchUsers();
   }, [token]);
 
-  // 🟨 Đổi quyền (admin <-> user)
-  const handleToggleRole = async (userId, currentRole) => {
+  // 🟧 Xác nhận chính chủ (verify user)
+  const handleVerifyUser = async (userId) => {
+    try {
+      await axios.put(
+        `${API_BASE_URL}/admin/${userId}/verify`,
+        {isVerified: true},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setUsers((prev) =>
+        prev.map((u) => (u._id === userId ? { ...u, isVerified: true } : u))
+      );
+
+      toast({
+        title: "Xác nhận thành công",
+        description: "Người dùng đã được xác nhận chính chủ.",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
+    } catch (err) {
+      console.error("Error verifying user:", err);
+      toast({
+        title: "Lỗi",
+        description: "Không thể xác nhận người dùng.",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+      });
+    }
+  };
+
+  // 🟨 Mở dialog xác nhận (chỉ khi nâng cấp user lên admin)
+  const handleToggleRoleClick = (userId, currentRole) => {
     const newRole = currentRole === "admin" ? "user" : "admin";
+
+    // Chỉ mở dialog nếu nâng cấp lên admin
+    if (newRole === "admin") {
+      setPendingRoleChange({ userId, currentRole, newRole });
+      onOpen();
+    } else {
+      // Hạ cấp xuống user không cần xác nhận
+      confirmRoleChange(userId, newRole);
+    }
+  };
+
+  // Xác nhận và thực hiện đổi quyền
+  const confirmRoleChange = async (userId, newRole) => {
     try {
       await axios.put(
         `${API_BASE_URL}/admin/${userId}/role`,
@@ -89,6 +146,10 @@ export default function AdminUsersPage() {
         status: "success",
         duration: 2000,
       });
+
+      // Reset dialog state
+      setPendingRoleChange(null);
+      onClose();
     } catch (err) {
       console.error("Error toggling role:", err);
       toast({
@@ -258,56 +319,68 @@ export default function AdminUsersPage() {
                 </Td>
 
                 {/* Các hành động */}
-<Td>
-  {user.role !== "admin" ? (
-    <HStack spacing={2}>
-      {/* Nút đổi quyền */}
-      <Tooltip
-        label={
-          user.role === "admin"
-            ? "Hạ cấp xuống User"
-            : "Nâng cấp lên Admin"
-        }
-      >
-        <IconButton
-          icon={
-            user.role === "admin" ? <FaUser /> : <FaUserShield />
-          }
-          size="sm"
-          colorScheme={
-            user.role === "admin" ? "yellow" : "purple"
-          }
-          onClick={() => handleToggleRole(user._id, user.role)}
-          aria-label="Toggle role"
-        />
-      </Tooltip>
+                <Td>
+                  {user.role !== "admin" ? (
+                    <HStack spacing={2}>
+                      {/* Nút đổi quyền */}
+                      <Tooltip
+                        label={
+                          user.role === "admin"
+                            ? "Hạ cấp xuống User"
+                            : "Nâng cấp lên Admin"
+                        }
+                      >
+                        <IconButton
+                          icon={
+                            user.role === "admin" ? <FaUser /> : <FaUserShield />
+                          }
+                          size="sm"
+                          colorScheme={
+                            user.role === "admin" ? "yellow" : "purple"
+                          }
+                          onClick={() => handleToggleRoleClick(user._id, user.role)}
+                          aria-label="Toggle role"
+                        />
+                      </Tooltip>
 
-      {/* Nút active / lock */}
-      <Tooltip
-        label={
-          user.isActive
-            ? "Khóa tài khoản"
-            : "Kích hoạt lại tài khoản"
-        }
-      >
-        <IconButton
-          icon={user.isActive ? <FaLock /> : <FaUnlock />}
-          size="sm"
-          colorScheme={user.isActive ? "red" : "green"}
-          onClick={() =>
-            handleToggleActive(user._id, user.isActive)
-          }
-          aria-label="Toggle active"
-        />
-      </Tooltip>
-    </HStack>
-  ) : (
-    <Text fontSize="sm" color="gray.500">
-      (Admin)
-    </Text>
-  )}
-</Td>
+                      {/* Nút active / lock */}
+                      <Tooltip
+                        label={
+                          user.isActive
+                            ? "Khóa tài khoản"
+                            : "Kích hoạt lại tài khoản"
+                        }
+                      >
+                        <IconButton
+                          icon={user.isActive ? <FaLock /> : <FaUnlock />}
+                          size="sm"
+                          colorScheme={user.isActive ? "red" : "green"}
+                          onClick={() =>
+                            handleToggleActive(user._id, user.isActive)
+                          }
+                          aria-label="Toggle active"
+                        />
+                      </Tooltip>
 
+                      {/* Nút xác nhận chính chủ */}
+                      {!user.isVerified && (
+                        <Tooltip label="Xác nhận chính chủ">
+                          <IconButton
+                            icon={<FaCheckCircle />}
+                            size="sm"
+                            colorScheme="green"
+                            onClick={() => handleVerifyUser(user._id)}
+                            aria-label="Verify user"
+                          />
+                        </Tooltip>
+                      )}
+                    </HStack>
+                  ) : (
+                    <Text fontSize="sm" color="gray.500">
+                      (Admin)
+                    </Text>
+                  )}
+                </Td>
               </Tr>
             ))}
           </Tbody>
@@ -318,6 +391,65 @@ export default function AdminUsersPage() {
             Không tìm thấy người dùng phù hợp.
           </Text>
         )}
+
+        {/* Confirmation Dialog */}
+        <AlertDialog
+          isOpen={isOpen}
+          leastDestructiveRef={cancelRef}
+          onClose={() => {
+            setPendingRoleChange(null);
+            onClose();
+          }}
+          isCentered
+        >
+          <AlertDialogOverlay>
+            <AlertDialogContent>
+              <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                ⚠️ Xác nhận nâng cấp quyền
+              </AlertDialogHeader>
+              <AlertDialogBody>
+                Bạn có chắc chắn muốn nâng cấp người dùng{" "}
+                <Text as="span" fontWeight="bold" color="blue.600">
+                  {
+                    users.find((u) => u._id === pendingRoleChange?.userId)
+                      ?.username
+                  }
+                </Text>
+                {" "}lên <Text as="span" fontWeight="bold" color="red.600">Admin</Text>?
+
+                <br />
+                <Text fontSize="sm" mt={2} color="gray.600">
+                  Những Admin sẽ có quyền truy cập tất cả các chức năng quản trị.
+                </Text>
+              </AlertDialogBody>
+              <AlertDialogFooter>
+                <Button
+                  ref={cancelRef}
+                  onClick={() => {
+                    setPendingRoleChange(null);
+                    onClose();
+                  }}
+                >
+                  Huỷ
+                </Button>
+                <Button
+                  colorScheme="red"
+                  onClick={() => {
+                    if (pendingRoleChange) {
+                      confirmRoleChange(
+                        pendingRoleChange.userId,
+                        pendingRoleChange.newRole
+                      );
+                    }
+                  }}
+                  ml={3}
+                >
+                  Xác nhận
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialogOverlay>
+        </AlertDialog>
       </Box>
     </Flex>
   );

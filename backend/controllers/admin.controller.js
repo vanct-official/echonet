@@ -79,3 +79,20 @@ export const changeUserRole = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const changeVerificationStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isVerified } = req.body;
+
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.isVerified = isVerified;
+    await user.save();
+    res.json({ message: "User verification status changed successfully", user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

@@ -1,206 +1,2845 @@
-[
-  {
-    "_id": { "$oid": "68fba4a9f91651c15cb3eb2a" },
-    "author": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
-    "content": "Hello world! Đây là bài đăng đầu tiên.",
-    "images": ["https://via.placeholder.com/400"],
-    "likes": [
-      { "$oid": "68fb9b94ec1104c6b4ea5db5" },
-      { "$oid": "68fb9c254e61561a56f85a99" }
-    ],
-    "comments": [
-      {
-        "user": { "$oid": "68fb9c254e61561a56f85a99" },
-        "text": "Hello",
-        "_id": { "$oid": "68fc3b3eb360c9c8e7f95a34" },
-        "createdAt": { "$date": "2025-10-25T02:51:42.786Z" }
-      }
-    ],
-    "status": "published",
-    "repostCount": 0,
-    "repostOf": null,
-    "wasRepost": false,
-    "createdAt": { "$date": "2025-10-24T16:09:13.843Z" },
-    "updatedAt": { "$date": "2025-10-25T02:54:44.535Z" },
-    "__v": 7
+[{
+  "_id": {
+    "$oid": "d3e3f5307b82451d852b67ac"
   },
-  {
-    "_id": { "$oid": "68fc3d1bb360c9c8e7f95ace" },
-    "author": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
-    "content": "Hello đây là bài đăng thứ 2 của mình nha",
-    "images": [],
-    "likes": [],
-    "comments": [],
-    "status": "published",
-    "repostCount": 0,
-    "repostOf": null,
-    "wasRepost": false,
-    "createdAt": { "$date": "2025-10-25T02:59:39.592Z" },
-    "updatedAt": { "$date": "2025-11-03T02:41:04.770Z" },
-    "__v": 16
+  "author": {
+    "$oid": "68fb9c424e61561a56f85a9c"
   },
-  {
-    "_id": { "$oid": "68fc3dceb360c9c8e7f95b49" },
-    "author": { "$oid": "68fb9c254e61561a56f85a99" },
-    "content": "Xin chào anh Văn",
-    "images": ["blob:http://localhost:5173/db84244e-5c14-466a-a437-7765ebff1646"],
-    "likes": [
-      { "$oid": "68fb9c254e61561a56f85a99" },
-      { "$oid": "68fb9b94ec1104c6b4ea5db5" }
-    ],
-    "comments": [
-      {
-        "user": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
-        "text": "Chất thế nhờ",
-        "_id": { "$oid": "68fc3dfab360c9c8e7f95b5f" },
-        "createdAt": { "$date": "2025-10-25T03:03:22.562Z" }
+  "content": "Đi dạo phố tối nay nè.",
+  "images": [],
+  "likes": [
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    },
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "261fb78894ea47c1a9311ddc"
       },
-      {
-        "user": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
-        "text": "Lô",
-        "_id": { "$oid": "68fc76e484a97e25bcc48112" },
-        "createdAt": { "$date": "2025-10-25T07:06:12.800Z" }
+      "user": {
+        "$oid": "68fb9c424e61561a56f85a9c"
       },
-      {
-        "user": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
-        "text": "Lô",
-        "_id": { "$oid": "68fc78f484a97e25bcc481be" },
-        "createdAt": { "$date": "2025-10-25T07:15:00.878Z" }
+      "text": "Comment 1 on post 1",
+      "createdAt": {
+        "$date": "2025-10-22T07:00:00.000Z"
       }
-    ],
-    "status": "published",
-    "repostCount": 0,
-    "repostOf": null,
-    "wasRepost": false,
-    "createdAt": { "$date": "2025-10-25T03:02:38.951Z" },
-    "updatedAt": { "$date": "2025-10-25T07:15:00.879Z" },
-    "__v": 5
-  },
-  {
-    "_id": { "$oid": "68fc41b6257311f2cfe7658c" },
-    "author": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
-    "content": "hello",
-    "images": [
-      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761362358/posts/hoyr3fj5he4gylwlywl7.jpg"
-    ],
-    "likes": [{ "$oid": "68fb9c254e61561a56f85a99" }],
-    "comments": [],
-    "status": "published",
-    "repostCount": 0,
-    "repostOf": null,
-    "wasRepost": false,
-    "createdAt": { "$date": "2025-10-25T03:19:18.478Z" },
-    "updatedAt": { "$date": "2025-10-25T03:20:21.342Z" },
-    "__v": 1
-  },
-  {
-    "_id": { "$oid": "68fc4376257311f2cfe765e0" },
-    "author": { "$oid": "68fb9c254e61561a56f85a99" },
-    "content": "Hello đồng bào",
-    "images": [
-      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761362805/posts/jsp21rgylnbe4ukwts6f.png"
-    ],
-    "likes": [{ "$oid": "68fb9b94ec1104c6b4ea5db5" }],
-    "comments": [
-      {
-        "user": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
-        "text": "Quét mã ah",
-        "_id": { "$oid": "68fc766e84a97e25bcc480fe" },
-        "createdAt": { "$date": "2025-10-25T07:04:14.682Z" }
+    },
+    {
+      "_id": {
+        "$oid": "fe9a0436bb7544d2a6b862e7"
       },
-      {
-        "user": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
-        "text": "ko nhé",
-        "_id": { "$oid": "68fc771d84a97e25bcc48148" },
-        "createdAt": { "$date": "2025-10-25T07:07:09.902Z" }
+      "user": {
+        "$oid": "68fb9c5a4e61561a56f85a9f"
+      },
+      "text": "Comment 2 on post 1",
+      "createdAt": {
+        "$date": "2025-10-22T07:00:00.000Z"
       }
-    ],
-    "status": "published",
-    "repostCount": 0,
-    "repostOf": null,
-    "wasRepost": false,
-    "createdAt": { "$date": "2025-10-25T03:26:46.136Z" },
-    "updatedAt": { "$date": "2025-10-25T07:07:42.947Z" },
-    "__v": 3
-  },
-  {
-    "_id": { "$oid": "68fc7ab484a97e25bcc4820e" },
-    "author": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
-    "content": "Cool Ngầu",
-    "images": [
-      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761376948/posts/k0zxm7xxb3m1i13nzol9.png"
-    ],
-    "likes": [{ "$oid": "68fb9b94ec1104c6b4ea5db5" }],
-    "comments": [],
-    "status": "published",
-    "repostCount": 0,
-    "repostOf": null,
-    "wasRepost": false,
-    "createdAt": { "$date": "2025-10-25T07:22:28.642Z" },
-    "updatedAt": { "$date": "2025-10-25T07:22:35.359Z" },
-    "__v": 1
-  },
-  {
-    "_id": { "$oid": "68fcb3982b435575f59e64b0" },
-    "author": { "$oid": "68fb9b94ec1104c6b4ea5db5" },
-    "content": "đăng nhiều ảnh này",
-    "images": [
-      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761391506/posts/poidl0zibm0sfryrm85v.jpg",
-      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761391508/posts/hpr5lat81nmicoammhep.png",
-      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761391510/posts/g7wuxwbkmclzpvb9rt1x.png",
-      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1761391511/posts/gvhpyeohyejbppaibpgh.png"
-    ],
-    "likes": [{ "$oid": "68fc6d2adf2a81282ba34875" }],
-    "comments": [
-      {
-        "user": { "$oid": "68fc6d2adf2a81282ba34875" },
-        "text": "Ui, đẹp",
-        "_id": { "$oid": "68fcb5522b435575f59e65a6" },
-        "createdAt": { "$date": "2025-10-25T11:32:34.320Z" }
+    },
+    {
+      "_id": {
+        "$oid": "a6e03bce0f4e4d6fa049daf8"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 3 on post 1",
+      "createdAt": {
+        "$date": "2025-10-22T07:00:00.000Z"
       }
-    ],
-    "status": "published",
-    "repostCount": 0,
-    "repostOf": null,
-    "wasRepost": false,
-    "createdAt": { "$date": "2025-10-25T11:25:12.299Z" },
-    "updatedAt": { "$date": "2025-10-25T11:32:34.322Z" },
-    "__v": 4
+    },
+    {
+      "_id": {
+        "$oid": "164b14856f4548f9ab90ccf1"
+      },
+      "user": {
+        "$oid": "68fb9c5a4e61561a56f85a9f"
+      },
+      "text": "Comment 4 on post 1",
+      "createdAt": {
+        "$date": "2025-10-22T07:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-22T07:00:00.000Z"
   },
-  {
-    "_id": { "$oid": "68fcb5b22b435575f59e6604" },
-    "author": { "$oid": "68fc6d2adf2a81282ba34875" },
-    "content": "Xin chào cộng đồng Echonet",
-    "images": [],
-    "likes": [
-      { "$oid": "68fc6d2adf2a81282ba34875" },
-      { "$oid": "68fb9c254e61561a56f85a99" }
-    ],
-    "comments": [],
-    "status": "published",
-    "repostCount": 0,
-    "repostOf": null,
-    "wasRepost": false,
-    "createdAt": { "$date": "2025-10-25T11:34:10.645Z" },
-    "updatedAt": { "$date": "2025-10-25T13:47:23.023Z" },
-    "__v": 4
+  "updatedAt": {
+    "$date": "2025-10-22T07:00:00.000Z"
   },
-  {
-    "_id": { "$oid": "690827629ab963e7c2378d7e" },
-    "author": { "$oid": "690815f5c24f2e30eb67c9d1" },
-    "content": "testA",
-    "images": [
-      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1762179547/posts/upjsqhjukhmzdykbnkrb.png",
-      "https://res.cloudinary.com/dekvmwy9i/image/upload/v1762179575/posts/hrfkll3tllzmhrsnuobf.jpg"
-    ],
-    "likes": [],
-    "comments": [],
-    "status": "published",
-    "repostCount": 0,
-    "repostOf": null,
-    "wasRepost": false,
-    "createdAt": { "$date": "2025-11-03T03:54:10.875Z" },
-    "updatedAt": { "$date": "2025-11-03T14:19:36.054Z" },
-    "__v": 10
-  }
-]
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "c0290b74941047bda9ee5262"
+  },
+  "author": {
+    "$oid": "68fb9c5a4e61561a56f85a9f"
+  },
+  "content": "Hôm nay trời thật đẹp!",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fcbda8171bf08b77e3a481"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    },
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    },
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "f5ad8f963ebf4d57ad5efdf0"
+      },
+      "user": {
+        "$oid": "68fb9c5a4e61561a56f85a9f"
+      },
+      "text": "Comment 1 on post 2",
+      "createdAt": {
+        "$date": "2025-10-21T02:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "0d6837252a854da6aa962f73"
+      },
+      "user": {
+        "$oid": "68fb9c424e61561a56f85a9c"
+      },
+      "text": "Comment 2 on post 2",
+      "createdAt": {
+        "$date": "2025-10-21T02:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-21T02:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-21T02:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "888db78afbd048999570a5bd"
+  },
+  "author": {
+    "$oid": "68fb9c424e61561a56f85a9c"
+  },
+  "content": "Ăn trưa thôi mọi người ơi!",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    },
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "8644836e909c49039d2de6bb"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 1 on post 3",
+      "createdAt": {
+        "$date": "2025-10-27T20:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "e5a6b391d13e4b1fb07709c7"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 2 on post 3",
+      "createdAt": {
+        "$date": "2025-10-27T20:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "6d8cbb9b554b4530b3141944"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 3 on post 3",
+      "createdAt": {
+        "$date": "2025-10-27T20:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-27T20:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-27T20:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "c9003087cac74b0985ac6a25"
+  },
+  "author": {
+    "$oid": "68fb9c5a4e61561a56f85a9f"
+  },
+  "content": "Một ngày tuyệt vời để viết code.",
+  "images": [],
+  "likes": [],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "4e7d0fd4c99b43fab5392728"
+      },
+      "user": {
+        "$oid": "68fcbda8171bf08b77e3a481"
+      },
+      "text": "Comment 1 on post 4",
+      "createdAt": {
+        "$date": "2025-10-28T21:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-28T21:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-28T21:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "55147e55063443e5a952f4d7"
+  },
+  "author": {
+    "$oid": "68fb9c5a4e61561a56f85a9f"
+  },
+  "content": "Hello social network!",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "442b7c724c6347b8a70cc205"
+      },
+      "user": {
+        "$oid": "68fb9c424e61561a56f85a9c"
+      },
+      "text": "Comment 1 on post 5",
+      "createdAt": {
+        "$date": "2025-10-20T23:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-20T23:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-20T23:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "06f8d35615734a96b35b4635"
+  },
+  "author": {
+    "$oid": "68fb9c254e61561a56f85a99"
+  },
+  "content": "Ăn trưa thôi mọi người ơi!",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    },
+    {
+      "$oid": "68fcbda8171bf08b77e3a481"
+    }
+  ],
+  "comments": [],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-23T05:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-23T05:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "8825e8f3b857468aa1c39c30"
+  },
+  "author": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "content": "Đi dạo phố tối nay nè.",
+  "images": [],
+  "likes": [],
+  "comments": [],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-23T17:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-23T17:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "3d2683291545488983685f81"
+  },
+  "author": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "content": "Hôm nay trời thật đẹp!",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    },
+    {
+      "$oid": "68fcbda8171bf08b77e3a481"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    },
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "f4521008344e4248ace5bf9c"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 1 on post 8",
+      "createdAt": {
+        "$date": "2025-10-24T06:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-24T06:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-24T06:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "c82fdbbdf5b24fc59d4c09c6"
+  },
+  "author": {
+    "$oid": "68fb9c5a4e61561a56f85a9f"
+  },
+  "content": "Random thought of the day.",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fcbda8171bf08b77e3a481"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "e9c1feda5a29401d843aefe6"
+      },
+      "user": {
+        "$oid": "68fcbda8171bf08b77e3a481"
+      },
+      "text": "Comment 1 on post 9",
+      "createdAt": {
+        "$date": "2025-10-21T09:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "604621a980ae47b6aed5f9e3"
+      },
+      "user": {
+        "$oid": "68fb9c424e61561a56f85a9c"
+      },
+      "text": "Comment 2 on post 9",
+      "createdAt": {
+        "$date": "2025-10-21T09:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "2bbcea2ceed04045b94142e4"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 3 on post 9",
+      "createdAt": {
+        "$date": "2025-10-21T09:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "c867bb46c8754f739a0869db"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 4 on post 9",
+      "createdAt": {
+        "$date": "2025-10-21T09:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-21T09:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-21T09:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "1988642e204345ce8964adff"
+  },
+  "author": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "content": "Đi dạo phố tối nay nè.",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fcbda8171bf08b77e3a481"
+    },
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    },
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "653b19784e15444c928f3d45"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 1 on post 10",
+      "createdAt": {
+        "$date": "2025-10-27T14:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "2c7f2c7b0b034208ab0c3ed1"
+      },
+      "user": {
+        "$oid": "68fb9b94ec1104c6b4ea5db5"
+      },
+      "text": "Comment 2 on post 10",
+      "createdAt": {
+        "$date": "2025-10-27T14:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "695ec3670e6a43eda887875f"
+      },
+      "user": {
+        "$oid": "68fb9c5a4e61561a56f85a9f"
+      },
+      "text": "Comment 3 on post 10",
+      "createdAt": {
+        "$date": "2025-10-27T14:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-27T14:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-27T14:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "b393f36cdd0844cd953c08aa"
+  },
+  "author": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "content": "Đây là bài đăng thử nghiệm cho hệ thống.",
+  "images": [],
+  "likes": [
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    }
+  ],
+  "comments": [],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-28T17:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-28T17:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "cafc88ba0dfa48359aaa99a0"
+  },
+  "author": {
+    "$oid": "68fb9b94ec1104c6b4ea5db5"
+  },
+  "content": "Đây là bài đăng thử nghiệm cho hệ thống.",
+  "images": [],
+  "likes": [
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "d6aef153e1f24c1aaf313263"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 1 on post 12",
+      "createdAt": {
+        "$date": "2025-10-24T22:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "7f10f853e9fe42fd9c4cde0f"
+      },
+      "user": {
+        "$oid": "68fb9c424e61561a56f85a9c"
+      },
+      "text": "Comment 2 on post 12",
+      "createdAt": {
+        "$date": "2025-10-24T22:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "ecb4c9ce255840d8bc4f85a0"
+      },
+      "user": {
+        "$oid": "68fb9b94ec1104c6b4ea5db5"
+      },
+      "text": "Comment 3 on post 12",
+      "createdAt": {
+        "$date": "2025-10-24T22:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "41f69b5d62a84769adb5c099"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 4 on post 12",
+      "createdAt": {
+        "$date": "2025-10-24T22:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-24T22:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-24T22:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "4c20ccee68e54d5c88b980f0"
+  },
+  "author": {
+    "$oid": "68fb9c5a4e61561a56f85a9f"
+  },
+  "content": "Đang học Node.js, phê quá!",
+  "images": [],
+  "likes": [],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "2b9c5667710c488da118e870"
+      },
+      "user": {
+        "$oid": "68fcbda8171bf08b77e3a481"
+      },
+      "text": "Comment 1 on post 13",
+      "createdAt": {
+        "$date": "2025-10-26T02:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "9c73021d095d4c5badc8c3c9"
+      },
+      "user": {
+        "$oid": "68fb9c424e61561a56f85a9c"
+      },
+      "text": "Comment 2 on post 13",
+      "createdAt": {
+        "$date": "2025-10-26T02:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "c847943b48754d139b797a93"
+      },
+      "user": {
+        "$oid": "68fb9c424e61561a56f85a9c"
+      },
+      "text": "Comment 3 on post 13",
+      "createdAt": {
+        "$date": "2025-10-26T02:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "de4e080719a7482ebda98c93"
+      },
+      "user": {
+        "$oid": "68fb9c424e61561a56f85a9c"
+      },
+      "text": "Comment 4 on post 13",
+      "createdAt": {
+        "$date": "2025-10-26T02:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-26T02:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-26T02:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "4d774386c4eb43ccbadc72c1"
+  },
+  "author": {
+    "$oid": "68fb9b94ec1104c6b4ea5db5"
+  },
+  "content": "Đây là bài đăng thử nghiệm cho hệ thống.",
+  "images": [],
+  "likes": [
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    },
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "c424935e17874f2a9bde5605"
+      },
+      "user": {
+        "$oid": "68fb9c5a4e61561a56f85a9f"
+      },
+      "text": "Comment 1 on post 14",
+      "createdAt": {
+        "$date": "2025-10-22T18:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-22T18:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-22T18:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "3eec5b70ed0644ebb4e485cc"
+  },
+  "author": {
+    "$oid": "68fb9c5a4e61561a56f85a9f"
+  },
+  "content": "Test thử like/comment.",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fcbda8171bf08b77e3a481"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    },
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    }
+  ],
+  "comments": [],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-23T04:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-23T04:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "5c5a1a7a41cf40cb94a15348"
+  },
+  "author": {
+    "$oid": "68fb9b94ec1104c6b4ea5db5"
+  },
+  "content": "Viết API mới xong rồi.",
+  "images": [],
+  "likes": [
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    },
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "c8240e33ad27443191772b9d"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 1 on post 16",
+      "createdAt": {
+        "$date": "2025-10-24T11:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-24T11:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-24T11:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "4d1ae3c915d74d3b819d1b39"
+  },
+  "author": {
+    "$oid": "68fb9c5a4e61561a56f85a9f"
+  },
+  "content": "Đi dạo phố tối nay nè.",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    },
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    },
+    {
+      "$oid": "68fcbda8171bf08b77e3a481"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "2d42696d65c74e259fec5c17"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 1 on post 17",
+      "createdAt": {
+        "$date": "2025-10-27T07:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "72801917b6a34e1fb5e6b4ea"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 2 on post 17",
+      "createdAt": {
+        "$date": "2025-10-27T07:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "a1afd9b886cd46d7ac2bceb1"
+      },
+      "user": {
+        "$oid": "68fb9b94ec1104c6b4ea5db5"
+      },
+      "text": "Comment 3 on post 17",
+      "createdAt": {
+        "$date": "2025-10-27T07:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-27T07:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-27T07:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "3601a58a8f374c70b2a5d128"
+  },
+  "author": {
+    "$oid": "68fb9b94ec1104c6b4ea5db5"
+  },
+  "content": "Test thử like/comment.",
+  "images": [],
+  "likes": [
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    },
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    }
+  ],
+  "comments": [],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-25T09:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-25T09:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "c951415ebf84438792f025a0"
+  },
+  "author": {
+    "$oid": "68fb9b94ec1104c6b4ea5db5"
+  },
+  "content": "Test thử like/comment.",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "a4fa775b4c4f4cf3a72a7e5d"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 1 on post 19",
+      "createdAt": {
+        "$date": "2025-10-24T21:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "e120feaf89164d30a135c19f"
+      },
+      "user": {
+        "$oid": "68fb9c5a4e61561a56f85a9f"
+      },
+      "text": "Comment 2 on post 19",
+      "createdAt": {
+        "$date": "2025-10-24T21:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "b377a0bb269d40d89b05fa12"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 3 on post 19",
+      "createdAt": {
+        "$date": "2025-10-24T21:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "546b535331904e0dbdb16423"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 4 on post 19",
+      "createdAt": {
+        "$date": "2025-10-24T21:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-24T21:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-24T21:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "2cf9eb06fcf14b2d87336069"
+  },
+  "author": {
+    "$oid": "68fb9c5a4e61561a56f85a9f"
+  },
+  "content": "Một ngày tuyệt vời để viết code.",
+  "images": [],
+  "likes": [
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    },
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    },
+    {
+      "$oid": "68fcbda8171bf08b77e3a481"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    }
+  ],
+  "comments": [],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-25T14:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-25T14:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "4b4098a9e7e54836b71d3693"
+  },
+  "author": {
+    "$oid": "68fb9c254e61561a56f85a99"
+  },
+  "content": "Đi dạo phố tối nay nè.",
+  "images": [],
+  "likes": [
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    },
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    },
+    {
+      "$oid": "68fcbda8171bf08b77e3a481"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "7e5fda01f0d34d1185d03c89"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 1 on post 21",
+      "createdAt": {
+        "$date": "2025-10-28T01:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-28T01:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-28T01:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "cfe21c9a7a9745a0be2aea25"
+  },
+  "author": {
+    "$oid": "68fb9c424e61561a56f85a9c"
+  },
+  "content": "Một ngày tuyệt vời để viết code.",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "0632ded25eb64643aa59b2cc"
+      },
+      "user": {
+        "$oid": "68fb9c424e61561a56f85a9c"
+      },
+      "text": "Comment 1 on post 22",
+      "createdAt": {
+        "$date": "2025-10-25T23:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "5134653bacb349599d4887a7"
+      },
+      "user": {
+        "$oid": "68fb9c424e61561a56f85a9c"
+      },
+      "text": "Comment 2 on post 22",
+      "createdAt": {
+        "$date": "2025-10-25T23:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "5b0f85a959ab4f3f966aef52"
+      },
+      "user": {
+        "$oid": "68fb9c5a4e61561a56f85a9f"
+      },
+      "text": "Comment 3 on post 22",
+      "createdAt": {
+        "$date": "2025-10-25T23:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "d1f98dbc9f1744a0910c0851"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 4 on post 22",
+      "createdAt": {
+        "$date": "2025-10-25T23:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-25T23:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-25T23:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "4059b214044348e1bf5b9c14"
+  },
+  "author": {
+    "$oid": "68fb9c5a4e61561a56f85a9f"
+  },
+  "content": "Ăn trưa thôi mọi người ơi!",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fcbda8171bf08b77e3a481"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "527d33caa1424cffa0673dc6"
+      },
+      "user": {
+        "$oid": "68fcbda8171bf08b77e3a481"
+      },
+      "text": "Comment 1 on post 23",
+      "createdAt": {
+        "$date": "2025-10-23T10:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "6dd21762e00645068879bf7f"
+      },
+      "user": {
+        "$oid": "68fb9b94ec1104c6b4ea5db5"
+      },
+      "text": "Comment 2 on post 23",
+      "createdAt": {
+        "$date": "2025-10-23T10:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "ca4e7c156e20452daeded791"
+      },
+      "user": {
+        "$oid": "68fb9b94ec1104c6b4ea5db5"
+      },
+      "text": "Comment 3 on post 23",
+      "createdAt": {
+        "$date": "2025-10-23T10:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "6580d6c20938483ba067885f"
+      },
+      "user": {
+        "$oid": "68fcbda8171bf08b77e3a481"
+      },
+      "text": "Comment 4 on post 23",
+      "createdAt": {
+        "$date": "2025-10-23T10:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-23T10:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-23T10:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "b33ec836ac364c15a0479751"
+  },
+  "author": {
+    "$oid": "68fb9c254e61561a56f85a99"
+  },
+  "content": "Hello social network!",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "e770d5f3bbb44b1e958c0198"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 1 on post 24",
+      "createdAt": {
+        "$date": "2025-10-24T14:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "bd266019041245219ac07c9e"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 2 on post 24",
+      "createdAt": {
+        "$date": "2025-10-24T14:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-24T14:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-24T14:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "0fc0bb32d98e4fdcb0f344b1"
+  },
+  "author": {
+    "$oid": "68fb9c5a4e61561a56f85a9f"
+  },
+  "content": "Random thought of the day.",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "92a762e87ba347a38764ad21"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 1 on post 25",
+      "createdAt": {
+        "$date": "2025-10-20T07:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "7bf2ddd231da4a1ea4ed0e54"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 2 on post 25",
+      "createdAt": {
+        "$date": "2025-10-20T07:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-20T07:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-20T07:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "35f099e487a448baa0aa80c2"
+  },
+  "author": {
+    "$oid": "68fb9c254e61561a56f85a99"
+  },
+  "content": "Hôm nay trời thật đẹp!",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "31e5e310ed064c3e85fb68cb"
+      },
+      "user": {
+        "$oid": "68fb9c424e61561a56f85a9c"
+      },
+      "text": "Comment 1 on post 26",
+      "createdAt": {
+        "$date": "2025-10-23T12:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "ede23d75e2294de2bc487c17"
+      },
+      "user": {
+        "$oid": "68fb9c5a4e61561a56f85a9f"
+      },
+      "text": "Comment 2 on post 26",
+      "createdAt": {
+        "$date": "2025-10-23T12:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "cd9bf05f072a4ac69660c9f7"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 3 on post 26",
+      "createdAt": {
+        "$date": "2025-10-23T12:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "13fc9a902a014995a39a84b3"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 4 on post 26",
+      "createdAt": {
+        "$date": "2025-10-23T12:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-23T12:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-23T12:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "888d72f5b3af40ebb949d33b"
+  },
+  "author": {
+    "$oid": "68fb9c254e61561a56f85a99"
+  },
+  "content": "Đi dạo phố tối nay nè.",
+  "images": [],
+  "likes": [
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    },
+    {
+      "$oid": "68fcbda8171bf08b77e3a481"
+    },
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    },
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "9a7fd244123346d2b70b11e9"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 1 on post 27",
+      "createdAt": {
+        "$date": "2025-10-23T10:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "631370743fde4a08ad8c46b0"
+      },
+      "user": {
+        "$oid": "68fcbda8171bf08b77e3a481"
+      },
+      "text": "Comment 2 on post 27",
+      "createdAt": {
+        "$date": "2025-10-23T10:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-23T10:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-23T10:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "53143d3557784eb583c8caff"
+  },
+  "author": {
+    "$oid": "68fb9b94ec1104c6b4ea5db5"
+  },
+  "content": "Đang học Node.js, phê quá!",
+  "images": [],
+  "likes": [
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    },
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    },
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    },
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "e709752c346c40cf804dee53"
+      },
+      "user": {
+        "$oid": "68fcbda8171bf08b77e3a481"
+      },
+      "text": "Comment 1 on post 28",
+      "createdAt": {
+        "$date": "2025-10-20T05:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-20T05:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-20T05:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "402b7c5d126f44e89d01e3ca"
+  },
+  "author": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "content": "Đi dạo phố tối nay nè.",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    },
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    },
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    },
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    }
+  ],
+  "comments": [],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-24T11:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-24T11:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6c03daf494dc45cc8c00c73f"
+  },
+  "author": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "content": "Hôm nay trời thật đẹp!",
+  "images": [],
+  "likes": [
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "37b526f7e8dd4707830a4038"
+      },
+      "user": {
+        "$oid": "68fb9c5a4e61561a56f85a9f"
+      },
+      "text": "Comment 1 on post 30",
+      "createdAt": {
+        "$date": "2025-10-25T13:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "8a8796dee1514ef6a59007cb"
+      },
+      "user": {
+        "$oid": "68fcbda8171bf08b77e3a481"
+      },
+      "text": "Comment 2 on post 30",
+      "createdAt": {
+        "$date": "2025-10-25T13:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-25T13:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-25T13:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "b6f5554394444ad4ba73e9fc"
+  },
+  "author": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "content": "Ăn trưa thôi mọi người ơi!",
+  "images": [],
+  "likes": [
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    },
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    },
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "ab8adea22169499ca3a8ab53"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 1 on post 31",
+      "createdAt": {
+        "$date": "2025-10-24T13:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "45d30dcbcaad44efa6ec1053"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 2 on post 31",
+      "createdAt": {
+        "$date": "2025-10-24T13:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "3601f6ab994447218d879aee"
+      },
+      "user": {
+        "$oid": "68fcbda8171bf08b77e3a481"
+      },
+      "text": "Comment 3 on post 31",
+      "createdAt": {
+        "$date": "2025-10-24T13:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "5c0801574e7848ffaa949480"
+      },
+      "user": {
+        "$oid": "68fb9c5a4e61561a56f85a9f"
+      },
+      "text": "Comment 4 on post 31",
+      "createdAt": {
+        "$date": "2025-10-24T13:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-24T13:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-24T13:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "fbef78a9bd2d4ba0b8240964"
+  },
+  "author": {
+    "$oid": "68fb9c254e61561a56f85a99"
+  },
+  "content": "Đây là bài đăng thử nghiệm cho hệ thống.",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    },
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    },
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    },
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "5c7c049e1bed494082342d50"
+      },
+      "user": {
+        "$oid": "68fb9b94ec1104c6b4ea5db5"
+      },
+      "text": "Comment 1 on post 32",
+      "createdAt": {
+        "$date": "2025-10-22T18:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "7ecd1e7d142644f9ad868aa0"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 2 on post 32",
+      "createdAt": {
+        "$date": "2025-10-22T18:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "05b32364631449ce98a6f4c6"
+      },
+      "user": {
+        "$oid": "68fcbda8171bf08b77e3a481"
+      },
+      "text": "Comment 3 on post 32",
+      "createdAt": {
+        "$date": "2025-10-22T18:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "da22a61b039c43fbaf048516"
+      },
+      "user": {
+        "$oid": "68fcbda8171bf08b77e3a481"
+      },
+      "text": "Comment 4 on post 32",
+      "createdAt": {
+        "$date": "2025-10-22T18:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-22T18:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-22T18:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "017d3e7229cc4a919ca78fdf"
+  },
+  "author": {
+    "$oid": "68fb9c5a4e61561a56f85a9f"
+  },
+  "content": "Random thought of the day.",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    }
+  ],
+  "comments": [],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-22T20:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-22T20:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6d3a339b8df2409583205066"
+  },
+  "author": {
+    "$oid": "68fb9b94ec1104c6b4ea5db5"
+  },
+  "content": "Ăn trưa thôi mọi người ơi!",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "3b3053ed51fb43d1b62bf286"
+      },
+      "user": {
+        "$oid": "68fb9b94ec1104c6b4ea5db5"
+      },
+      "text": "Comment 1 on post 34",
+      "createdAt": {
+        "$date": "2025-10-27T14:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-27T14:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-27T14:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "fb00f216d6a34c6d8da7c17b"
+  },
+  "author": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "content": "Đi dạo phố tối nay nè.",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "0ec8724c377c453f8a764cfa"
+      },
+      "user": {
+        "$oid": "68fb9c424e61561a56f85a9c"
+      },
+      "text": "Comment 1 on post 35",
+      "createdAt": {
+        "$date": "2025-10-26T06:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "7a4d7dd03831414496d92f18"
+      },
+      "user": {
+        "$oid": "68fb9c424e61561a56f85a9c"
+      },
+      "text": "Comment 2 on post 35",
+      "createdAt": {
+        "$date": "2025-10-26T06:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-26T06:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-26T06:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "f5090c08a13446f58ed99a3f"
+  },
+  "author": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "content": "Viết API mới xong rồi.",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "05f9530b6eda414089d013b4"
+      },
+      "user": {
+        "$oid": "68fcbda8171bf08b77e3a481"
+      },
+      "text": "Comment 1 on post 36",
+      "createdAt": {
+        "$date": "2025-10-20T23:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "78d48c7f82c24068bd5015f8"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 2 on post 36",
+      "createdAt": {
+        "$date": "2025-10-20T23:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-20T23:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-20T23:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "094e02e54f554e4c80d06100"
+  },
+  "author": {
+    "$oid": "68fc6d2adf2a81282ba34875"
+  },
+  "content": "Ăn trưa thôi mọi người ơi!",
+  "images": [],
+  "likes": [
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "05475f2a7ccb4a07a492b538"
+      },
+      "user": {
+        "$oid": "68fcbda8171bf08b77e3a481"
+      },
+      "text": "Comment 1 on post 37",
+      "createdAt": {
+        "$date": "2025-10-26T05:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "a16809bae9a2450a8738c063"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 2 on post 37",
+      "createdAt": {
+        "$date": "2025-10-26T05:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-26T05:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-26T05:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "d30388d3e1244c5aa3ac8da6"
+  },
+  "author": {
+    "$oid": "68fb9c424e61561a56f85a9c"
+  },
+  "content": "Test thử like/comment.",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    },
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    },
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    },
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    }
+  ],
+  "comments": [],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-23T10:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-23T10:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "4c2fa336a3784cb8870366b7"
+  },
+  "author": {
+    "$oid": "68fb9b94ec1104c6b4ea5db5"
+  },
+  "content": "Hôm nay trời thật đẹp!",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fcbda8171bf08b77e3a481"
+    },
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "816cc212601a48e9a5c4e3e7"
+      },
+      "user": {
+        "$oid": "68fcbda8171bf08b77e3a481"
+      },
+      "text": "Comment 1 on post 39",
+      "createdAt": {
+        "$date": "2025-10-27T16:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "79286df960864e4e9a53d793"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 2 on post 39",
+      "createdAt": {
+        "$date": "2025-10-27T16:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-27T16:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-27T16:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "b0af92fe29a6471cb94bfaa0"
+  },
+  "author": {
+    "$oid": "68fb9c5a4e61561a56f85a9f"
+  },
+  "content": "Hello social network!",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    },
+    {
+      "$oid": "68fcbda8171bf08b77e3a481"
+    },
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    },
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "2b0552897450428886b8a9ac"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 1 on post 40",
+      "createdAt": {
+        "$date": "2025-10-20T08:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-20T08:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-20T08:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "802cc600cf3d4a1b81536b01"
+  },
+  "author": {
+    "$oid": "68fb9b94ec1104c6b4ea5db5"
+  },
+  "content": "Đang học Node.js",
+  "images": [
+    "https://res.cloudinary.com/dekvmwy9i/image/upload/v1763134339/posts/mtxxahws2y67egarybz7.png"
+  ],
+  "likes": [
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    },
+    {
+      "$oid": "6902c44c534f0d6c21216942"
+    },
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "c34fbdecbfa24b1eb1c7a4dd"
+      },
+      "user": {
+        "$oid": "68fb9c424e61561a56f85a9c"
+      },
+      "text": "Comment 1 on post 41",
+      "createdAt": {
+        "$date": "2025-10-28T19:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "7f715400780443b2a8e4a996"
+      },
+      "user": {
+        "$oid": "68fcbda8171bf08b77e3a481"
+      },
+      "text": "Comment 2 on post 41",
+      "createdAt": {
+        "$date": "2025-10-28T19:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-28T19:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-14T15:32:20.710Z"
+  },
+  "__v": 4,
+  "reports": [
+    {
+      "user": {
+        "$oid": "6902c44c534f0d6c21216942"
+      },
+      "reason": "spam",
+      "details": "Ngôn từ nhạy cảm",
+      "status": "pending",
+      "_id": {
+        "$oid": "6916aa9df7af7319d3b44abc"
+      },
+      "createdAt": {
+        "$date": "2025-11-14T04:05:49.445Z"
+      }
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "b119854171d041dbbef01826"
+  },
+  "author": {
+    "$oid": "68fb9b94ec1104c6b4ea5db5"
+  },
+  "content": "Đang học Node.js, phê quá!",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "2d73fdb487024a24aabfcf9b"
+      },
+      "user": {
+        "$oid": "68fb9b94ec1104c6b4ea5db5"
+      },
+      "text": "Comment 1 on post 42",
+      "createdAt": {
+        "$date": "2025-10-20T23:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "dba24f84afea4e738c97c3c6"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 2 on post 42",
+      "createdAt": {
+        "$date": "2025-10-20T23:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-20T23:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-20T23:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "64463b9287db497994c1eaa1"
+  },
+  "author": {
+    "$oid": "68fb9c424e61561a56f85a9c"
+  },
+  "content": "Viết API mới xong rồi.",
+  "images": [],
+  "likes": [],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "8284bd019c8a4a9ea82444a7"
+      },
+      "user": {
+        "$oid": "68fb9c5a4e61561a56f85a9f"
+      },
+      "text": "Comment 1 on post 43",
+      "createdAt": {
+        "$date": "2025-10-28T15:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "4d7f35261a78424ea15fd1be"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 2 on post 43",
+      "createdAt": {
+        "$date": "2025-10-28T15:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-28T15:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-28T15:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "71de2e90488d4a0fb1eb08b0"
+  },
+  "author": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "content": "Đang học Node.js, phê quá!",
+  "images": [],
+  "likes": [
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    },
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    },
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    }
+  ],
+  "comments": [],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-21T05:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-21T05:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "8142e860294e48c8b6d0835e"
+  },
+  "author": {
+    "$oid": "68fb9c5a4e61561a56f85a9f"
+  },
+  "content": "Một ngày tuyệt vời để viết code.",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    },
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    },
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    },
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "1d333c4dee294e8ca08415a2"
+      },
+      "user": {
+        "$oid": "68fcbda8171bf08b77e3a481"
+      },
+      "text": "Comment 1 on post 45",
+      "createdAt": {
+        "$date": "2025-10-27T03:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "47e2aaae9e844a2e8e22c020"
+      },
+      "user": {
+        "$oid": "68fb9b94ec1104c6b4ea5db5"
+      },
+      "text": "Comment 2 on post 45",
+      "createdAt": {
+        "$date": "2025-10-27T03:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "b582bf53457e4a32822e628b"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 3 on post 45",
+      "createdAt": {
+        "$date": "2025-10-27T03:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-27T03:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-27T03:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "b6ed90c113164f298cc7e566"
+  },
+  "author": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "content": "Đi dạo phố tối nay nè.",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    },
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    },
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    },
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "0a5dd774e79d4bc3b4055c96"
+      },
+      "user": {
+        "$oid": "68fb9c5a4e61561a56f85a9f"
+      },
+      "text": "Comment 1 on post 46",
+      "createdAt": {
+        "$date": "2025-10-27T09:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "03b4226a70084de092fe7628"
+      },
+      "user": {
+        "$oid": "68fb9c254e61561a56f85a99"
+      },
+      "text": "Comment 2 on post 46",
+      "createdAt": {
+        "$date": "2025-10-27T09:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "b7626c26334f4b5ba912d570"
+      },
+      "user": {
+        "$oid": "68fcbda8171bf08b77e3a481"
+      },
+      "text": "Comment 3 on post 46",
+      "createdAt": {
+        "$date": "2025-10-27T09:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-27T09:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-27T09:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "35aa7788d4014b0dbbc20fe1"
+  },
+  "author": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "content": "Đang học Node.js, phê quá!",
+  "images": [],
+  "likes": [
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    },
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    },
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "d5b8b4e41c634f398bae69d9"
+      },
+      "user": {
+        "$oid": "68fb9c5a4e61561a56f85a9f"
+      },
+      "text": "Comment 1 on post 47",
+      "createdAt": {
+        "$date": "2025-10-21T18:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "7bc0b9f2dc1049c08be4656e"
+      },
+      "user": {
+        "$oid": "68fb9c5a4e61561a56f85a9f"
+      },
+      "text": "Comment 2 on post 47",
+      "createdAt": {
+        "$date": "2025-10-21T18:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "f3f28dd6e0bd4a2199444f00"
+      },
+      "user": {
+        "$oid": "68fc6d2adf2a81282ba34875"
+      },
+      "text": "Comment 3 on post 47",
+      "createdAt": {
+        "$date": "2025-10-21T18:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "5e493b9d7ca440ae88735eb1"
+      },
+      "user": {
+        "$oid": "68fb9c5a4e61561a56f85a9f"
+      },
+      "text": "Comment 4 on post 47",
+      "createdAt": {
+        "$date": "2025-10-21T18:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-21T18:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-21T18:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "8dd25269dc954121a0ea21f8"
+  },
+  "author": {
+    "$oid": "68fb9c424e61561a56f85a9c"
+  },
+  "content": "Hello social network!",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    },
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    },
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    },
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    },
+    {
+      "$oid": "68fcbda8171bf08b77e3a481"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "f7dd27061dae409d95af49b0"
+      },
+      "user": {
+        "$oid": "68fb9b94ec1104c6b4ea5db5"
+      },
+      "text": "Comment 1 on post 48",
+      "createdAt": {
+        "$date": "2025-10-28T18:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "597fa22b86114b8bb2128c05"
+      },
+      "user": {
+        "$oid": "68fb9c5a4e61561a56f85a9f"
+      },
+      "text": "Comment 2 on post 48",
+      "createdAt": {
+        "$date": "2025-10-28T18:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 1,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-28T18:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-28T18:00:00.000Z"
+  },
+  "__v": 1,
+  "reports": []
+},
+{
+  "_id": {
+    "$oid": "4023756149de4690ada63a4c"
+  },
+  "author": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "content": "Đây là bài đăng thử nghiệm cho hệ thống.",
+  "images": [],
+  "likes": [
+    {
+      "$oid": "68fb9c5a4e61561a56f85a9f"
+    },
+    {
+      "$oid": "68fb9c254e61561a56f85a99"
+    },
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    },
+    {
+      "$oid": "68fcbda8171bf08b77e3a481"
+    }
+  ],
+  "comments": [
+    {
+      "_id": {
+        "$oid": "29fc4a1028eb4b55a9196ec5"
+      },
+      "user": {
+        "$oid": "68fb9c424e61561a56f85a9c"
+      },
+      "text": "Comment 1 on post 49",
+      "createdAt": {
+        "$date": "2025-10-25T09:00:00.000Z"
+      }
+    },
+    {
+      "_id": {
+        "$oid": "fdd0544868d746d28e9c8cd9"
+      },
+      "user": {
+        "$oid": "68fb9b94ec1104c6b4ea5db5"
+      },
+      "text": "Comment 2 on post 49",
+      "createdAt": {
+        "$date": "2025-10-25T09:00:00.000Z"
+      }
+    }
+  ],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-25T09:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-25T09:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "5c910df54bcd4da2acfb86f0"
+  },
+  "author": {
+    "$oid": "68fcbda8171bf08b77e3a481"
+  },
+  "content": "Test thử like/comment.",
+  "images": [
+    "https://via.placeholder.com/400"
+  ],
+  "likes": [
+    {
+      "$oid": "68fb9b94ec1104c6b4ea5db5"
+    },
+    {
+      "$oid": "68fc6d2adf2a81282ba34875"
+    },
+    {
+      "$oid": "68fb9c424e61561a56f85a9c"
+    }
+  ],
+  "comments": [],
+  "status": "published",
+  "repostCount": 0,
+  "repostOf": null,
+  "wasRepost": false,
+  "createdAt": {
+    "$date": "2025-10-28T01:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-28T01:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6916ad34f7af7319d3b44bd2"
+  },
+  "author": {
+    "$oid": "6902c44c534f0d6c21216942"
+  },
+  "content": "",
+  "images": [],
+  "likes": [
+    {
+      "$oid": "6902c44c534f0d6c21216942"
+    }
+  ],
+  "status": "published",
+  "repostOf": {
+    "$oid": "8dd25269dc954121a0ea21f8"
+  },
+  "repostCount": 0,
+  "wasRepost": true,
+  "comments": [],
+  "reports": [],
+  "createdAt": {
+    "$date": "2025-11-14T04:16:52.238Z"
+  },
+  "updatedAt": {
+    "$date": "2025-11-14T04:16:55.754Z"
+  },
+  "__v": 1
+}]

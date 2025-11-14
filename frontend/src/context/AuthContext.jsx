@@ -41,25 +41,39 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await axios.post(LOGIN_API_URL, { username, password });
 
-      // ✅ Backend trả { user: {...}, token: "..." }
+      // Backend trả { user: {...}, token: "..." } hoặc chỉ token
       const { user: userData, token } = res.data;
 
       if (!token) throw new Error("Token not returned from API.");
 
-      // ✅ Lưu token + role vào localStorage
+      // Lưu token ngay để dùng cho request tiếp theo
       localStorage.setItem("token", token);
-      localStorage.setItem("userId", userData._id);
-      if (userData.role) localStorage.setItem("userRole", userData.role);
 
-      // ✅ Cập nhật state user
-      setUser(userData);
-
-      // ✅ Chuyển hướng theo vai trò
-      if (userData.role === "admin") {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/");
+      // Lấy thông tin đầy đủ của user từ endpoint /users/me (đảm bảo token đã được lưu)
+      let fullUser = userData;
+      try {
+        const meRes = await axios.get(USER_API_URL, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        fullUser = meRes.data;
+      } catch (err) {
+        // Nếu backend đã trả đầy đủ user trong login response thì vẫn ok,
+        // nếu không thì log lỗi nhưng tiếp tục với userData (nếu có)
+        console.warn("Không thể tải thông tin user đầy đủ sau khi login:", err);
       }
+
+      // Lưu thông tin cục bộ
+      if (fullUser?._id) localStorage.setItem("userId", fullUser._id);
+      if (fullUser?.role) localStorage.setItem("userRole", fullUser.role);
+
+      // Cập nhật state user với thông tin đầy đủ
+      setUser(fullUser);
+
+      // Điều hướng theo role
+      setTimeout(() => {
+        if (fullUser.role === "admin") navigate("/admin/dashboard");
+        else navigate("/");
+      }, 10);
 
       return true;
     } catch (err) {
@@ -85,6 +99,5 @@ export const AuthProvider = ({ children }) => {
 };
 
 // Quên mật khẩu
-
 
 export const useAuth = () => useContext(AuthContext);

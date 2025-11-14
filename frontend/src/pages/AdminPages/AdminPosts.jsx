@@ -26,19 +26,21 @@ import {
   VStack,
   HStack,
   Badge,
-  Toast,
+  
 } from "@chakra-ui/react";
-import { DeleteIcon, ViewIcon } from "@chakra-ui/icons";
+import { DeleteIcon, ViewIcon, ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import { deletePost, fetchAllPosts, fetchPostReports } from "../../api/post";
 import { useNavigate } from "react-router-dom";
 import AdminSidebar from "../../components/AdminSidebar";
-import PostDetail from "../../components/posts/PostDetail.jsx"; // <-- added
 import AdminPostDetail from "../../components/posts/AdminPostDetail.jsx";
+
+const POSTS_PER_PAGE = 10;
 
 export default function AdminPosts() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [previewMedia, setPreviewMedia] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const toast = useToast();
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
@@ -54,7 +56,7 @@ export default function AdminPosts() {
   const [reportsForModal, setReportsForModal] = useState([]);
   const [reportsPost, setReportsPost] = useState(null);
 
-  // Detail modal state (for PostDetail)
+  // Detail modal state (for AdminPostDetail)
   const {
     isOpen: isDetailOpen,
     onOpen: onDetailOpen,
@@ -67,7 +69,10 @@ export default function AdminPosts() {
     const loadPosts = async () => {
       try {
         const res = await fetchAllPosts("/posts/admin/all");
-        setPosts(res);
+        // Sắp xếp từ mới nhất xuống cũ nhất
+        const sortedPosts = res.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setPosts(sortedPosts);
+        setCurrentPage(1); // Reset về trang 1 khi load dữ liệu mới
       } catch (err) {
         toast({
           title: "Lỗi khi tải bài viết",
@@ -101,7 +106,7 @@ export default function AdminPosts() {
     }
   };
 
-  // Mở modal chi tiết bài viết (PostDetail)
+  // Mở modal chi tiết bài viết (AdminPostDetail)
   const openDetail = (post) => {
     setSelectedPostDetail(post);
     onDetailOpen();
@@ -113,6 +118,8 @@ export default function AdminPosts() {
     try {
       await deletePost(id, token);
       setPosts((prev) => prev.filter((p) => p._id !== id));
+      // Reset về trang 1 nếu trang hiện tại trống
+      setCurrentPage(1);
       toast({
         title: "Đã xóa bài viết",
         description: "Bài viết đã được xóa thành công.",
@@ -137,6 +144,12 @@ export default function AdminPosts() {
     onOpen();
   };
 
+  // Tính toán phân trang
+  const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+  const endIndex = startIndex + POSTS_PER_PAGE;
+  const currentPosts = posts.slice(startIndex, endIndex);
+
   if (loading) {
     return (
       <Flex justify="center" align="center" minH="80vh">
@@ -157,92 +170,132 @@ export default function AdminPosts() {
         {posts.length === 0 ? (
           <Text color="gray.500">Không có bài viết nào.</Text>
         ) : (
-          <Table variant="simple">
-            <Thead>
-              <Tr>
-                <Th>Người đăng</Th>
-                <Th>Nội dung</Th>
-                <Th>Phương tiện</Th>
-                <Th>Báo cáo</Th>
-                <Th>Ngày tạo</Th>
-                <Th>Hành động</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {posts.map((post) => (
-                <Tr key={post._id}>
-                  {/* 🧍 Người đăng */}
-                  <Td>
-                    <Flex align="center">
-                      <Avatar size="sm" src={post.author?.avatar} mr={2} />
-                      <Text fontWeight="medium">{post.author?.username}</Text>
-                    </Flex>
-                  </Td>
-
-                  {/* 📝 Nội dung */}
-                  <Td maxW="300px">
-                    <Text noOfLines={2}>{post.content || "(Không có nội dung)"}</Text>
-                  </Td>
-
-                  {/* 🖼️ Phương tiện */}
-                  <Td>
-                    {/* Ảnh */}
-                    {Array.isArray(post.images) && post.images.length > 0 && (
-                      <Flex gap={2} wrap="wrap">
-                        {post.images.slice(0, 5).map((img, i) => (
-                          <Box key={i} boxSize="70px" cursor="pointer" onClick={() => openPreview(img)}>
-                            <Image src={img} alt={`image-${i}`} w="100%" h="100%" objectFit="cover" borderRadius="6px" />
-                          </Box>
-                        ))}
+          <>
+            <Table variant="simple">
+              <Thead>
+                <Tr>
+                  <Th>Người đăng</Th>
+                  <Th>Nội dung</Th>
+                  <Th>Phương tiện</Th>
+                  <Th>Báo cáo</Th>
+                  <Th>Ngày tạo</Th>
+                  <Th>Hành động</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {currentPosts.map((post) => (
+                  <Tr key={post._id}>
+                    {/* 🧍 Người đăng */}
+                    <Td>
+                      <Flex align="center">
+                        <Avatar size="sm" src={post.author?.avatar} mr={2} />
+                        <Text fontWeight="medium">{post.author?.username}</Text>
                       </Flex>
-                    )}
+                    </Td>
 
-                    {/* Video */}
-                    {post.video && (
-                      <Box mt={2} cursor="pointer" onClick={() => openPreview(post.video)}>
-                        <video src={post.video} style={{ width: "120px", borderRadius: "6px", objectFit: "cover" }} />
-                      </Box>
-                    )}
-                  </Td>
+                    {/* 📝 Nội dung */}
+                    <Td maxW="300px">
+                      <Text noOfLines={2}>{post.content || "(Không có nội dung)"}</Text>
+                    </Td>
 
-                  {/* 🔎 Báo cáo */}
-                  <Td>
-                    {post.reports && post.reports.length > 0 ? (
-                      <HStack spacing={3}>
-                        <Badge colorScheme="red">{post.reports.length}</Badge>
-                        <Button size="sm" leftIcon={<ViewIcon />} onClick={() => openReports(post)}>
+                    {/* 🖼️ Phương tiện */}
+                    <Td>
+                      {/* Ảnh */}
+                      {Array.isArray(post.images) && post.images.length > 0 && (
+                        <Flex gap={2} wrap="wrap">
+                          {post.images.slice(0, 5).map((img, i) => (
+                            <Box key={i} boxSize="70px" cursor="pointer" onClick={() => openPreview(img)}>
+                              <Image src={img} alt={`image-${i}`} w="100%" h="100%" objectFit="cover" borderRadius="6px" />
+                            </Box>
+                          ))}
+                        </Flex>
+                      )}
+
+                      {/* Video */}
+                      {post.video && (
+                        <Box mt={2} cursor="pointer" onClick={() => openPreview(post.video)}>
+                          <video src={post.video} style={{ width: "120px", borderRadius: "6px", objectFit: "cover" }} />
+                        </Box>
+                      )}
+                    </Td>
+
+                    {/* 🔎 Báo cáo */}
+                    <Td>
+                      {post.reports && post.reports.length > 0 ? (
+                        <HStack spacing={3}>
+                          <Badge colorScheme="red">{post.reports.length}</Badge>
+                          <Button size="sm" leftIcon={<ViewIcon />} onClick={() => openReports(post)}>
+                            Xem
+                          </Button>
+                        </HStack>
+                      ) : (
+                        <Text color="gray.500">Không có báo cáo</Text>
+                      )}
+                    </Td>
+
+                    {/* 📅 Ngày tạo */}
+                    <Td>{new Date(post.createdAt).toLocaleString("vi-VN")}</Td>
+
+                    {/* ❌ Hành động */}
+                    <Td>
+                      <HStack>
+                        <Button size="sm" leftIcon={<ViewIcon />} onClick={() => openDetail(post)}>
                           Xem
                         </Button>
+                        <Button
+                          leftIcon={<DeleteIcon />}
+                          color="gray.600"
+                          variant="ghost"
+                          _hover={{ color: "red.500" }}
+                          onClick={() => handleDelete(post._id)}
+                        >
+                          Xóa
+                        </Button>
                       </HStack>
-                    ) : (
-                      <Text color="gray.500">Không có báo cáo</Text>
-                    )}
-                  </Td>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
 
-                  {/* 📅 Ngày tạo */}
-                  <Td>{new Date(post.createdAt).toLocaleString("vi-VN")}</Td>
+            {/* Phần phân trang */}
+            <Flex justify="center" align="center" mt={8} gap={4}>
+              <Button
+                leftIcon={<ChevronLeftIcon />}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                isDisabled={currentPage === 1}
+              >
+                Trước
+              </Button>
 
-                  {/* ❌ Hành động */}
-                  <Td>
-                    <HStack>
-                      <Button size="sm" leftIcon={<ViewIcon />} onClick={() => openDetail(post)}>
-                        Xem
-                      </Button>
-                      <Button
-                        leftIcon={<DeleteIcon />}
-                        color="gray.600"
-                        variant="ghost"
-                        _hover={{ color: "red.500" }}
-                        onClick={() => handleDelete(post._id)}
-                      >
-                        Xóa
-                      </Button>
-                    </HStack>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
+              <HStack spacing={2}>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    colorScheme={currentPage === page ? "blue" : "gray"}
+                    variant={currentPage === page ? "solid" : "outline"}
+                    size="sm"
+                    minW="40px"
+                  >
+                    {page}
+                  </Button>
+                ))}
+              </HStack>
+
+              <Button
+                rightIcon={<ChevronRightIcon />}
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                isDisabled={currentPage === totalPages}
+              >
+                Sau
+              </Button>
+
+              <Text ml={4} fontSize="sm" color="gray.600">
+                Trang {currentPage} / {totalPages} ({posts.length} bài viết)
+              </Text>
+            </Flex>
+          </>
         )}
 
         {/* 🔍 Modal xem preview */}
@@ -267,22 +320,6 @@ export default function AdminPosts() {
             <ModalHeader>Danh sách báo cáo</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              {/* helper nhỏ để format thời gian và map reason */}
-              {(() => {
-                const formatTime = (iso) => (iso ? new Date(iso).toLocaleString("vi-VN") : "");
-                const reasonLabel = (r) => {
-                  const map = {
-                    spam: "Spam / Quảng cáo",
-                    harassment: "Quấy rối / Lăng mạ",
-                    nudity: "Nội dung nhạy cảm",
-                    hate: "Ngôn từ thù hận",
-                    other: "Khác",
-                  };
-                  return map[r] || r || "Không xác định";
-                };
-                return null;
-              })()}
-
               {!reportsForModal || reportsForModal.length === 0 ? (
                 <Text>Không có báo cáo</Text>
               ) : (
@@ -326,21 +363,17 @@ export default function AdminPosts() {
                               </Text>
 
                               <HStack>
-                                {/* nút xem profile (nếu muốn) */}
                                 {user._id && (
                                   <Button size="sm" variant="ghost" onClick={() => navigate(`/admin/users/${user._id}`)}>
                                     Xem người dùng
                                   </Button>
                                 )}
-                                {/* ví dụ action: mark resolved (phía frontend chỉ gửi request nếu bạn cài API) */}
                                 <Button
                                   size="sm"
                                   colorScheme="green"
                                   variant="outline"
                                   onClick={async () => {
-                                    // optional: thực hiện API mark-resolved nếu backend có
                                     try {
-                                      // await resolveReport(r._id, token)
                                       toast({ title: "Đánh dấu đã xử lý (chưa gọi API)", status: "info" });
                                     } catch (err) {
                                       toast({ title: "Lỗi", description: err?.message, status: "error" });
@@ -373,20 +406,7 @@ export default function AdminPosts() {
             onDetailClose();
           }}
           postData={selectedPostDetail}
-          currentUser={null}
-          canEdit={true}
-          onEditOpen={() => {
-            Toast({ title: "Chức năng chỉnh sửa chưa được cài đặt", status: "info" });
-          }}
           handleDelete={() => selectedPostDetail && handleDelete(selectedPostDetail._id)}
-          handlePublish={() => {}}
-          onReportOpen={() => selectedPostDetail && openReports(selectedPostDetail)}
-          setIsRepostModalOpen={() => {}}
-          handleRepost={() => {}}
-          liked={false}
-          handleLike={() => {}}
-          isLiking={false}
-          fetchLikes={() => {}}
           likesCount={selectedPostDetail ? (selectedPostDetail.likes?.length || 0) : 0}
           comments={selectedPostDetail ? (selectedPostDetail.comments || []) : []}
           isCommentLoading={false}

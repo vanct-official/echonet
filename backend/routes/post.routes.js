@@ -6,6 +6,7 @@ import {
   toggleLike,
   getLikes,
   addComment,
+  replyToComment,
   updatePost,
   deletePost, 
   getDraftPosts,
@@ -30,10 +31,17 @@ router.get("/admin/all", protect, adminOnly, getPosts);
 router.get("/", protect, getPosts);
 router.get("/user/:id", protect, getUserPosts);
 
+router.post("/:id/comment", protect, addComment);
+router.post(
+  "/:postId/comments/:commentId/reply",
+  protect, // middleware JWT
+  replyToComment
+);
+
 router.post("/", protect, upload.array("images", 5), createPost);
 router.put("/:id/like", protect, toggleLike);
 router.get("/:id/likes", getLikes);
-router.post("/:id/comment", protect, addComment);
+
 router.put("/:id", protect, upload.array("media", 10), updatePost);
 router.put("/:id/publish", protect, publishPost);
 router.delete("/:id", protect, deletePost);

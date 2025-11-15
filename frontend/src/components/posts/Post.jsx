@@ -694,6 +694,16 @@ export default function Post({
         handleAddComment={handleAddComment}
         setSelectedImage={setSelectedImage}
         setIsImageModalOpen={setIsImageModalOpen}
+        onUpdateComments={(updateFn) => {
+          setPostData((prev) => {
+            const updated = {
+              ...prev,
+              comments: updateFn(prev.comments || []),
+            };
+            safeUpdateUpstream(updated);
+            return updated;
+          });
+        }}
       />
 
       <EditPostModal

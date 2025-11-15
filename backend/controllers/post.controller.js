@@ -9,27 +9,37 @@ export const getPosts = async (req, res) => {
     const currentUserId = req.user._id;
 
     // Lấy danh sách người bị chặn hoặc đã chặn bạn
-    const currentUser = await User.findById(currentUserId).select("blockedUsers");
-    const blockedByOthers = await User.find({ blockedUsers: currentUserId }).select("_id");
+    const currentUser = await User.findById(currentUserId).select(
+      "blockedUsers"
+    );
+    const blockedByOthers = await User.find({
+      blockedUsers: currentUserId,
+    }).select("_id");
 
     const blockedIds = [
       ...currentUser.blockedUsers,
-      ...blockedByOthers.map(u => u._id)
-    ];    
+      ...blockedByOthers.map((u) => u._id),
+    ];
 
     // Lọc bài post của những người không nằm trong danh sách block
     const posts = await Post.find({
       status: "published",
-      author: { $nin: blockedIds }
+      author: { $nin: blockedIds },
     })
       .sort({ createdAt: -1 })
       .populate([
         { path: "author", select: "username avatar isVerified" },
         { path: "comments.user", select: "username avatar isVerified" },
-        { path: "repostOf",
+        { path: "comments.reply.user", select: "username avatar isVerified" },
+        {
+          path: "repostOf",
           populate: [
             { path: "author", select: "username avatar isVerified" },
             { path: "comments.user", select: "username avatar isVerified" },
+            {
+              path: "comments.reply.user",
+              select: "username avatar isVerified",
+            },
           ],
         },
       ])
@@ -48,12 +58,14 @@ export const getAllPostsForAdmin = async (req, res) => {
       .sort({ createdAt: -1 })
       .populate("author", "username avatar role")
       .populate("comments.user", "username avatar role")
+      .populate("comments.reply.user", "username avatar role")
       .populate("reports.user", "username avatar role avatar email")
       .populate({
         path: "repostOf",
         populate: [
           { path: "author", select: "username avatar role" },
           { path: "comments.user", select: "username avatar role" },
+          { path: "comments.reply.user", select: "username avatar role" },
         ],
       })
       .lean();
@@ -65,12 +77,14 @@ export const getAllPostsForAdmin = async (req, res) => {
   }
 };
 
-
 // New: lấy danh sách report của 1 post (chỉ admin hoặc chủ bài)
 export const getPostReports = async (req, res) => {
   try {
     const postId = req.params.id;
-    const post = await Post.findById(postId).populate("reports.user", "username avatar role");
+    const post = await Post.findById(postId).populate(
+      "reports.user",
+      "username avatar role"
+    );
 
     if (!post) return res.status(404).json({ message: "Post not found" });
 
@@ -96,11 +110,13 @@ export const getMyPosts = async (req, res) => {
       .populate([
         { path: "author", select: "username avatar" },
         { path: "comments.user", select: "username avatar" },
+        { path: "comments.reply.user", select: "username avatar" },
         {
           path: "repostOf",
           populate: [
             { path: "author", select: "username avatar" },
             { path: "comments.user", select: "username avatar" },
+            { path: "comments.reply.user", select: "username avatar" },
           ],
         },
       ])
@@ -123,11 +139,16 @@ export const getUserPosts = async (req, res) => {
       .populate([
         { path: "author", select: "username avatar isVerified" },
         { path: "comments.user", select: "username avatar isVerified" },
+        {path: "comments.reply.user", select: "username avatar isVerified" },
         {
           path: "repostOf",
           populate: [
             { path: "author", select: "username avatar isVerified" },
             { path: "comments.user", select: "username avatar isVerified" },
+            {
+              path: "comments.reply.user",
+              select: "username avatar isVerified",
+            },
           ],
         },
       ])
@@ -157,14 +178,18 @@ export const getDraftPosts = async (req, res) => {
   }
 };
 
-// Đăng bài từ nháp 
+// Đăng bài từ nháp
 export const publishPost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
-    if (!post) return res.status(404).json({ message: "Không tìm thấy bài viết" });
+    if (!post)
+      return res.status(404).json({ message: "Không tìm thấy bài viết" });
 
     // ✅ Chỉ cho phép chính chủ hoặc admin đăng bài
-    if (post.author.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+    if (
+      post.author.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
       return res.status(403).json({ message: "Không có quyền đăng bài này" });
     }
 
@@ -176,7 +201,10 @@ export const publishPost = async (req, res) => {
     await post.save();
 
     const populatedPost = await post.populate("author", "username avatar");
-    res.json({ message: "Bài viết đã được đăng thành công", post: populatedPost });
+    res.json({
+      message: "Bài viết đã được đăng thành công",
+      post: populatedPost,
+    });
   } catch (err) {
     console.error("Error in publishPost:", err);
     res.status(500).json({ message: "Server error" });
@@ -221,7 +249,10 @@ export const createPost = async (req, res) => {
 // Like / Unlike post
 export const toggleLike = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id).populate("author", "username _id");
+    const post = await Post.findById(req.params.id).populate(
+      "author",
+      "username _id"
+    );
     if (!post) return res.status(404).json({ message: "Post not found" });
 
     const userId = req.user._id.toString();
@@ -266,7 +297,10 @@ export const toggleLike = async (req, res) => {
 // Get Users who liked a post
 export const getLikes = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id).populate("likes", "username avatar isVerified");
+    const post = await Post.findById(req.params.id).populate(
+      "likes",
+      "username avatar isVerified"
+    );
     if (!post) return res.status(404).json({ message: "Post not found" });
     res.status(200).json(post.likes);
   } catch (err) {
@@ -278,7 +312,10 @@ export const getLikes = async (req, res) => {
 // Comment vào post
 export const addComment = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id).populate("author", "username _id");
+    const post = await Post.findById(req.params.id).populate(
+      "author",
+      "username _id"
+    );
     if (!post) return res.status(404).json({ message: "Post not found" });
 
     const { text } = req.body;
@@ -318,6 +355,47 @@ export const addComment = async (req, res) => {
   }
 };
 
+// Reply to a comment
+export const replyToComment = async (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+    const { text } = req.body;
+    const userId = req.user._id;
+
+    // Tìm post
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    // Tìm comment
+    const comment = post.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    // Đảm bảo reply array tồn tại
+    if (!comment.reply) comment.reply = []; // ← fix chính
+
+    // Push reply (nếu schema là replies)
+    comment.reply.push({
+      user: userId,
+      text,
+      createdAt: new Date(),
+    });
+
+    await post.save();
+
+    const populatedPost = await Post.findById(postId)
+      .populate("comments.user", "username avatar isVerified")
+      .populate("comments.reply.user", "username avatar isVerified");
+
+    res.status(200).json({
+      message: "Reply added successfully",
+      post: populatedPost,
+    });
+  } catch (error) {
+    console.error("replyToComment error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // Cập nhật bài viết (chỉ chủ bài hoặc admin)
 export const updatePost = async (req, res) => {
   try {
@@ -349,7 +427,10 @@ export const updatePost = async (req, res) => {
 
       const populatedPost = await post.populate([
         { path: "author", select: "username avatar" },
-        { path: "repostOf", populate: { path: "author", select: "username avatar" } },
+        {
+          path: "repostOf",
+          populate: { path: "author", select: "username avatar" },
+        },
       ]);
 
       return res.status(200).json({
@@ -440,12 +521,9 @@ export const updatePost = async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Lỗi cập nhật bài viết:", err);
-    res
-      .status(500)
-      .json({ message: "Cập nhật thất bại", error: err.message });
+    res.status(500).json({ message: "Cập nhật thất bại", error: err.message });
   }
 };
-
 
 // 🗑️ Xóa bài viết (người dùng xóa bài của mình, admin có thể xóa bất kỳ)
 export const deletePost = async (req, res) => {
@@ -459,8 +537,13 @@ export const deletePost = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy bài viết" });
 
     // ✅ Kiểm tra quyền
-    if (post.author.toString() !== userId.toString() && req.user.role !== "admin") {
-      return res.status(403).json({ message: "Bạn không có quyền xóa bài viết này" });
+    if (
+      post.author.toString() !== userId.toString() &&
+      req.user.role !== "admin"
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Bạn không có quyền xóa bài viết này" });
     }
 
     // ✅ Nếu đây là bài repost → giảm repostCount bài gốc
@@ -472,21 +555,24 @@ export const deletePost = async (req, res) => {
 
       const originalPost = await Post.findById(originalId);
       if (originalPost) {
-        originalPost.repostCount = Math.max((originalPost.repostCount || 1) - 1, 0);
+        originalPost.repostCount = Math.max(
+          (originalPost.repostCount || 1) - 1,
+          0
+        );
         await originalPost.save({ timestamps: false });
       }
-    } 
-// ✅ Nếu là bài gốc → đánh dấu các bài repost từng chia sẻ nó
-else {
-  await Post.updateMany(
-    { repostOf: post._id },
-    {
-      $unset: { repostOf: "" }, // xoá hoàn toàn trường này
-      $set: { wasRepost: true } // đánh dấu từng là repost
-    },
-    { timestamps: false }
-  );
-}
+    }
+    // ✅ Nếu là bài gốc → đánh dấu các bài repost từng chia sẻ nó
+    else {
+      await Post.updateMany(
+        { repostOf: post._id },
+        {
+          $unset: { repostOf: "" }, // xoá hoàn toàn trường này
+          $set: { wasRepost: true }, // đánh dấu từng là repost
+        },
+        { timestamps: false }
+      );
+    }
 
     // 🧹 Xoá ảnh trên Cloudinary nếu có
     if (Array.isArray(post.images)) {
@@ -504,7 +590,9 @@ else {
     if (post.video) {
       try {
         const publicId = post.video.split("/").pop().split(".")[0];
-        await cloudinary.uploader.destroy(`posts/${publicId}`, { resource_type: "video" });
+        await cloudinary.uploader.destroy(`posts/${publicId}`, {
+          resource_type: "video",
+        });
       } catch (err) {
         console.warn("Không thể xóa video trên Cloudinary:", err.message);
       }
@@ -531,7 +619,8 @@ export const repostPost = async (req, res) => {
     const { id } = req.params;
 
     const originalPost = await Post.findById(id).populate(
-      "author", "username avatar isVerified"
+      "author",
+      "username avatar isVerified"
     );
     if (!originalPost)
       return res.status(404).json({ message: "Post not found" });
@@ -542,7 +631,7 @@ export const repostPost = async (req, res) => {
       content,
       repostOf: originalPost._id,
       status: "published",
-      wasRepost: true   // 🧩 Thêm dòng này
+      wasRepost: true, // 🧩 Thêm dòng này
     });
 
     await repost.save();

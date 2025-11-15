@@ -81,7 +81,7 @@ const handleSubmit = async () => {
   ) {
     toast({
       title: "Thiếu nội dung",
-      description: "Vui lòng nhập nội dung hoặc chọn ảnh/video.",
+      description: "Vui lòng nhập nội dung hoặc chọn ảnh.",
       status: "warning",
       duration: 2500,
       isClosable: true,

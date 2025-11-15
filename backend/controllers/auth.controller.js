@@ -145,7 +145,7 @@ export const loginUser = async (req, res) => {
   try {
     const { username, password } = req.body;
     const user = await User.findOne({ username });
-    if (user && (await user.matchPassword(password))) {
+    if (user && (await user.matchPassword(password)) && user.isActive == true) {
       res.json({
         user: {
           _id: user._id,

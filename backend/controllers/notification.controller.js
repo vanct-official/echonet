@@ -73,3 +73,18 @@ export const deleteNotification = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// GET /api/notifications/me
+export const getMyNotifications = async (req, res) => {
+  try {
+    const userId = req.user._id; // lấy từ token đã verify
+    const notifications = await Notification.find({ receiverId: userId })
+      .populate("senderId", "username avatar")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(notifications);
+  } catch (error) {
+    console.error("getMyNotifications error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};

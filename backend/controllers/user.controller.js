@@ -1,4 +1,5 @@
 import User from "../models/user.model.js";
+import Notification from "../models/notification.model.js";
 
 // @desc    Get profile of logged-in user
 // @route   GET /api/users/me
@@ -67,9 +68,39 @@ export const followUser = async (req, res) => {
     targetUser.followers.push(req.user._id);
     await targetUser.save();
 
-    // Thêm vào followed của current user
-    req.user.followed.push(targetUser._id);
-    await req.user.save();
+    // Thêm vào followed của current user - cần lấy lại từ DB để đảm bảo là Mongoose document
+    const currentUser = await User.findById(req.user._id);
+    if (!currentUser) {
+      return res.status(404).json({ message: "Current user not found" });
+    }
+    
+    // Kiểm tra đã follow chưa (tránh duplicate)
+    if (!currentUser.followed.includes(targetUser._id)) {
+      currentUser.followed.push(targetUser._id);
+      await currentUser.save();
+    }
+
+    // 🧩 Tạo notification khi follow
+    const replierId = req.user._id.toString();
+    const targetUserId = targetUser._id.toString();
+
+    // Chỉ tạo notification nếu không follow chính mình
+    if (replierId !== targetUserId) {
+      const message = `${req.user.username} đã theo dõi bạn.`;
+
+      const notification = await Notification.create({
+        senderId: replierId,
+        receiverId: targetUserId,
+        type: "follow", // enum phải có "follow" trong Notification schema
+        message,
+      });
+
+      // 🚀 Gửi real-time notification nếu user online
+      const receiverSocketId = global.findSocketByUser(targetUserId);
+      if (receiverSocketId) {
+        global.io.to(receiverSocketId).emit("notification_new", notification);
+      }
+    }
 
     res.json({ 
       message: `You are now following ${targetUser.username}`,
@@ -77,7 +108,10 @@ export const followUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Follow user error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ 
+      message: "Server error",
+      error: error.message 
+    });
   }
 };
 
@@ -107,11 +141,16 @@ export const unfollowUser = async (req, res) => {
     );
     await targetUser.save();
 
-    // Xóa khỏi followed của current user
-    req.user.followed = req.user.followed.filter(
+    // Xóa khỏi followed của current user - cần lấy lại từ DB để đảm bảo là Mongoose document
+    const currentUser = await User.findById(req.user._id);
+    if (!currentUser) {
+      return res.status(404).json({ message: "Current user not found" });
+    }
+    
+    currentUser.followed = currentUser.followed.filter(
       (f) => f.toString() !== targetUser._id.toString()
     );
-    await req.user.save();
+    await currentUser.save();
 
     res.json({ 
       message: `You have unfollowed ${targetUser.username}`,
@@ -119,7 +158,10 @@ export const unfollowUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Unfollow user error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ 
+      message: "Server error",
+      error: error.message 
+    });
   }
 };
 

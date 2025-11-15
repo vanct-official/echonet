@@ -139,7 +139,7 @@ export const getUserPosts = async (req, res) => {
       .populate([
         { path: "author", select: "username avatar isVerified" },
         { path: "comments.user", select: "username avatar isVerified" },
-        {path: "comments.reply.user", select: "username avatar isVerified" },
+        { path: "comments.reply.user", select: "username avatar isVerified" },
         {
           path: "repostOf",
           populate: [
@@ -385,6 +385,31 @@ export const replyToComment = async (req, res) => {
     const populatedPost = await Post.findById(postId)
       .populate("comments.user", "username avatar isVerified")
       .populate("comments.reply.user", "username avatar isVerified");
+
+    // 🧩 Tạo thông báo nếu người reply ≠ chủ comment
+    const lastReply = populatedPost.comments.id(commentId).reply.slice(-1)[0];
+    const commentOwnerId = populatedPost.comments
+      .id(commentId)
+      .user._id.toString();
+    const replierId = req.user._id.toString();
+
+    if (commentOwnerId !== replierId) {
+      const message = `${req.user.username} đã trả lời bình luận của bạn: "${text}"`;
+
+      const notification = await Notification.create({
+        senderId: replierId,
+        receiverId: commentOwnerId,
+        type: "reply",
+        message,
+        targetId: post._id, // bạn có thể lưu commentId nếu muốn
+      });
+
+      // 🚀 Gửi real-time notification nếu user online
+      const receiverSocketId = global.findSocketByUser(commentOwnerId);
+      if (receiverSocketId) {
+        global.io.to(receiverSocketId).emit("notification_new", notification);
+      }
+    }
 
     res.status(200).json({
       message: "Reply added successfully",

@@ -116,8 +116,9 @@ export const markMessagesAsRead = async (conversationId) => {
 
 export const deleteMessage = async (messageId) => {
   try {
-    const res = await axios.delete(
+    const res = await axios.patch(
       `${API_URL}/chat/messages/${messageId}`, // API endpoint mới
+      {},
       getAuthHeaders()
     );
     return res.data;

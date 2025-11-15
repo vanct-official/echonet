@@ -1,15 +1,10 @@
-// controllers/chat.controller.js
-
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
-import cloudinary from "../config/cloudinary.js"; // Giả định file này export default cloudinary.v2
-import fs from "fs/promises"; // Bắt buộc để xóa file tạm
+import cloudinary from "../config/cloudinary.js";
+import fs from "fs/promises";
 import streamifier from "streamifier";
 
-/* -------------------------------------------------------------------------- */
-/* 🟢 GỬI TIN NHẮN (MESSAGE) */
-/* -------------------------------------------------------------------------- */
-
+// Send a message
 export const sendMessage = async (req, res) => {
   try {
     const sender = req.user._id;
@@ -17,14 +12,14 @@ export const sendMessage = async (req, res) => {
     let mediaURL = null;
     let messageType = "text";
 
-    // 1️⃣ Kiểm tra hợp lệ
+    // Check if there's content to send
     if (!text?.trim() && !req.file) {
       return res
         .status(400)
         .json({ message: "Không có nội dung tin nhắn hoặc file đính kèm." });
     }
 
-    // 2️⃣ Nếu chưa có conversation → tạo mới
+    // If no conversation ID is provided, find or create a conversation
     if (!conversation && receiverId) {
       let existingConv = await Conversation.findOne({
         participants: { $all: [sender, receiverId] },
@@ -45,7 +40,7 @@ export const sendMessage = async (req, res) => {
         .json({ message: "Thiếu conversation hoặc receiverId." });
     }
 
-    // 3️⃣ Upload file lên Cloudinary nếu có
+    // Upload media to Cloudinary if file is present
     if (req.file) {
       console.log("📤 Uploading file:", req.file.originalname);
 
@@ -73,7 +68,7 @@ export const sendMessage = async (req, res) => {
       console.log("✅ Uploaded:", mediaURL);
     }
 
-    // 4️⃣ Lưu message vào DB
+    // Save the message
     const newMessage = await Message.create({
       conversation,
       sender,
@@ -83,36 +78,31 @@ export const sendMessage = async (req, res) => {
       readBy: [sender],
     });
 
-    // 5️⃣ Cập nhật latestMessage
+    // Update latestMessage in Conversation
     await Conversation.findByIdAndUpdate(conversation, {
       latestMessage: newMessage._id,
     });
 
-    // 6️⃣ Populate và gửi realtime
+    // Populate sender info
     const populated = await Message.findById(newMessage._id).populate(
       "sender",
       "username avatar"
     );
 
-    // Gửi đến các client trong cùng conversation (ngoại trừ sender)
+    // Emit the new message via Socket.io
     req.io?.to(conversation.toString()).emit("receiveMessage", populated);
 
-    // 7️⃣ Trả về kết quả cho client
+    // Respond with the new message
     res.status(201).json(populated);
   } catch (error) {
     console.error("❌ Lỗi gửi tin nhắn:", error);
-    res
-      .status(500)
-      .json({
-        message: error.message || "Lỗi máy chủ nội bộ khi gửi tin nhắn",
-      });
+    res.status(500).json({
+      message: error.message || "Lỗi máy chủ nội bộ khi gửi tin nhắn",
+    });
   }
 };
 
-/* -------------------------------------------------------------------------- */
-/* 🟢 LẤY TIN NHẮN (GET MESSAGES) */
-/* -------------------------------------------------------------------------- */
-
+// Get messages for a conversation
 export const getMessages = async (req, res) => {
   try {
     const { conversationId } = req.params;
@@ -130,82 +120,78 @@ export const getMessages = async (req, res) => {
   }
 };
 
-/* -------------------------------------------------------------------------- */
-/* 🆕 XÓA TIN NHẮN (DELETE MESSAGE) */
-/* -------------------------------------------------------------------------- */
-
+// Delete a message
 export const deleteMessage = async (req, res) => {
   try {
     const userId = req.user._id;
     const { messageId } = req.params;
 
-    // 1. Tìm tin nhắn
     const message = await Message.findById(messageId);
 
     if (!message) {
       return res.status(404).json({ message: "Không tìm thấy tin nhắn." });
     }
 
-    // 2. Kiểm tra quyền: Chỉ người gửi mới được xóa
     if (message.sender.toString() !== userId.toString()) {
       return res
         .status(403)
         .json({ message: "Bạn không có quyền xóa tin nhắn này." });
     }
 
-    // 3. Xóa tin nhắn
-    await Message.deleteOne({ _id: messageId });
+    message.isDeleted = true;
+    message.content = "Tin nhắn đã được xóa";
+    message.mediaURL = null;
+    await message.save();
 
-    // 4. Cập nhật latestMessage của Conversation (nếu tin nhắn bị xóa là tin nhắn mới nhất)
     const conversation = await Conversation.findById(message.conversation);
     if (
       conversation &&
       conversation.latestMessage &&
       conversation.latestMessage.toString() === messageId
     ) {
-      // Tìm tin nhắn mới nhất còn lại trong conversation
       const newLatestMessage = await Message.findOne({
         conversation: message.conversation,
+        isDeleted: false,
       })
         .sort({ createdAt: -1 })
         .limit(1);
 
       conversation.latestMessage = newLatestMessage
         ? newLatestMessage._id
-        : null;
+        : messageId; // giữ nguyên nếu không còn message nào
       await conversation.save();
     }
 
-    // 5. Emit sự kiện Socket thông báo tin nhắn đã bị xóa
-    req.io
-      ?.to(message.conversation.toString())
-      .emit("deleteMessage", messageId);
+    req.io?.to(message.conversation.toString()).emit("messageDeleted", {
+      messageId,
+      conversationId: message.conversation,
+      content: "Tin nhắn đã được xóa",
+    });
 
-    res.status(200).json({ message: "Tin nhắn đã được xóa thành công." });
+    res.status(200).json({
+      message: "Tin nhắn đã được cập nhật trạng thái xóa.",
+      messageId,
+    });
   } catch (error) {
-    console.error("❌ Lỗi xóa tin nhắn:", error);
-    res.status(500).json({ message: error.message || "Lỗi máy chủ nội bộ" });
+    console.error("❌ Lỗi khi cập nhật trạng thái xóa:", error);
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ" });
   }
 };
 
-/* -------------------------------------------------------------------------- */
-/* 🟢 ĐÁNH DẤU ĐÃ ĐỌC (MARK AS READ) */
-/* -------------------------------------------------------------------------- */
-
+// Mark messages as read
 export const markMessagesAsRead = async (req, res) => {
   try {
     const userId = req.user._id;
     const { conversationId } = req.params;
 
-    // Chỉ cập nhật trạng thái đọc cho các tin nhắn đã gửi đi không phải bởi người dùng hiện tại
     const updateResult = await Message.updateMany(
       {
         conversation: conversationId,
-        sender: { $ne: userId }, // Tin nhắn không phải của mình
-        readBy: { $ne: userId }, // Chưa có trong danh sách đã đọc
+        sender: { $ne: userId },
+        readBy: { $ne: userId },
       },
       {
-        $addToSet: { readBy: userId }, // Thêm userId vào mảng readBy
+        $addToSet: { readBy: userId },
       }
     );
 
@@ -216,9 +202,7 @@ export const markMessagesAsRead = async (req, res) => {
   }
 };
 
-// ... (Các hàm getConversations, getMyMessages khác nếu có)
-
-// Lấy danh sách conversation
+// Get conversations for the logged-in user
 export const getConversations = async (req, res) => {
   try {
     const conversations = await Conversation.find({
@@ -238,7 +222,7 @@ export const getConversations = async (req, res) => {
   }
 };
 
-// Lấy tin nhắn của chính người dùng
+// Get messages sent by the logged-in user
 export const getMyMessages = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -259,10 +243,7 @@ export const getMyMessages = async (req, res) => {
   }
 };
 
-/* -------------------------------------------------------------------------- */
-/* 🟡 CẬP NHẬT NỘI DUNG TIN NHẮN (UPDATE MESSAGE) */
-/* -------------------------------------------------------------------------- */
-
+// Update a message
 export const updateMessage = async (req, res) => {
   try {
     const userId = req.user._id;

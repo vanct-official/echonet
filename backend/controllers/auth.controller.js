@@ -10,9 +10,7 @@ import streamifier from "streamifier";
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 
-// @desc    Register a new user
-// @route   POST /api/auth/register
-// @access  Public
+// Register a new user
 export const registerRequest = async (req, res) => {
   try {
     const {
@@ -26,7 +24,6 @@ export const registerRequest = async (req, res) => {
       gender,
     } = req.body;
 
-    // Kiểm tra trùng email/username
     const existingUsername = await User.findOne({ username });
     if (existingUsername)
       return res.status(400).json({ message: "Username đã tồn tại" });
@@ -38,7 +35,6 @@ export const registerRequest = async (req, res) => {
     if (existingPhone)
       return res.status(400).json({ message: "Số điện thoại này đã tồn tại" });
 
-    // nếu người dùng nhỏ hơn 13 tuổi thì không hợp lệ
     const today = new Date();
     if( today.getFullYear() - new Date(dob).getFullYear() < 13 ) {
       return res.status(400).json({ message: "Chưa đủ 13 tuổi" });
@@ -72,11 +68,11 @@ export const registerRequest = async (req, res) => {
       console.log("Mật khẩu hợp lệ");
     }
 
-    // Tạo OTP
+    // Create OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 chữ số
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Lưu tạm
+    // Save temp data
     const temp = await OtpTemp.create({
       email,
       username,
@@ -91,7 +87,7 @@ export const registerRequest = async (req, res) => {
       expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 phút
     });
 
-    // Gửi email OTP
+    // Send email OTP
     const transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
@@ -111,7 +107,7 @@ export const registerRequest = async (req, res) => {
   }
 };
 
-// Xác thực Đăng ký
+// Confirm registration with OTP
 export const confirmRegister = async (req, res) => {
   try {
     const { email, otp, firstname, lastname, phone, dob, gender } = req.body;
@@ -123,7 +119,7 @@ export const confirmRegister = async (req, res) => {
       return res.status(400).json({ message: "OTP đã hết hạn" });
     }
 
-    // Tạo user chính thức
+    // Create user
     const user = await User.create({
       username: temp.username,
       email: temp.email,
@@ -144,9 +140,7 @@ export const confirmRegister = async (req, res) => {
   }
 };
 
-// @desc    Login user
-// @route   POST /api/auth/login
-// @access  Public
+// Login user
 export const loginUser = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -182,9 +176,7 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// @desc    Yêu cầu đặt lại mật khẩu (Gửi OTP)
-// @route   POST /api/auth/forgot-password
-// @access  Public
+// Request password reset (send OTP)
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -194,13 +186,13 @@ export const forgotPassword = async (req, res) => {
         .status(404)
         .json({ message: "Không tìm thấy tài khoản với email này" });
 
-    // Tạo OTP 6 số
+    // Create OTP with 6 digits
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Xóa OTP cũ nếu có
+    // Delete existing OTPs for this email
     await OtpTemp.deleteMany({ email, purpose: "forgot-password" });
 
-    // Lưu OTP mới
+    // Save new OTP temp record
     await OtpTemp.create({
       email,
       otp,
@@ -208,7 +200,7 @@ export const forgotPassword = async (req, res) => {
       expiresAt: new Date(Date.now() + 10 * 60 * 1000), // hết hạn sau 10 phút
     });
 
-    // Gửi email OTP
+    // Send email with OTP
     const transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
@@ -228,10 +220,7 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
-// Đặt lại mật khẩu (khi nhập OTP hợp lệ)
-// @desc    Xác thực OTP để đặt lại mật khẩu
-// @route   POST /api/auth/verify-reset-otp
-// @access  Public
+// Verify OTP for password reset
 export const verifyResetOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -255,17 +244,12 @@ export const verifyResetOtp = async (req, res) => {
   }
 };
 
-// @desc    Đặt lại mật khẩu mới
-// @route   POST /api/auth/reset-password
-// @access  Public
-// @desc    Đặt lại mật khẩu sau khi nhập OTP hợp lệ
-// @route   POST /api/auth/reset-password
-// @access  Public
+// Reset new password
 export const resetPassword = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
 
-    // 1️⃣ Kiểm tra OTP
+    // Check OTP
     const temp = await OtpTemp.findOne({
       email,
       otp,
@@ -282,12 +266,12 @@ export const resetPassword = async (req, res) => {
       return res.status(400).json({ message: "OTP đã hết hạn" });
     }
 
-    // 2️⃣ Tìm user thật
+    // Find user
     const user = await User.findOne({ email });
     if (!user)
       return res.status(404).json({ message: "Không tìm thấy người dùng" });
 
-    // 3️⃣ Cập nhật mật khẩu mới (middleware sẽ tự hash)
+    // Update password
     user.passwordHash = newPassword;
     if( newPassword.length < 8 || newPassword.length > 20) {
       return  res.status(400).json({ message: "Mật khẩu phải từ 8 đến 20 ký tự" });
@@ -305,7 +289,7 @@ export const resetPassword = async (req, res) => {
 
     await user.save();
 
-    // 4️⃣ Xóa OTP tạm
+    // Delete temp OTP record
     await temp.deleteOne();
 
     res.json({ message: "Đặt lại mật khẩu thành công" });
@@ -315,7 +299,7 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-// Chỉnh sửa Profile
+// Update user profile
 export const updateProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -324,7 +308,7 @@ export const updateProfile = async (req, res) => {
     let { firstname, lastname, phone, dob, gender, bio } = req.body;
     if (typeof gender === "string") gender = gender === "true";
 
-    // 🧩 Cập nhật thông tin cơ bản
+    // Update fields
     if (firstname) user.firstname = firstname;
     if (lastname) user.lastname = lastname;
     if (phone) user.phone = phone;
@@ -332,11 +316,11 @@ export const updateProfile = async (req, res) => {
     if (bio) user.bio = bio;
     if (gender !== undefined) user.gender = gender;
 
-    // 🖼️ Nếu có upload file (memoryStorage)
+    // If there is a file (avatar) to upload
     if (req.file) {
       console.log("REQ FILE:", req.file);
 
-      // Upload lên Cloudinary qua stream (giống createPost)
+      // Upload to Cloudinary
       const uploadResult = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           {
@@ -369,7 +353,7 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// Thay đổi mật khẩu
+// Change password
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;

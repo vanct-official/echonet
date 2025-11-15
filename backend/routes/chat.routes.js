@@ -22,7 +22,7 @@ router.post("/message", upload.single("file"), sendMessage);
 router.put("/messages/:messageId", protect, updateMessage); // Cập nhật trạng thái đã đọc cho tin nhắn cụ thể
 
 // 🆕 Route xóa tin nhắn
-router.delete("/messages/:messageId",protect, deleteMessage);
+router.patch("/messages/:messageId",protect, deleteMessage);
 
 // 🆕 Route mới để lấy tin nhắn của chính người dùng
 router.get("/messages/mine", getMyMessages);

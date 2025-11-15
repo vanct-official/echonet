@@ -1,10 +1,9 @@
 import Conversation from "../models/conversation.model.js";
 import User from "../models/user.model.js";
 
-// 📩 Lấy danh sách cuộc trò chuyện của user hiện tại
+// Get all conversations for the logged-in user, excluding blocked users
 export const getUserConversations = async (req, res) => {
   try {
-    // ✅ Lấy danh sách block 2 chiều
     const currentUser = await User.findById(req.user._id).select("blockedUsers");
     const blockedByOthers = await User.find({ blockedUsers: req.user._id }).select("_id");
 
@@ -13,7 +12,6 @@ export const getUserConversations = async (req, res) => {
       ...blockedByOthers.map((u) => u._id.toString()),
     ];
 
-    // ✅ Tìm tất cả conversation có user hiện tại tham gia
     const conversations = await Conversation.find({
       participants: req.user._id,
     })
@@ -27,7 +25,6 @@ export const getUserConversations = async (req, res) => {
       })
       .sort({ updatedAt: -1 });
 
-    // 🚫 Lọc bỏ conversation có người bị block 2 chiều
     const filtered = conversations.filter((conv) =>
       conv.participants.every((p) => !blockedIds.includes(p._id.toString()))
     );
@@ -40,13 +37,12 @@ export const getUserConversations = async (req, res) => {
 };
 
 
-// 💬 Tạo cuộc trò chuyện mới giữa 2 người (kiểm tra block 2 chiều)
+// Create a new conversation between two users 
 export const createConversation = async (req, res) => {
   try {
     const { receiverId } = req.body;
     const senderId = req.user._id;
 
-    // ✅ Kiểm tra chặn hai chiều
     const [sender, receiver] = await Promise.all([
       User.findById(senderId).select("blockedUsers"),
       User.findById(receiverId).select("blockedUsers"),
@@ -61,7 +57,6 @@ export const createConversation = async (req, res) => {
       });
     }
 
-    // 🔍 Kiểm tra xem đã có cuộc trò chuyện này chưa
     let existing = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
     })
@@ -76,7 +71,6 @@ export const createConversation = async (req, res) => {
 
     if (existing) return res.status(200).json(existing);
 
-    // 🆕 Nếu chưa có -> tạo mới
     const newConversation = await Conversation.create({
       participants: [senderId, receiverId],
     });

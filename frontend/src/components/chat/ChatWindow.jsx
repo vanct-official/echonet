@@ -102,7 +102,9 @@ export default function ChatWindow({ conversation, setConversation }) {
     };
 
     const handleUpdateMessage = ({ _id, content }) => {
-      setMessages((prev) => prev.map((m) => (m._id === _id ? { ...m, content } : m)));
+      setMessages((prev) =>
+        prev.map((m) => (m._id === _id ? { ...m, content } : m))
+      );
     };
 
     const handleDeleteMessageEvent = (messageId) => {
@@ -126,7 +128,28 @@ export default function ChatWindow({ conversation, setConversation }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  /* ----------------------------- GỬI TIN NHẮN ---------------------------- */
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("messageDeleted", ({ messageId }) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m._id === messageId
+            ? {
+                ...m,
+                isDeleted: true,
+                content: "Tin nhắn đã được xóa",
+                mediaURL: null,
+              }
+            : m
+        )
+      );
+    });
+
+    return () => socket.off("messageDeleted");
+  }, [socket]);
+
+  // Send message
   const handleSend = async (text, file) => {
     if (!text && !file) return;
     let conversationId = conversation?._id;
@@ -144,7 +167,8 @@ export default function ChatWindow({ conversation, setConversation }) {
       }
     }
 
-    if (!conversationId) return console.error("Không thể xác định Conversation ID");
+    if (!conversationId)
+      return console.error("Không thể xác định Conversation ID");
 
     try {
       let newMessage;
@@ -172,31 +196,37 @@ export default function ChatWindow({ conversation, setConversation }) {
     }
   };
 
-  /* ----------------------------- EDIT / DELETE ---------------------------- */
+  // Edit message
   const handleEditMessage = async (msg) => {
-  const oldText =
-    typeof msg.content === "string" ? msg.content : "";
+    const oldText = typeof msg.content === "string" ? msg.content : "";
 
-  const newText = prompt("Nhập nội dung mới:", oldText);
-  if (!newText || newText.trim() === oldText) return;
+    const newText = prompt("Nhập nội dung mới:", oldText);
+    if (!newText || newText.trim() === oldText) return;
 
-  try {
-    const updated = await updateMessage(msg._id, newText.trim());
-    setMessages((prev) =>
-      prev.map((m) => (m._id === msg._id ? updated : m))
-    );
-  } catch (error) {
-    console.error("❌ Lỗi update tin nhắn:", error);
-  }
-};
+    try {
+      const updated = await updateMessage(msg._id, newText.trim());
+      setMessages((prev) => prev.map((m) => (m._id === msg._id ? updated : m)));
+    } catch (error) {
+      console.error("❌ Lỗi update tin nhắn:", error);
+    }
+  };
 
-
+  // Delete message
   const handleDeleteMessage = async (messageId) => {
     if (!window.confirm("Bạn muốn xóa tin nhắn này?")) return;
     try {
       await deleteMessage(messageId);
-      setMessages((prev) => prev.filter((m) => m._id !== messageId));
-      socket?.emit("deleteMessage", { messageId, conversationId: conversation?._id });
+      setMessages((prev) =>
+        prev.map((m) =>
+          m._id === messageId
+            ? { ...m, isDeleted: true, content: "Tin nhắn đã được xóa" }
+            : m
+        )
+      );
+      socket?.emit("deleteMessage", {
+        messageId,
+        conversationId: conversation?._id,
+      });
       toast({ title: "Đã xóa tin nhắn", status: "info", duration: 1500 });
     } catch (err) {
       console.error("❌ Lỗi xóa tin nhắn:", err);
@@ -223,7 +253,9 @@ export default function ChatWindow({ conversation, setConversation }) {
     );
   }
 
-  const receiver = conversation.participants.find((p) => p._id !== currentUserId);
+  const receiver = conversation.participants.find(
+    (p) => p._id !== currentUserId
+  );
 
   return (
     <>
@@ -271,6 +303,7 @@ export default function ChatWindow({ conversation, setConversation }) {
           {messages.map((m, index) => {
             const senderId = m.sender?._id || m.sender;
             const isSender = senderId === currentUserId;
+            const isDeleted = m.isDeleted === true;
 
             return (
               <div
@@ -311,12 +344,20 @@ export default function ChatWindow({ conversation, setConversation }) {
                       }}
                     />
                   )}
-
                   {/* Bong bóng tin nhắn */}
                   <div
                     style={{
-                      backgroundColor: isSender ? primaryBlue : "white",
-                      color: isSender ? "white" : "black",
+                      backgroundColor: isDeleted
+                        ? "#e6e6e6" // XÁM CHO TIN ĐÃ XOÁ
+                        : isSender
+                        ? primaryBlue
+                        : "white",
+                      color: isDeleted
+                        ? "#777" // Text xám
+                        : isSender
+                        ? "white"
+                        : "black",
+
                       padding: "10px 12px",
                       borderRadius: "18px",
                       borderBottomLeftRadius: isSender ? "18px" : "2px",
@@ -324,10 +365,11 @@ export default function ChatWindow({ conversation, setConversation }) {
                       wordBreak: "break-word",
                       boxShadow: "0 1px 0.5px rgba(0, 0, 0, 0.13)",
                       position: "relative",
+                      fontStyle: isDeleted ? "italic" : "normal",
                     }}
                   >
-                    {/* Hiển thị media */}
-                    {m.mediaURL && (
+                    {/* 🔥 Nếu đã xoá → KHÔNG hiển thị media */}
+                    {!isDeleted && m.mediaURL && (
                       <div style={{ marginBottom: m.content ? "8px" : "0" }}>
                         {m.type === "image" && (
                           <img
@@ -343,6 +385,7 @@ export default function ChatWindow({ conversation, setConversation }) {
                             }}
                           />
                         )}
+
                         {m.type === "video" && (
                           <video
                             controls
@@ -355,6 +398,7 @@ export default function ChatWindow({ conversation, setConversation }) {
                             }}
                           />
                         )}
+
                         {(m.type === "file" || m.type === "document") && (
                           <a
                             href={m.mediaURL}
@@ -371,13 +415,20 @@ export default function ChatWindow({ conversation, setConversation }) {
                       </div>
                     )}
 
-                    {/* Nội dung text */}
-                    <div style={{ whiteSpace: "pre-wrap" }}>{m.content}</div>
+                    {/* 🔥 Nội dung text */}
+                    <div style={{ whiteSpace: "pre-wrap" }}>
+                      {isDeleted ? "Tin nhắn đã được xóa" : m.content}
+                    </div>
 
+                    {/* 🔥 Thời gian + bạn */}
                     <div
                       style={{
                         fontSize: "11px",
-                        color: isSender ? "#d0e4ff" : "#666",
+                        color: isDeleted
+                          ? "#999" // màu nhẹ cho timestamp tin xoá
+                          : isSender
+                          ? "#d0e4ff"
+                          : "#666",
                         marginTop: "6px",
                         textAlign: isSender ? "right" : "left",
                         display: "flex",
@@ -386,7 +437,11 @@ export default function ChatWindow({ conversation, setConversation }) {
                         alignItems: "center",
                       }}
                     >
-                      {isSender && <span style={{ fontWeight: 600, opacity: 0.9 }}>Bạn</span>}
+                      {isSender && !isDeleted && (
+                        <span style={{ fontWeight: 600, opacity: 0.9 }}>
+                          Bạn
+                        </span>
+                      )}
                       <span>
                         {new Date(m.createdAt).toLocaleTimeString([], {
                           hour: "2-digit",
@@ -395,9 +450,14 @@ export default function ChatWindow({ conversation, setConversation }) {
                       </span>
                     </div>
                   </div>
-
                   {isSender && (
-                    <div style={{ marginRight: "6px", display: "flex", alignItems: "center" }}>
+                    <div
+                      style={{
+                        marginRight: "6px",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
                       <Menu>
                         <MenuButton
                           as={IconButton}
@@ -407,8 +467,12 @@ export default function ChatWindow({ conversation, setConversation }) {
                           variant="ghost"
                         />
                         <MenuList>
-                          <MenuItem onClick={() => handleEditMessage(m)}>Chỉnh sửa</MenuItem>
-                          <MenuItem onClick={() => handleDeleteMessage(m._id)}>Xóa</MenuItem>
+                          <MenuItem onClick={() => handleEditMessage(m)}>
+                            Chỉnh sửa
+                          </MenuItem>
+                          <MenuItem onClick={() => handleDeleteMessage(m._id)}>
+                            Xóa
+                          </MenuItem>
                         </MenuList>
                       </Menu>
                     </div>

@@ -30,6 +30,10 @@ const MessageSchema = new mongoose.Schema({
         type: String,
         default: 'text'
     },
+    isDeleted: {
+        type: Boolean,
+        default: false
+    },
 
     // 5. TRẠNG THÁI ĐỌC
     readBy: [{

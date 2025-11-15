@@ -42,15 +42,6 @@ const VerifiedBadgeIcon = () => (
   />
 );
 
-/**
- * Props:
- * isOpen, onClose, postData, currentUser, canEdit,
- * onEditOpen, handleDelete, handlePublish, onReportOpen,
- * setIsRepostModalOpen, handleRepost,
- * liked, handleLike, isLiking, fetchLikes, likesCount,
- * comments, isCommentLoading, newComment, setNewComment, handleAddComment,
- * setSelectedImage, setIsImageModalOpen
- */
 export default function PostDetail(props) {
   const {
     isOpen,

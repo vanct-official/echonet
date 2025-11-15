@@ -28,14 +28,6 @@ const VerifiedBadgeIcon = () => (
   <Image src={VerifiedBadgeSVG} alt="Verified Badge" w="16px" h="16px" ml={1} display="inline-block" />
 );
 
-/**
- * Props:
- * isOpen, onClose, postData,
- * handleDelete,
- * likesCount, comments,
- * isCommentLoading, newComment, setNewComment, handleAddComment,
- * setSelectedImage, setIsImageModalOpen
- */
 export default function AdminPostDetail(props) {
   const {
     isOpen,

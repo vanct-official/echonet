@@ -7,10 +7,11 @@ import {
   markAllAsRead,
   deleteNotification,
 } from "../controllers/notification.controller.js";
+import { protect } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/me", getMyNotifications);
+router.get("/me", protect, getMyNotifications);
 router.get("/:userId", getNotifications);
 router.post("/", createNotification);
 router.patch("/:id/read", markAsRead);

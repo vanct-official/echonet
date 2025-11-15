@@ -7,8 +7,9 @@ import {
   Spinner,
   HStack,
   useColorMode,
+  Divider,
 } from "@chakra-ui/react";
-import { getFollowedUsers } from "../services/userService.js";
+import { getFollowedUsers, getFollowers } from "../services/userService.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 
@@ -16,9 +17,11 @@ export default function RightSidebar({ refreshTrigger }) {
   const { user } = useAuth();
   const { colorMode } = useColorMode();
   const [following, setFollowing] = useState([]);
+  const [followers, setFollowers] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // 🌀 Lấy danh sách người dùng đang theo dõi
   useEffect(() => {
     const fetchFollowing = async () => {
       try {
@@ -44,6 +47,26 @@ export default function RightSidebar({ refreshTrigger }) {
     };
 
     fetchFollowing();
+  }, [user, refreshTrigger]); // refreshTrigger giúp reload khi follow/unfollow
+
+  // Lấy danh sách followers
+  useEffect(() => {
+    const fetchFollowers = async () => {
+      try {
+        if (!user || !user._id) {
+          setFollowers([]);
+          return;
+        }
+
+        const res = await getFollowers();
+        setFollowers(Array.isArray(res) ? res : []);
+      } catch (err) {
+        console.error("Lỗi khi lấy danh sách theo dõi:", err);
+        setFollowers([]);
+      }
+    };
+
+    fetchFollowers();
   }, [user, refreshTrigger]); // refreshTrigger giúp reload khi follow/unfollow
 
   // 🌀 Trạng thái loading
@@ -72,6 +95,7 @@ export default function RightSidebar({ refreshTrigger }) {
       display={{ base: "none", xl: "block" }}
       zIndex={5}
     >
+      {/* Đang theo dõi */}
       <Text fontWeight="bold" mb={4} fontSize="lg">
         Đang theo dõi
       </Text>
@@ -100,9 +124,58 @@ export default function RightSidebar({ refreshTrigger }) {
                 <Avatar
                   size="sm"
                   name={`${f.firstname || ""} ${f.lastname || ""}`}
-                  src={`${f.avatar || undefined}`} // ✅ thêm dòng này
+                  src={f.avatar || undefined}
                 />
-                <Box>
+                <Box flex={1}>
+                  <Text fontWeight="bold" fontSize="sm">
+                    {`${f.firstname || ""} ${f.lastname || ""}`.trim() ||
+                      f.username ||
+                      "Người dùng"}
+                  </Text>
+                  <Text fontSize="xs" color="gray.500">
+                    @{f.username || "ẩn danh"}
+                  </Text>
+                </Box>
+              </HStack>
+            );
+          })}
+        </VStack>
+      )}
+
+      <Divider my={4} />
+
+      {/* Người theo dõi */}
+      <Text fontWeight="bold" mb={4} fontSize="lg">
+        Theo dõi
+      </Text>
+
+      {!followers || followers.length === 0 ? (
+        <Text color="gray.500" fontSize="sm">
+          Bạn chưa được ai theo dõi.
+        </Text>
+      ) : (
+        <VStack align="stretch" spacing={3}>
+          {followers.map((f) => {
+            if (!f || !f._id) return null;
+            return (
+              <HStack
+                key={f._id}
+                spacing={3}
+                p={2}
+                borderRadius="md"
+                cursor="pointer"
+                align="center"
+                _hover={{
+                  bg: colorMode === "light" ? "gray.50" : "gray.700",
+                }}
+                onClick={() => navigate(`/user/${f._id}`)}
+              >
+                <Avatar
+                  size="sm"
+                  name={`${f.firstname || ""} ${f.lastname || ""}`}
+                  src={f.avatar || undefined}
+                />
+                <Box flex={1}>
                   <Text fontWeight="bold" fontSize="sm">
                     {`${f.firstname || ""} ${f.lastname || ""}`.trim() ||
                       f.username ||

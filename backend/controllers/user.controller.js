@@ -190,6 +190,7 @@ export const searchUsers = async (req, res) => {
   }
 };
 
+// @desc    Get list of users that the logged-in user is following
 export const getFollowedUsers = async (req, res) => {
   try {
     const user = await User.findById(req.user.id)
@@ -200,6 +201,19 @@ export const getFollowedUsers = async (req, res) => {
     res.json(user.followed || []);
   } catch (error) {
     console.error("Lỗi khi lấy danh sách followed:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get list of users that follow the logged-in user
+export const getFollowers = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+      .populate("followers", "username firstname lastname _id avatar");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(user.followers || []);
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách followers:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

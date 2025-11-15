@@ -40,6 +40,19 @@ export const getFollowedUsers = async () => {
   }
 };
 
+export const getFollowers = async (userId) => {
+  try {
+    const res = await axios.get(
+      `${API_URL}/users/followers`,
+      getAuthHeaders()
+    );
+    return res.data || []; // ✅ fallback rừng tránh crash
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách followers:", error);
+    return []; // ✅ fallback rừng tránh crash
+  }
+};
+
 // ✅ Theo dõi người khác
 export const followUser = async (userId) => {
   try {
